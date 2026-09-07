@@ -1363,7 +1363,7 @@ Digital-Mail-Service
          * นำ URL ที่ได้จาก Apps Script > Deploy > Web app มาใส่ด้านล่าง
          * ตัวอย่าง: https://script.google.com/macros/s/AKfycb.../exec
          **************************************************************/
-        const GAS_WEB_APP_URL ='https://script.google.com/macros/s/AKfycbylQ1p2T5GxM6_DZM_b11mEWvlrzE6dvzS6pIe4vnrC94gU08_OHeDb_CrWnSaHHhohYg/exec';
+        const GAS_WEB_APP_URL ='[https://script.google.com/macros/s/AKfycbylQ1p2T5GxM6_DZM_b11mEWvlrzE6dvzS6pIe4vnrC94gU08_OHeDb_CrWnSaHHhohYg/exec](https://script.google.com/macros/s/AKfycbylQ1p2T5GxM6_DZM_b11mEWvlrzE6dvzS6pIe4vnrC94gU08_OHeDb_CrWnSaHHhohYg/exec)';
 
         const API_SOURCE = 'NTL_DMS_GAS_API';
         const apiPending = new Map();
