@@ -1,2 +1,6701 @@
+[NTL_Digital_Mail_Professional_v5_9_18.html](https://github.com/user-attachments/files/31918192/NTL_Digital_Mail_Professional_v5_9_18.html)
 # preedapon.github.io
 Digital-Mail-Service
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NTL | Digital Mail Service</title>
+    <!-- Tailwind CSS & FontAwesome Icons -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Signature Pad Library สำหรับ E-Sign -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <!-- Barcode + OCR libraries -->
+    <script src="https://unpkg.com/@zxing/library@0.23.0/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade-up { animation: fadeUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* ===== Hi-Tech Courier Hero (pure SVG / CSS, no external image) ===== */
+        @keyframes gridPan {
+            from { background-position: 0 0; }
+            to   { background-position: 80px 80px; }
+        }
+        @keyframes floatY {
+            0%, 100% { transform: translateY(0px); }
+            50%      { transform: translateY(-14px); }
+        }
+        @keyframes scanLine {
+            0%   { transform: translateY(-100%); opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(420px); opacity: 0; }
+        }
+        @keyframes pulseGlow {
+            0%, 100% { opacity: .55; }
+            50%      { opacity: 1; }
+        }
+        @keyframes dashMove {
+            to { stroke-dashoffset: -200; }
+        }
+        .bg-hero-grid {
+            background-image:
+                linear-gradient(rgba(99,102,241,0.18) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99,102,241,0.18) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: gridPan 6s linear infinite;
+        }
+        .hero-float { animation: floatY 5s ease-in-out infinite; }
+        .hero-scan { animation: scanLine 3.2s ease-in-out infinite; }
+        .hero-pulse { animation: pulseGlow 2.4s ease-in-out infinite; }
+        .hero-dash { stroke-dasharray: 6 10; animation: dashMove 4s linear infinite; }
+
+        .bg-courier-tech {
+            background:
+                radial-gradient(ellipse 90% 60% at 30% 0%, rgba(37,99,235,0.35), transparent 60%),
+                radial-gradient(ellipse 70% 50% at 90% 100%, rgba(79,70,229,0.30), transparent 60%),
+                linear-gradient(155deg, #020617 0%, #0b1224 45%, #131a3d 100%);
+        }
+
+        /* ===== Light / Dark Mode — scoped to the app shell only (login screen keeps its own dark theme) ===== */
+        #view-app { transition: background-color .2s ease, color .2s ease; }
+        #view-app.dark-mode { background-color: #0b1220; }
+        #view-app.dark-mode .bg-slate-50,
+        #view-app.dark-mode .bg-slate-100\/70 { background-color: #0b1220 !important; }
+        #view-app.dark-mode .bg-white { background-color: #111827 !important; }
+        #view-app.dark-mode .bg-slate-50\/50,
+        #view-app.dark-mode .bg-slate-50\/70 { background-color: rgba(30,41,59,0.6) !important; }
+        #view-app.dark-mode .text-slate-800 { color: #f1f5f9 !important; }
+        #view-app.dark-mode .text-slate-700 { color: #e2e8f0 !important; }
+        #view-app.dark-mode .text-slate-600 { color: #cbd5e1 !important; }
+        #view-app.dark-mode .text-slate-500 { color: #94a3b8 !important; }
+        #view-app.dark-mode .text-slate-400 { color: #64748b !important; }
+        #view-app.dark-mode .border-slate-200,
+        #view-app.dark-mode .border-slate-200\/80 { border-color: #334155 !important; }
+        #view-app.dark-mode .border-slate-100 { border-color: #1e293b !important; }
+        #view-app.dark-mode input,
+        #view-app.dark-mode select { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; }
+        #view-app.dark-mode .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
+
+        /* ===== Role-based visibility (Operation Staff has no Insight & Automation) ===== */
+        body.role-staff .admin-only { display: none !important; }
+
+        .theme-toggle-btn i { transition: transform .3s ease; }
+    </style>
+</head>
+<body class="bg-slate-900 font-sans text-slate-800 h-screen overflow-hidden antialiased selection:bg-indigo-500 selection:text-white">
+    <!-- ================= STARTUP / SESSION RESTORE ================= -->
+    <div id="view-startup" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950 text-white">
+        <div class="w-full max-w-sm px-6 text-center">
+            <div class="relative w-20 h-20 mx-auto mb-6">
+                <div class="absolute inset-0 rounded-2xl bg-indigo-500/20 animate-ping"></div>
+                <div class="relative w-full h-full rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-2xl shadow-indigo-900/50">
+                    <span class="font-black tracking-wider text-xl">NTL</span>
+                </div>
+            </div>
+            <h1 class="text-xl font-black tracking-wide">Digital Mail Service</h1>
+            <p id="startup-message" class="text-sm text-indigo-200 mt-2">กำลังตรวจสอบการเข้าใช้งาน...</p>
+            <div class="mt-6 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                <div class="h-full w-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
+            </div>
+            <button id="startup-retry-btn" onclick="bootstrapApplication(true)" class="hidden mt-6 px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-900 text-sm font-bold hover:bg-slate-800 transition">
+                ลองเชื่อมต่ออีกครั้ง
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ================= VIEW 1: LOGIN PAGE ================= -->
+    <div id="view-login" class="hidden min-h-screen w-full bg-slate-950 overflow-hidden">
+
+        <!-- LEFT HERO PANEL — Hi-Tech Courier Illustration (desktop / iPad landscape) -->
+        <div class="hidden lg:flex lg:w-[54%] relative overflow-hidden bg-courier-tech">
+            <div class="absolute inset-0 bg-hero-grid opacity-60 pointer-events-none"></div>
+            <div class="absolute -top-32 -left-24 w-96 h-96 rounded-full bg-blue-600/30 blur-3xl hero-pulse pointer-events-none"></div>
+            <div class="absolute bottom-0 -right-24 w-[28rem] h-[28rem] rounded-full bg-indigo-600/30 blur-3xl hero-pulse pointer-events-none" style="animation-delay:1.1s"></div>
+
+            <div class="relative z-10 flex flex-col justify-between w-full p-12 xl:p-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/50">
+                        <span class="text-white font-black text-sm tracking-wider">NTL</span>
+                    </div>
+                    <div>
+                        <p class="text-white font-bold tracking-wide leading-none">Digital Mail Service</p>
+                        <p class="text-[11px] text-indigo-300 font-medium mt-1">Smart Document &amp; Parcel Tracking</p>
+                    </div>
+                </div>
+
+                <!-- Smart Parcel Intelligence Visual — no human figure -->
+                <div class="flex-1 flex items-center justify-center py-6">
+                    <div class="relative hero-float w-full max-w-[430px]">
+                        <svg viewBox="0 0 520 430" class="w-full h-auto drop-shadow-[0_0_45px_rgba(79,70,229,0.38)]" xmlns="http://www.w3.org/2000/svg" aria-label="Smart parcel scanning">
+                            <defs>
+                                <linearGradient id="smartBox" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e2e8f0"/><stop offset="100%" stop-color="#94a3b8"/></linearGradient>
+                                <linearGradient id="smartBlue" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#38bdf8"/><stop offset="55%" stop-color="#6366f1"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+                                <radialGradient id="smartHalo" cx="50%" cy="45%" r="58%"><stop offset="0%" stop-color="#4f46e5" stop-opacity=".5"/><stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/></radialGradient>
+                                <filter id="smartGlow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+                            </defs>
+                            <ellipse cx="260" cy="215" rx="220" ry="175" fill="url(#smartHalo)"/>
+                            <circle cx="260" cy="210" r="170" fill="none" stroke="#6366f1" stroke-opacity=".3"/>
+                            <circle cx="260" cy="210" r="145" fill="none" stroke="#818cf8" stroke-opacity=".45" class="hero-dash"/>
+                            <g stroke="#38bdf8" stroke-opacity=".55" stroke-width="1.5" stroke-dasharray="5 8">
+                                <path d="M85 105 L162 152"/><path d="M425 105 L355 153"/><path d="M78 314 L165 270"/><path d="M442 312 L357 271"/>
+                            </g>
+                            <g fill="#38bdf8" filter="url(#smartGlow)"><circle cx="85" cy="105" r="5"/><circle cx="425" cy="105" r="5"/><circle cx="78" cy="314" r="5"/><circle cx="442" cy="312" r="5"/></g>
+                            <g transform="translate(145 116)">
+                                <path d="M20 70 L116 18 L226 70 L128 126 Z" fill="#cbd5e1"/>
+                                <path d="M20 70 L128 126 L128 263 L20 205 Z" fill="url(#smartBox)"/>
+                                <path d="M128 126 L226 70 L226 206 L128 263 Z" fill="#94a3b8"/>
+                                <path d="M116 18 L226 70 L128 126 L20 70 Z" fill="#e2e8f0"/>
+                                <path d="M116 18 L116 79 L128 86 L128 126" fill="none" stroke="#64748b" stroke-width="2"/>
+                                <rect x="49" y="104" width="104" height="66" rx="8" fill="#f8fafc" stroke="#cbd5e1"/>
+                                <rect x="61" y="116" width="54" height="7" rx="3" fill="#64748b"/>
+                                <rect x="61" y="130" width="76" height="5" rx="2" fill="#cbd5e1"/>
+                                <g fill="#0f172a"><rect x="61" y="146" width="3" height="15"/><rect x="67" y="146" width="2" height="15"/><rect x="72" y="146" width="5" height="15"/><rect x="80" y="146" width="2" height="15"/><rect x="85" y="146" width="4" height="15"/><rect x="92" y="146" width="2" height="15"/><rect x="98" y="146" width="6" height="15"/><rect x="108" y="146" width="2" height="15"/><rect x="113" y="146" width="4" height="15"/><rect x="121" y="146" width="3" height="15"/><rect x="128" y="146" width="5" height="15"/></g>
+                            </g>
+                            <g fill="none" stroke="url(#smartBlue)" stroke-width="5" stroke-linecap="round" filter="url(#smartGlow)"><path d="M112 126 V88 H154"/><path d="M408 126 V88 H366"/><path d="M112 298 V338 H154"/><path d="M408 298 V338 H366"/></g>
+                            <g class="hero-pulse"><rect x="121" y="203" width="278" height="3" rx="2" fill="#22d3ee" filter="url(#smartGlow)"/><rect x="145" y="190" width="230" height="30" fill="#22d3ee" opacity=".06"/></g>
+                            </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT FORM PANEL -->
+        <div class="flex-1 flex items-center justify-center bg-courier-tech lg:bg-slate-950 p-4 relative overflow-hidden">
+
+            <!-- Ambient glow (mobile / tablet portrait, since hero panel is hidden) -->
+            <div class="lg:hidden absolute inset-0 bg-hero-grid opacity-40 pointer-events-none"></div>
+            <div class="lg:hidden absolute -top-40 -right-40 w-96 h-96 rounded-full bg-blue-600 blur-3xl opacity-25 hero-pulse pointer-events-none"></div>
+            <div class="lg:hidden absolute bottom-10 -left-20 w-80 h-80 rounded-full bg-indigo-600 blur-3xl opacity-25 pointer-events-none"></div>
+
+            <!-- Login Card -->
+            <div class="max-w-md w-full bg-slate-900/85 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl border border-slate-700/50 relative z-10 animate-fade-up">
+
+                <div class="text-center mb-8">
+                    <!-- Smart Parcel Avatar -->
+                    <div class="relative w-24 h-24 mx-auto mb-4">
+                        <div class="w-full h-full rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-1 shadow-lg shadow-indigo-500/30">
+                            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center overflow-hidden relative">
+                                <svg class="w-20 h-20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Parcel scanner">
+                                    <rect x="25" y="28" width="50" height="46" rx="6" fill="#CBD5E1"/>
+                                    <path d="M25 42 L50 29 L75 42 L50 55 Z" fill="#E2E8F0"/>
+                                    <path d="M50 55 L75 42 V67 L50 80 Z" fill="#94A3B8"/>
+                                    <path d="M25 42 L50 55 V80 L25 67 Z" fill="#B6C2D1"/>
+                                    <rect x="32" y="50" width="30" height="16" rx="3" fill="#F8FAFC"/>
+                                    <g fill="#0F172A">
+                                        <rect x="36" y="54" width="2" height="8"/><rect x="40" y="54" width="1.5" height="8"/>
+                                        <rect x="44" y="54" width="3" height="8"/><rect x="49" y="54" width="1.5" height="8"/>
+                                        <rect x="53" y="54" width="2.5" height="8"/><rect x="58" y="54" width="1.5" height="8"/>
+                                    </g>
+                                    <path d="M16 30 V18 H28 M84 30 V18 H72 M16 70 V82 H28 M84 70 V82 H72" stroke="#38BDF8" stroke-width="4" stroke-linecap="round"/>
+                                    <rect x="15" y="48" width="70" height="3" rx="1.5" fill="#22D3EE"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <span class="absolute -bottom-1 -right-1 bg-emerald-500 w-5 h-5 rounded-full border-2 border-slate-900 shadow" title="System Online"></span>
+                    </div>
+
+                    <h2 class="text-2xl font-black text-white tracking-wide">Digital Mail Service</h2>
+                    <p class="text-indigo-300 text-xs md:text-sm mt-1 font-medium">Smart Document Tracking &amp; E-Signature</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Username</label>
+                        <div class="relative">
+                            <i class="fa-regular fa-envelope absolute left-4 top-3.5 text-slate-400"></i>
+                            <input type="text" id="login-username" placeholder="Name" class="w-full bg-slate-800/80 border border-slate-700 text-white pl-11 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Password</label>
+                        <div class="relative">
+                            <i class="fa-solid fa-lock absolute left-4 top-3.5 text-slate-400"></i>
+                            <input type="password" id="login-password" placeholder="กรอกรหัสผ่าน" class="w-full bg-slate-800/80 border border-slate-700 text-white pl-11 p-3 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 transition-all">
+                        </div>
+                    </div>
+
+                    <div id="login-status" class="hidden rounded-xl border px-3.5 py-3 text-xs font-bold"></div>
+
+                    <button id="login-submit-btn" onclick="handleLogin()" class="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-indigo-600/30 hover:from-blue-700 hover:to-indigo-800 active:scale-[0.98] transition-all duration-200 mt-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-wait">
+                        <span id="login-submit-text">Sign In to Service</span>
+                        <i id="login-submit-icon" class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+
+                <div class="mt-6 text-center">
+                    <span class="text-[11px] text-slate-400 font-semibold tracking-wider uppercase">NTL Digital Mail Service</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW 2: MAIN APPLICATION ================= -->
+    <div id="view-app" class="hidden h-screen w-full flex bg-slate-50">
+
+        <!-- SIDEBAR (PC & Tablet View) -->
+        <aside class="w-64 bg-slate-900 text-slate-300 hidden md:flex flex-col shadow-2xl relative z-20 flex-shrink-0 border-r border-slate-800">
+            <div class="h-20 flex items-center px-6 border-b border-slate-800 bg-slate-950">
+                <div class="w-9 h-9 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-md shadow-indigo-500/20">
+                    <span class="text-white font-black text-xs tracking-wider">NTL</span>
+                </div>
+                <div>
+                    <h1 class="text-white font-bold text-base tracking-wide leading-none">Digital Mail</h1>
+                    <p class="text-[10px] text-indigo-400 font-medium mt-0.5">Digital Mail Service</p>
+                </div>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 overflow-y-auto py-6 px-4 space-y-1 no-scrollbar">
+                <p class="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 mt-2">Overview</p>
+                <button onclick="navigateTo('home')" id="side-home" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-house w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> หน้าแรก
+                </button>
+                <button onclick="navigateTo('dashboard')" id="side-dashboard" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-chart-pie w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> Executive Dashboard
+                </button>
+                <button onclick="navigateTo('operations')" id="side-operations" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-route w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> Operations Control
+                </button>
+
+                <p class="px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Operations System</p>
+                <button onclick="navigateTo('keyin')" id="side-keyin" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-keyboard w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> นำเข้าเอกสาร (Key In)
+                </button>
+                <button onclick="navigateTo('evidencecapture')" id="side-evidencecapture" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-camera w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> แนบรูปหลักฐาน (Evidence)
+                </button>
+                <button onclick="navigateTo('esign')" id="side-esign" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-file-signature w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> ลายเซ็นดิจิทัล (E-Sign)
+                </button>
+                <button onclick="navigateTo('deptstatus')" id="side-deptstatus" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-building-shield w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> ตรวจสอบสถานะเอกสาร
+                </button>
+                <button onclick="navigateTo('track')" id="side-track" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-map-location-dot w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> ติดตามสถานะ (Track)
+                </button>
+                <button onclick="navigateTo('return')" id="side-return" class="sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-rotate-left w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> เอกสารตีกลับ (Return)
+                </button>
+
+                <p class="admin-only px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 mt-6">Insight &amp; Automation</p>
+                <button onclick="navigateTo('report')" id="side-report" class="admin-only sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-chart-column w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> รายงาน (Report)
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800 bg-slate-950">
+                <div class="flex items-center justify-between bg-slate-900 p-3 rounded-xl border border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-indigo-950 text-indigo-400 flex items-center justify-center font-bold text-xs border border-indigo-800">
+                            <i class="fa-regular fa-user"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-white leading-tight" id="sidebar-user-name">Admin</p>
+                            <p class="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> <span id="sidebar-user-role-label">Active session</span></p>
+                        </div>
+                    </div>
+                    <button onclick="handleLogout()" class="text-slate-400 hover:text-rose-400 transition-colors p-2 rounded-lg hover:bg-slate-800" title="Logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT CONTAINER -->
+        <main class="flex-1 flex flex-col h-full w-full relative min-w-0 overflow-hidden">
+
+            <!-- Mobile Header Bar -->
+            <header class="md:hidden bg-slate-900 text-white h-16 border-b border-slate-800 flex items-center justify-between px-4 shadow-md z-30 flex-shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-lg flex items-center justify-center shadow">
+                        <span class="text-white font-black text-xs">NTL</span>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-100 text-sm truncate max-w-[160px]" id="mobile-header-title">Digital Mail Service</h1>
+                        <p class="text-[9px] text-indigo-300 font-medium">NTL Digital Mail Service</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-1.5 text-xs bg-indigo-950/80 border border-indigo-700/50 px-2.5 py-1.5 rounded-lg text-indigo-200 font-bold flex-shrink-0">
+                        <i class="fa-solid fa-shield-halved text-indigo-400"></i> <span id="mobile-user-name">Admin</span>
+                    </div>
+                    <button onclick="toggleTheme()" class="theme-toggle-btn text-slate-400 p-2 hover:text-indigo-300" title="Toggle theme">
+                        <i class="fa-solid fa-moon" id="theme-icon-mobile"></i>
+                    </button>
+                    <button onclick="toggleNotificationPanel()" class="relative text-slate-400 p-2 hover:text-indigo-300 min-w-[44px] min-h-[44px] flex items-center justify-center">
+                        <i class="fa-regular fa-bell"></i>
+                        <span id="mobile-notification-badge" class="hidden absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">0</span>
+                    </button>
+                    <button onclick="handleLogout()" class="text-slate-400 p-2 hover:text-rose-400">
+                        <i class="fa-solid fa-power-off"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Desktop Header Bar -->
+            <div class="hidden md:flex h-20 bg-white border-b border-slate-200 items-center justify-between px-8 z-10 flex-shrink-0">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800" id="desktop-header-title">Digital Mail Service</h2>
+                    <p class="text-xs text-slate-500 mt-0.5" id="desktop-header-subtitle">System overview and quick access to your core modules</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleTheme()" class="theme-toggle-btn w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center justify-center" title="Toggle light / dark mode">
+                        <i class="fa-solid fa-moon" id="theme-icon-desktop"></i>
+                    </button>
+                    <button onclick="toggleNotificationPanel()" class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition flex items-center justify-center relative">
+                        <i class="fa-regular fa-bell"></i>
+                        <span id="desktop-notification-badge" class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+                    </button>
+                    <div class="h-8 w-px bg-slate-200"></div>
+                    <span class="text-xs font-semibold text-slate-600 flex items-center gap-2 bg-slate-50 px-3 py-2 rounded-xl border border-slate-200">
+                        <i class="fa-regular fa-calendar text-indigo-600"></i> <span id="current-date">--/--/----</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Scrollable Viewport Pages -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 no-scrollbar bg-slate-100/70">
+
+                <!-- MODULE 1: HOME GRID -->
+                <section id="page-home" class="page-section hidden max-w-7xl mx-auto space-y-6 md:space-y-8 animate-fade-in">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
+                        <button onclick="navigateTo('dashboard')" id="btn-home-dashboard" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-indigo-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-chart-pie text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-indigo-600">Dashboard</span>
+                        </button>
+                        <button onclick="navigateTo('operations')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-violet-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-violet-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-route text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-violet-600">Operations</span>
+                        </button>
+                        <button onclick="navigateTo('keyin')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-blue-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-keyboard text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-blue-600">Key In</span>
+                        </button>
+                        <button onclick="navigateTo('evidencecapture')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-orange-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-camera text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-orange-600 text-center leading-tight">แนบรูปหลักฐาน</span>
+                        </button>
+                        <button onclick="navigateTo('esign')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-purple-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-file-signature text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-purple-600">E-Sign</span>
+                        </button>
+                        <button onclick="navigateTo('deptstatus')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-teal-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-building-shield text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-teal-600 text-center leading-tight">สถานะเอกสาร</span>
+                        </button>
+                        <button onclick="navigateTo('track')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-emerald-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-map-location-dot text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-emerald-600">Track</span>
+                        </button>
+                        <button onclick="navigateTo('return')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-rose-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-rotate-left text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-rose-600">Return</span>
+                        </button>
+                        <button onclick="navigateTo('report')" class="admin-only group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-sky-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
+                            <div class="w-14 h-14 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition-all duration-300 shadow-sm">
+                                <i class="fa-solid fa-chart-column text-2xl"></i>
+                            </div>
+                            <span class="text-sm font-bold text-slate-700 group-hover:text-sky-600">Report</span>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- MODULE 2: DASHBOARD -->
+                <section id="page-dashboard" class="page-section hidden max-w-7xl mx-auto space-y-6 animate-fade-in">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                        <button type="button" onclick="openDashboardDetail('all')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center text-left hover:border-indigo-300 hover:shadow-md transition cursor-pointer">
+                            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xl mr-4 flex-shrink-0"><i class="fa-solid fa-layer-group"></i></div>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Total Docs</p>
+                                <p class="text-2xl font-black text-slate-800 mt-0.5" id="stat-total">-</p>
+                            </div>
+                        </button>
+                        <button type="button" onclick="openDashboardDetail('today')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center">
+                            <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mr-4 flex-shrink-0"><i class="fa-solid fa-calendar-day"></i></div>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Today</p>
+                                <p class="text-2xl font-black text-slate-800 mt-0.5" id="stat-today">-</p>
+                            </div>
+                        </button>
+                        <button type="button" onclick="openDashboardDetail('success')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center text-left hover:border-indigo-300 hover:shadow-md transition cursor-pointer">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl mr-4 flex-shrink-0"><i class="fa-solid fa-check-double"></i></div>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Success</p>
+                                <p class="text-2xl font-black text-slate-800 mt-0.5" id="stat-success">-</p>
+                            </div>
+                        </button>
+                        <button type="button" onclick="openDashboardDetail('return')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex items-center text-left hover:border-indigo-300 hover:shadow-md transition cursor-pointer">
+                            <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl mr-4 flex-shrink-0"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div>
+                                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Return</p>
+                                <p class="text-2xl font-black text-slate-800 mt-0.5" id="stat-return">-</p>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-base font-bold text-slate-800">Transaction Volume (Weekly)</h3>
+                                <button onclick="navigateTo('report')" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition cursor-pointer">Export XLS</button>
+                            </div>
+                            <div id="dashboard-weekly-chart" class="h-64 w-full bg-slate-50/50 rounded-xl border border-slate-100 flex items-end justify-around px-4 pb-4 pt-10 relative"><div class="m-auto text-sm text-slate-400">กำลังโหลดข้อมูลจริง...</div></div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                            <h3 class="text-base font-bold text-slate-800 mb-6">Recent Log</h3>
+                            <div id="dashboard-recent-log" class="space-y-4"><div class="text-sm text-slate-400">กำลังโหลดข้อมูลจริง...</div></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 2B: OPERATIONS CONTROL -->
+                <section id="page-operations" class="page-section hidden max-w-7xl mx-auto space-y-6 animate-fade-in">
+                    <div class="bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 md:p-8 shadow-xl overflow-hidden relative">
+                        <div class="absolute -right-20 -top-20 w-64 h-64 rounded-full bg-indigo-500/20 blur-3xl"></div>
+                        <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div>
+                                <p class="text-[11px] uppercase tracking-[0.22em] text-indigo-300 font-bold">Daily Operations Control</p>
+                                <h3 class="text-2xl font-black mt-1">Ari Hills → BTSVP Delivery Flow</h3>
+                                <p class="text-sm text-slate-300 mt-2">ควบคุม Chain of Custody ตั้งแต่รับเข้า Ari Hills จนถึงยืนยันรับที่ BTSVP และ E-Sign</p>
+                            </div>
+                            <button type="button" onclick="loadOperationsControl()" class="self-start md:self-auto bg-white/10 border border-white/15 hover:bg-white/15 px-4 py-2.5 rounded-xl text-xs font-bold transition"><i class="fa-solid fa-rotate mr-1.5"></i> Refresh Data</button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5"><div class="flex items-center gap-2 text-indigo-600"><i class="fa-solid fa-inbox"></i><span class="text-[11px] font-bold uppercase">Received</span></div><p id="ops-received" class="text-3xl font-black text-slate-800 mt-2">-</p><p class="text-[11px] text-slate-400">รับเข้า Ari Hills วันนี้</p></div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5"><div class="flex items-center gap-2 text-rose-600"><i class="fa-solid fa-triangle-exclamation"></i><span class="text-[11px] font-bold uppercase">Pending Dispatch</span></div><p id="ops-pending" class="text-3xl font-black text-slate-800 mt-2">-</p><p class="text-[11px] text-slate-400">รับแล้ว ยังไม่ Dispatch</p></div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5"><div class="flex items-center gap-2 text-amber-600"><i class="fa-solid fa-truck-fast"></i><span class="text-[11px] font-bold uppercase">In Transit</span></div><p id="ops-transit" class="text-3xl font-black text-slate-800 mt-2">-</p><p class="text-[11px] text-slate-400">ส่งแล้ว รอถึง BTSVP</p></div>
+                        <div class="bg-white border border-slate-200 rounded-2xl p-4 md:p-5"><div class="flex items-center gap-2 text-purple-600"><i class="fa-solid fa-building-shield"></i><span class="text-[11px] font-bold uppercase">Awaiting E-Sign</span></div><p id="ops-awaiting-esign" class="text-3xl font-black text-slate-800 mt-2">-</p><p class="text-[11px] text-slate-400">ถึง BTSVP แล้ว รอเซ็นรับ</p></div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 space-y-6">
+                            <!-- Stage A — Waiting Dispatch -->
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div><h4 class="font-bold text-slate-800">Stage A — รายการรอส่งจาก Ari Hills → BTSVP</h4><p class="text-xs text-slate-500 mt-0.5">เลือกรายการที่ส่งออกจริง แล้วบันทึก Dispatch</p></div>
+                                    <div class="flex gap-2"><button type="button" onclick="toggleAllDispatchItems(true)" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold min-h-[44px]">เลือกทั้งหมด</button><button type="button" onclick="markSelectedDispatch()" class="px-3 py-2 rounded-lg bg-blue-600 text-white text-xs font-bold shadow-sm min-h-[44px]"><i class="fa-solid fa-truck-fast mr-1"></i> Dispatch to BTSVP</button></div>
+                                </div>
+                                <div id="ops-pending-list" class="divide-y divide-slate-100 max-h-[360px] overflow-y-auto"><div class="p-6 text-center text-sm text-slate-400">กำลังโหลดข้อมูล...</div></div>
+                            </div>
+
+                            <!-- Stage B/C — In Transit → Confirm Arrival at BTSVP -->
+                            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                    <div><h4 class="font-bold text-slate-800">Stage B — กำลังนำส่ง / รอยืนยันถึง BTSVP</h4><p class="text-xs text-slate-500 mt-0.5">เลือกรายการที่ถึง BTSVP แล้ว จากนั้นยืนยันรับเข้า</p></div>
+                                    <div class="flex gap-2"><button type="button" onclick="toggleAllArrivalItems(true)" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold min-h-[44px]">เลือกทั้งหมด</button><button type="button" onclick="confirmSelectedArrival()" class="px-3 py-2 rounded-lg bg-purple-700 text-white text-xs font-bold shadow-sm min-h-[44px]"><i class="fa-solid fa-building-shield mr-1"></i> ยืนยันรับเอกสารที่ BTSVP</button></div>
+                                </div>
+                                <div id="ops-transit-list" class="divide-y divide-slate-100 max-h-[360px] overflow-y-auto"><div class="p-6 text-center text-sm text-slate-400">กำลังโหลดข้อมูล...</div></div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+                            <h4 class="font-bold text-slate-800">Daily Delivery Completion</h4><p class="text-xs text-slate-500 mt-1">เทียบจำนวนรับเข้ากับจำนวนส่งถึงจริง</p>
+                            <div class="mt-6"><div class="flex justify-between text-xs font-bold mb-2"><span class="text-slate-600">Completion</span><span id="ops-completion-label" class="text-indigo-600">0%</span></div><div class="h-3 rounded-full bg-slate-100 overflow-hidden"><div id="ops-completion-bar" class="h-full bg-gradient-to-r from-indigo-500 to-emerald-500 rounded-full transition-all duration-500" style="width:0%"></div></div></div>
+                            <div class="mt-6 grid grid-cols-2 gap-3"><div class="rounded-xl bg-emerald-50 border border-emerald-100 p-3"><p class="text-[10px] uppercase font-bold text-emerald-600">Delivered</p><p id="ops-delivered-small" class="text-xl font-black text-emerald-800">0</p></div><div class="rounded-xl bg-rose-50 border border-rose-100 p-3"><p class="text-[10px] uppercase font-bold text-rose-600">Return</p><p id="ops-returned" class="text-xl font-black text-rose-800">0</p></div></div>
+                            <p class="text-[11px] text-slate-400 mt-5 leading-relaxed">“ส่งถึงจริง” จะนับเมื่อรายการได้รับ E-Sign สำเร็จ ซึ่งเปิดให้เซ็นได้ก็ต่อเมื่อยืนยันรับเข้า BTSVP แล้วเท่านั้น</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 3: KEY IN FORM -->
+                <section id="page-keyin" class="page-section hidden max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 animate-fade-in">
+                    <!-- Requirement 15: Sticky Batch Status — only shown while Batch Entry Mode (Qty > 1) is active -->
+                    <div id="keyin-batch-sticky" class="hidden sticky top-0 z-20 -mx-6 md:-mx-8 -mt-6 md:-mt-8 mb-5 px-4 md:px-6 py-2.5 bg-indigo-700 text-white flex items-center justify-between gap-3 rounded-t-2xl shadow-md">
+                        <span id="keyin-batch-sticky-text" class="text-xs font-bold truncate">รายการ 1/1 | บันทึกแล้ว 0 | เหลือ 0</span>
+                        <button type="button" onclick="cancelKeyInForm()" class="text-[10px] font-bold text-white/80 hover:text-white underline shrink-0 min-h-[32px] px-2">ยกเลิก Batch</button>
+                    </div>
+                    <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
+                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-file-circle-plus"></i></div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800">Document Entry (Key In)</h3>
+                            <p class="text-xs text-slate-500">ลงทะเบียนสแกนพัสดุและแนบภาพถ่ายหลักฐาน</p>
+                        </div>
+                    </div>
+
+                    <!-- Requirement: 2-Step Wizard progress indicator — plain, no animation -->
+                    <div class="flex items-center justify-center gap-3 mb-6 select-none">
+                        <div class="flex items-center gap-2">
+                            <span id="keyin-step-badge-1" class="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                            <span id="keyin-step-indicator-1" class="text-xs font-bold text-indigo-600">ข้อมูลจัดส่ง</span>
+                        </div>
+                        <span class="w-8 sm:w-16 h-0.5 bg-slate-200 shrink-0"></span>
+                        <div class="flex items-center gap-2">
+                            <span id="keyin-step-badge-2" class="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                            <span id="keyin-step-indicator-2" class="text-xs font-bold text-slate-400">หลักฐาน &amp; Tracking</span>
+                        </div>
+                    </div>
+                    <p id="keyin-step-label" class="text-center text-[11px] text-slate-400 mb-6">ขั้นตอนที่ 1 จาก 2 — เลือกอาคาร ผู้ส่ง และแผนก</p>
+
+                    <div class="max-w-2xl mx-auto">
+                        <div id="keyin-step-1" class="space-y-5">
+                            <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider border-b border-indigo-100 pb-2">1. ข้อมูลสถานที่จัดส่ง</h4>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Select Route / เส้นทาง <span class="text-rose-500">*</span></label>
+                                <select id="keyin-route" onchange="onKeyInRouteChange()" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                    <option value="">-- กรุณาเลือกเส้นทาง --</option>
+                                    <option value="Ari Hills">Ari Hills</option>
+                                    <option value="BTSVP">BTSVP</option>
+                                </select>
+                                <p id="keyin-route-hint" class="text-[10px] text-slate-400 mt-1.5">Ari Hills = นำส่งภายในอาคาร พร้อมเซ็นรับทันทีหลัง Key In • BTSVP = ต้องผ่าน Operations Control (Dispatch → Confirm Arrival) ก่อนจึงเซ็นรับได้</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Document Sender / ชื่อผู้ส่งเอกสาร <span class="text-rose-500">*</span></label>
+                                <input type="text" id="keyin-sender" placeholder="ระบุชื่อผู้ส่งเอกสาร" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                <p class="text-[10px] text-slate-400 mt-1.5">ผู้ที่ส่งมอบเอกสารจริง — คนละความหมายกับบัญชีผู้ใช้ที่ Login (Created By)</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Select Department / แผนกผู้รับ <span class="text-rose-500">*</span></label>
+                                <select id="keyin-dept" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                    <option value="">-- กรุณาเลือกแผนก --</option>
+                                    <option value="ซองสัญญา">ซองสัญญา</option>
+                                    <option value="นายหน้าประกันภัย">นายหน้าประกันภัย</option>
+                                    <option value="ปฏิบัติการประกันภัย">ปฏิบัติการประกันภัย</option>
+                                    <option value="ทะเบียน">ทะเบียน</option>
+                                    <option value="บุคคล">บุคคล</option>
+                                    <option value="บัญชี">บัญชี</option>
+                                    <option value="BSCS">BSCS</option>
+                                    <option value="BDSM">BDSM</option>
+                                    <option value="CLD">CLD</option>
+                                    <option value="Audit">Audit</option>
+                                    <option value="Fraud">Fraud</option>
+                                    <option value="CRD">CRD</option>
+                                    <option value="กำกับธุรกรรม">กำกับธุรกรรม</option>
+                                    <option value="Legal">Legal</option>
+                                    <option value="CAS">CAS</option>
+                                    <option value="MKT">MKT</option>
+                                    <option value="Falcon">Falcon</option>
+                                    <option value="IT">IT</option>
+                                    <option value="จัดซื้อ">จัดซื้อ</option>
+                                    <option value="MD">MD</option>
+                                    <option value="CS">CS</option>
+                                    <option value="DB">DB</option>
+                                    <option value="A&D">A&D</option>
+                                    <option value="HeyGoody">HeyGoody</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Quantity / จำนวนเอกสารที่จะบันทึกชุดนี้</label>
+                                <div class="relative w-1/2">
+                                    <i class="fa-solid fa-layer-group absolute left-4 top-3.5 text-slate-400"></i>
+                                    <input type="number" id="keyin-qty" value="1" min="1" max="50" oninput="onKeyInQtyChange()" class="w-full border border-slate-200 pl-11 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-bold">
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1.5">มากกว่า 1 = เข้าสู่ Batch Entry Mode — บันทึกทีละ Tracking จริงทันทีที่กด "บันทึกรายการนี้" (1 Tracking = 1 Document = 1 KeyIn Row)</p>
+
+                                <!-- Evidence/scan capture indicator for the CURRENT item — informational only, never blocks Save (Requirement 14) -->
+                                <div id="scan-progress-card" class="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                                    <div class="flex items-center justify-between gap-2"><div><p class="text-[11px] font-bold text-slate-600">Evidence Capture (รายการปัจจุบัน)</p><p id="scan-progress-text" class="text-xs text-slate-500 mt-0.5">สแกน/แนบหลักฐานแล้ว 0 ครั้ง</p></div><button type="button" onclick="resetScanProgress()" class="text-[10px] font-bold text-slate-500 hover:text-rose-600">Reset</button></div>
+                                </div>
+
+                                <!-- Requirement 3: Batch Entry Progress — only visible when Batch Entry Mode is active -->
+                                <div id="batch-progress-card" class="hidden mt-3 rounded-xl border border-indigo-100 bg-indigo-50/70 p-3">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div>
+                                            <p class="text-[11px] font-bold text-indigo-900">Batch Entry</p>
+                                            <p id="batch-progress-text" class="text-xs text-indigo-700 mt-0.5">รายการปัจจุบัน 1 / 1 • บันทึกสำเร็จ 0 • คงเหลือ 1</p>
+                                        </div>
+                                        <button type="button" onclick="cancelKeyInForm()" class="text-[10px] font-bold text-slate-500 hover:text-rose-600 shrink-0">ยกเลิก Batch</button>
+                                    </div>
+                                    <div class="h-2 bg-white rounded-full overflow-hidden mt-2 border border-indigo-100"><div id="batch-progress-bar" class="h-full bg-indigo-600 rounded-full transition-all duration-300" style="width:0%"></div></div>
+                                    <div id="batch-saved-list" class="flex flex-wrap gap-1.5 mt-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="keyin-step-2" class="hidden space-y-5">
+                            <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider border-b border-indigo-100 pb-2">2. หลักฐานและหมายเลขพัสดุ</h4>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Tracking Number / หมายเลขพัสดุ</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-barcode absolute left-4 top-3.5 text-slate-400"></i>
+                                    <input type="text" id="keyin-tracking"
+                                        placeholder="สแกน Barcode / QR Code หรือกรอก Tracking ID"
+                                        autocomplete="off" autocapitalize="off" spellcheck="false"
+                                        class="w-full border border-slate-200 pl-11 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-mono">
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1.5">รองรับ Tracking ทุก Format และเก็บค่าตามที่สแกนได้จริงโดยไม่เติม Prefix</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">จำนวนเอกสารใน Tracking นี้ / Document Count</label>
+                                <div class="relative w-1/2">
+                                    <i class="fa-regular fa-copy absolute left-4 top-3.5 text-slate-400"></i>
+                                    <input type="number" id="keyin-document-count" value="1" min="1" max="999"
+                                        class="w-full border border-slate-200 pl-11 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-bold">
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1.5">ปกติปล่อยเป็น 1 — เปลี่ยนเฉพาะเมื่อ Tracking นี้เป็นเอกสารมัดรวมหลายชิ้น (เช่น 8 ฉบับในซองเดียว ยังคงเป็น 1 Tracking)</p>
+                            </div>
+
+                            <div>
+                                <label class="flex justify-between items-center text-xs font-bold text-slate-700 mb-1.5">
+                                    <span>Capture Evidence / ถ่ายภาพหลักฐาน</span>
+                                    <span id="photo-count" class="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-bold">0 แนบแล้ว</span>
+                                </label>
+
+                                <input type="file" id="camera-file-input" accept="image/*" capture="environment" class="hidden" onchange="handleImageCapture(event)">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <button type="button" onclick="startParcelScanner()" class="w-full border-2 border-indigo-200 rounded-xl p-4 text-center text-indigo-700 bg-indigo-50 hover:bg-indigo-100 transition cursor-pointer">
+                                        <i class="fa-solid fa-qrcode text-xl mb-1"></i>
+                                        <p class="text-xs font-bold">เปิดกล้องสแกนพัสดุ</p>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">Barcode / QR + Tracking OCR + Thai OCR</p>
+                                    </button>
+                                    <button type="button" onclick="document.getElementById('camera-file-input').click()" class="w-full border-2 border-dashed border-slate-300 rounded-xl p-4 text-center text-slate-700 bg-slate-50 hover:bg-slate-100 transition cursor-pointer">
+                                        <i class="fa-solid fa-camera text-xl mb-1"></i>
+                                        <p class="text-xs font-bold">ถ่าย / เลือกรูปเอกสาร</p>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">ใช้ได้บน PC, iPad และมือถือ</p>
+                                    </button>
+                                </div>
+
+                                <div id="scanner-panel" class="hidden mt-3 rounded-2xl overflow-hidden border border-slate-200 bg-slate-950">
+                                    <div class="relative aspect-video bg-black">
+                                        <video id="parcel-scanner-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                                        <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                                            <div id="tracking-roi-guide" class="relative w-[86%] h-[34%] border-2 border-cyan-400 rounded-xl shadow-[0_0_0_9999px_rgba(0,0,0,.32)]">
+                                                <span class="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-black tracking-wide text-white bg-slate-950/75 px-3 py-1.5 rounded-full">
+                                                    วาง Barcode / Tracking ในกรอบ
+                                                </span>
+                                                <div class="absolute inset-x-4 top-1/2 h-[2px] bg-cyan-300/90 shadow-[0_0_12px_rgba(34,211,238,.9)]"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 flex flex-wrap gap-2 bg-slate-900">
+                                        <button type="button" onclick="captureScannerFrame()" class="flex-1 min-w-[130px] bg-indigo-600 text-white py-2.5 px-3 rounded-lg text-xs font-bold"><i class="fa-solid fa-camera mr-1"></i> ถ่ายและอ่านข้อมูล</button>
+                                        <button type="button" onclick="stopParcelScanner()" class="bg-slate-700 text-white py-2.5 px-3 rounded-lg text-xs font-bold"><i class="fa-solid fa-xmark mr-1"></i> ปิดกล้อง</button>
+                                    </div>
+                                </div>
+
+                                <div id="scanner-status" class="hidden mt-2 text-xs rounded-lg p-2.5 bg-cyan-50 text-cyan-800 border border-cyan-100"></div>
+                                <div id="ocr-result-box" class="hidden mt-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p class="text-xs font-black text-slate-800"><i class="fa-solid fa-wand-magic-sparkles text-indigo-500 mr-1.5"></i>Smart Parcel Capture</p>
+                                            <p id="smart-capture-status" class="text-[10px] text-slate-500 mt-1">กำลังวิเคราะห์ข้อมูลจากหน้าพัสดุ</p>
+                                            <p class="text-[10px] text-indigo-500 mt-1 font-semibold">
+                                                <i class="fa-solid fa-hand-pointer mr-1"></i>ช่องที่ว่างสามารถแตะเพื่อเลือกข้อมูล OCR ได้
+                                            </p>
+                                        </div>
+                                        <span id="smart-overall-confidence" class="text-[10px] font-black bg-slate-100 text-slate-600 px-2.5 py-1 rounded-full">-</span>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                                        <div class="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                                            <div class="flex justify-between gap-2"><span class="text-[10px] uppercase font-bold text-slate-400">Tracking</span><span id="smart-tracking-confidence" class="text-[10px] font-bold text-slate-400">-</span></div>
+                                            <p id="smart-tracking-value" class="text-xs font-black text-slate-800 break-all mt-1">ยังไม่พบ</p>
+                                        </div>
+                                        <div class="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                                            <span class="text-[10px] uppercase font-bold text-slate-400">Route</span>
+                                            <p id="smart-route-value" class="text-xs font-bold text-slate-700 mt-1">-</p>
+                                        </div>
+                                        <div class="rounded-xl bg-slate-50 border border-slate-100 p-3 sm:col-span-2">
+                                            <span class="text-[10px] uppercase font-bold text-slate-400">Department</span>
+                                            <p id="smart-department-value" class="text-xs font-bold text-slate-700 mt-1">-</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="smart-review-note" class="hidden mt-3 rounded-xl bg-amber-50 border border-amber-100 p-3 text-[11px] font-semibold text-amber-700">
+                                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                                        มีบางข้อมูลที่ความมั่นใจต่ำ กรุณาตรวจเฉพาะช่องที่ระบบไฮไลต์ก่อนบันทึก
+                                    </div>
+
+                                    <div id="ocr-tracking-candidates" class="hidden mt-3">
+                                        <p class="text-[10px] font-bold text-slate-500 mb-1.5">พบ Tracking หลายค่า — เลือกค่าที่ถูกต้อง</p>
+                                        <div id="ocr-tracking-candidate-list" class="flex flex-wrap gap-1.5"></div>
+                                    </div>
+
+                                    <pre id="ocr-raw-text" class="hidden"></pre>
+                                    <p id="ocr-summary" class="hidden"></p>
+                                </div>
+
+                                <div id="image-preview-container" class="flex gap-2 mt-3 overflow-x-auto no-scrollbar"></div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Remarks / หมายเหตุ</label>
+                                <input type="text" id="keyin-remarks" placeholder="ระบุข้อความเพิ่มเติม..." class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 1 footer: Cancel + Next (Frontend-only navigation, no API call) -->
+                    <div id="keyin-step-1-footer" class="flex gap-3 pt-6 mt-6 border-t border-slate-100">
+                        <button type="button" onclick="cancelKeyInForm()" class="w-1/3 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm hover:bg-slate-50 transition cursor-pointer min-h-[44px]">ยกเลิก</button>
+                        <button type="button" onclick="goToKeyInNextStep()" class="w-2/3 bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:bg-indigo-800 transition cursor-pointer min-h-[44px]">ถัดไป <i class="fa-solid fa-arrow-right ml-1"></i></button>
+                    </div>
+
+                    <!-- Step 2 footer: Back (no API call, keeps data) + the existing real Save -->
+                    <div id="keyin-step-2-footer" class="hidden flex gap-3 pt-6 mt-6 border-t border-slate-100">
+                        <button type="button" onclick="goToKeyInPreviousStep()" class="w-1/3 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm hover:bg-slate-50 transition cursor-pointer min-h-[44px]"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
+                        <button id="keyin-save-btn" onclick="submitKeyInForm()" class="w-2/3 bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:bg-indigo-800 transition cursor-pointer min-h-[44px]">บันทึกข้อมูลเข้าระบบ</button>
+                    </div>
+                </section>
+
+                <!-- MODULE 3B: EVIDENCE CAPTURE (v5.9.16) — attach photos to an EXISTING KeyIn Tracking; never creates a new Document -->
+                <section id="page-evidencecapture" class="page-section hidden max-w-6xl mx-auto space-y-5 animate-fade-in">
+                    <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-camera"></i></div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Evidence Capture</h3>
+                                <p class="text-xs text-slate-500">แนบรูปหลักฐานจาก Tracking ที่ลงทะเบียนแล้ว — ไม่มี OCR ไม่มี Barcode Scan</p>
+                            </div>
+                            <button type="button" onclick="loadEvidenceCaptureQueue()" class="ml-auto shrink-0 bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold px-3 py-2.5 rounded-xl min-h-[44px]"><i class="fa-solid fa-rotate mr-1"></i> Refresh</button>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Department</label>
+                                <select id="evidencecapture-filter-department" onchange="onEvidenceCaptureFilterChange()" class="w-full border border-slate-200 p-2.5 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    <option value="__ALL__">ทุกแผนก</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Route</label>
+                                <select id="evidencecapture-filter-route" onchange="onEvidenceCaptureFilterChange()" class="w-full border border-slate-200 p-2.5 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    <option value="__ALL__">ทุกเส้นทาง</option>
+                                    <option value="Ari Hills">Ari Hills</option>
+                                    <option value="BTSVP">BTSVP</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Date</label>
+                                <div class="flex gap-1.5">
+                                    <input type="date" id="evidencecapture-filter-date" onchange="onEvidenceCaptureFilterChange()" class="flex-1 min-w-0 border border-slate-200 p-2.5 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    <button type="button" onclick="clearEvidenceCaptureDateFilter()" title="ทุกวันที่" class="shrink-0 w-9 h-9 rounded-lg border border-slate-200 bg-white text-slate-500 hover:text-rose-600 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 mb-1">Evidence Status</label>
+                                <select id="evidencecapture-filter-status" onchange="onEvidenceCaptureFilterChange()" class="w-full border border-slate-200 p-2.5 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                    <option value="pending">รอแนบรูป</option>
+                                    <option value="completed">แนบแล้ว</option>
+                                    <option value="all">ทั้งหมด</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Summary counters -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <div class="bg-amber-50 border border-amber-100 rounded-xl p-3 text-center">
+                                <p class="text-[10px] font-bold text-amber-600 uppercase">รอแนบรูป</p>
+                                <p id="evidencecapture-pending-count" class="text-2xl font-black text-amber-700 mt-0.5">-</p>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-3 text-center">
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase">แนบแล้ว</p>
+                                <p id="evidencecapture-completed-count" class="text-2xl font-black text-emerald-700 mt-0.5">-</p>
+                            </div>
+                        </div>
+
+                        <p id="evidencecapture-status-line" class="text-xs text-slate-400 mt-4 mb-2 font-medium">กำลังโหลดข้อมูล...</p>
+
+                        <div id="evidencecapture-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div class="sm:col-span-2 lg:col-span-3 text-center text-slate-400 text-xs py-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 4: E-SIGNATURE -->
+                <section id="page-esign" class="page-section hidden max-w-5xl mx-auto bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 animate-fade-in">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-file-signature"></i></div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">E-Signature รับพัสดุแบบกลุ่ม</h3>
+                                <p class="text-xs text-slate-500">รายการเอกสารที่พร้อมสำหรับการเซ็นรับ — เลือกแผนก → ตรวจรายการ → เซ็นรับครั้งเดียวสำหรับหลาย Tracking</p>
+                                <p class="text-[10px] text-slate-400 mt-1">Ari Hills: เอกสารภายในอาคารพร้อมเซ็นหลัง Key In • BTSVP: เอกสารพร้อมเซ็นหลังยืนยันรับเข้า BTSVP</p>
+                            </div>
+                        </div>
+                        <span id="esign-pending-badge" class="text-xs font-bold text-purple-700 bg-purple-50 border border-purple-100 px-3 py-1.5 rounded-full">รอรับ 0 รายการ</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-1 space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">แผนกผู้รับ <span class="text-rose-500">*</span></label>
+                                <select id="esign-department" onchange="loadEsignParcels()" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                                    <option value="">-- เลือกแผนกผู้รับ --</option>
+                                    <option value="ซองสัญญา">ซองสัญญา</option>
+                                    <option value="นายหน้าประกันภัย">นายหน้าประกันภัย</option>
+                                    <option value="ปฏิบัติการประกันภัย">ปฏิบัติการประกันภัย</option>
+                                    <option value="ทะเบียน">ทะเบียน</option>
+                                    <option value="บุคคล">บุคคล</option>
+                                    <option value="บัญชี">บัญชี</option>
+                                    <option value="BSCS">BSCS</option>
+                                    <option value="BDSM">BDSM</option>
+                                    <option value="CLD">CLD</option>
+                                    <option value="Audit">Audit</option>
+                                    <option value="Fraud">Fraud</option>
+                                    <option value="CRD">CRD</option>
+                                    <option value="กำกับธุรกรรม">กำกับธุรกรรม</option>
+                                    <option value="Legal">Legal</option>
+                                    <option value="CAS">CAS</option>
+                                    <option value="MKT">MKT</option>
+                                    <option value="Falcon">Falcon</option>
+                                    <option value="IT">IT</option>
+                                    <option value="จัดซื้อ">จัดซื้อ</option>
+                                    <option value="MD">MD</option>
+                                    <option value="CS">CS</option>
+                                    <option value="DB">DB</option>
+                                    <option value="A&D">A&D</option>
+                                    <option value="HeyGoody">HeyGoody</option>
+                                </select>
+                                <p class="text-[11px] text-slate-400 mt-1.5">จำนวนรายการรอเซ็นจะ Sync จาก Key In ที่ยังไม่ปิดงานโดยอัตโนมัติ</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">ชื่อผู้เซ็นรับเอกสาร <span class="text-rose-500">*</span></label>
+                                <input type="text" id="esign-recipient-name" placeholder="ชื่อ-นามสกุล ผู้รับ/ผู้เซ็น" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="text-xs font-bold text-slate-700">กระดานเซ็นชื่อ (Sign Area)</label>
+                                    <button onclick="clearSignatureCanvas()" class="text-xs font-bold text-rose-500 hover:underline cursor-pointer"><i class="fa-solid fa-eraser"></i> ล้างกระดาน</button>
+                                </div>
+                                <div class="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 overflow-hidden touch-none relative">
+                                    <canvas id="signature-pad" class="w-full h-52 block cursor-crosshair"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-2">
+                            <div class="flex items-center justify-between gap-3 mb-3">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700">รายการพัสดุรอเซ็นรับ</p>
+                                    <p class="text-[11px] text-slate-400">Tracking และข้อมูลหน้าพัสดุดึงจาก Key In โดยตรง</p>
+                                </div>
+                                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
+                                    <input id="esign-select-all" type="checkbox" checked onchange="toggleEsignSelectAll(this.checked)" class="w-4 h-4 accent-purple-600"> เลือกทั้งหมด
+                                </label>
+                            </div>
+
+                            <div id="esign-parcel-list" class="space-y-2 max-h-[430px] overflow-y-auto pr-1">
+                                <div class="text-center p-8 rounded-xl border border-dashed border-slate-200 bg-slate-50">
+                                    <i class="fa-solid fa-building text-slate-300 text-2xl"></i>
+                                    <p class="text-xs text-slate-500 mt-2">เลือกแผนกเพื่อโหลดรายการพัสดุ</p>
+                                </div>
+                            </div>
+
+                            <button onclick="saveEsignature()" id="esign-save-btn" class="w-full bg-purple-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-purple-200 hover:bg-purple-800 transition cursor-pointer mt-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                                <i class="fa-solid fa-file-signature mr-1"></i> เซ็นรับรายการที่เลือก
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 4.5: DEPARTMENT STATUS MONITOR -->
+                <section id="page-deptstatus" class="page-section hidden max-w-7xl mx-auto space-y-6 animate-fade-in">
+                    <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                            <div class="w-10 h-10 bg-teal-50 text-teal-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-building-shield"></i></div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">ตรวจสอบสถานะเอกสาร</h3>
+                                <p class="text-xs text-slate-500">Department Status Monitor — ภาพรวมเอกสารทุกแผนก ทุกสถานะ</p>
+                            </div>
+                        </div>
+
+                        <!-- Overview KPI -->
+                        <div id="deptstatus-overview" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+                            <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">งานทั้งหมด</p>
+                                <p id="deptstatus-kpi-total" class="text-xl font-black text-slate-800 mt-1">-</p>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                                <p class="text-[10px] font-bold text-amber-600 uppercase">รอรับ/ยังไม่ปิดงาน</p>
+                                <p id="deptstatus-kpi-pending" class="text-xl font-black text-amber-700 mt-1">-</p>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase">Delivered</p>
+                                <p id="deptstatus-kpi-delivered" class="text-xl font-black text-emerald-700 mt-1">-</p>
+                            </div>
+                            <div class="bg-rose-50 border border-rose-100 rounded-xl p-4">
+                                <p class="text-[10px] font-bold text-rose-600 uppercase">Returned</p>
+                                <p id="deptstatus-kpi-returned" class="text-xl font-black text-rose-700 mt-1">-</p>
+                            </div>
+                            <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 col-span-2 md:col-span-1">
+                                <p class="text-[10px] font-bold text-indigo-600 uppercase">แผนกที่ยังมีงานค้าง</p>
+                                <p id="deptstatus-kpi-depts" class="text-xl font-black text-indigo-700 mt-1">-</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:max-w-xl">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">เลือกแผนก / Department</label>
+                                <select id="deptstatus-department-select" onchange="renderDepartmentStatusDetail()"
+                                    class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                    <option value="__ALL__">ทุกแผนก / All Departments</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">วันที่ตรวจสอบ / Date</label>
+                                <div class="flex gap-2">
+                                    <input type="date" id="deptstatus-date-filter" onchange="renderDepartmentStatusDetail()"
+                                        class="flex-1 min-w-0 border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                    <button type="button" onclick="clearDeptStatusDateFilter()" title="ล้างวันที่"
+                                        class="shrink-0 w-11 h-11 rounded-xl border border-slate-200 bg-white text-slate-500 hover:text-rose-600 hover:border-rose-200 flex items-center justify-center">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="deptstatus-detail-summary" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-4">
+                            <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-400">งานทั้งหมด</p><p id="deptstatus-detail-total" class="text-lg font-black text-slate-800 mt-0.5">0</p></div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-400">At Ari Hills</p><p id="deptstatus-detail-atarihills" class="text-lg font-black text-sky-600 mt-0.5">0</p></div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-400">In Transit</p><p id="deptstatus-detail-intransit" class="text-lg font-black text-amber-600 mt-0.5">0</p></div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-400">Awaiting E-Sign</p><p id="deptstatus-detail-awaitingesign" class="text-lg font-black text-purple-600 mt-0.5">0</p></div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-400">รอรับ/ยังไม่ปิดงาน</p><p id="deptstatus-detail-pending" class="text-lg font-black text-amber-600 mt-0.5">0</p></div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-400">เซ็นรับแล้ว</p><p id="deptstatus-detail-delivered" class="text-lg font-black text-emerald-600 mt-0.5">0</p></div>
+                            <div class="bg-white border border-slate-200 rounded-xl p-3"><p class="text-[10px] font-bold text-slate-400">ตีกลับ</p><p id="deptstatus-detail-returned" class="text-lg font-black text-rose-600 mt-0.5">0</p></div>
+                        </div>
+
+                        <p id="deptstatus-status-line" class="text-xs text-slate-400 mb-3 font-medium">กำลังโหลดข้อมูลเอกสาร...</p>
+
+                        <!-- Desktop / tablet table (horizontal-scroll contained to this box only) -->
+                        <div class="hidden sm:block overflow-x-auto border border-slate-100 rounded-xl">
+                            <table class="w-full text-xs min-w-[860px]">
+                                <thead class="bg-slate-50 text-slate-500">
+                                    <tr>
+                                        <th class="text-left font-bold px-4 py-3">Date</th>
+                                        <th class="text-left font-bold px-4 py-3">Tracking</th>
+                                        <th class="text-left font-bold px-4 py-3">Department</th>
+                                        <th class="text-left font-bold px-4 py-3">Recipient</th>
+                                        <th class="text-left font-bold px-4 py-3">Current Location</th>
+                                        <th class="text-right font-bold px-4 py-3">Qty</th>
+                                        <th class="text-left font-bold px-4 py-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deptstatus-table-body" class="divide-y divide-slate-100">
+                                    <tr><td colspan="7" class="text-center text-slate-400 py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูลเอกสาร...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mobile card list -->
+                        <div id="deptstatus-card-list" class="sm:hidden space-y-2">
+                            <div class="text-center text-slate-400 text-xs py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูลเอกสาร...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 5: TRACK & TRACE -->
+                <section id="page-track" class="page-section hidden max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 animate-fade-in">
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">Track &amp; Trace</h3>
+                    <p class="text-xs text-slate-500 mb-6">ค้นหาและติดตามสถานะพัสดุ</p>
+
+                    <div class="flex gap-2 mb-6">
+                        <input type="text" id="track-search-input" placeholder="สแกนหรือระบุ Tracking / Barcode..." class="flex-1 border border-slate-200 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <button onclick="searchTracking()" class="bg-emerald-600 text-white px-6 rounded-xl font-bold text-sm hover:bg-emerald-700 transition cursor-pointer">ค้นหา</button>
+                    </div>
+
+                    <div id="track-result" class="hidden border border-slate-100 rounded-2xl p-5 md:p-6 bg-slate-50 cursor-pointer hover:border-emerald-200 transition" onclick="handleTrackCardClick(event)">
+                        <button type="button" onclick="toggleTrackDetails()" class="w-full text-left cursor-pointer" aria-expanded="true" id="track-result-toggle">
+                            <div class="flex justify-between items-center gap-3 pb-4 border-b border-slate-200">
+                                <div class="min-w-0">
+                                    <p class="text-xs font-bold text-slate-400">TRACKING NO.</p>
+                                    <p class="text-lg font-black text-slate-800 break-all" id="result-tracking-id">-</p>
+                                    <p class="text-xs text-slate-500 mt-1" id="result-track-summary">แตะเพื่อดูรายละเอียดสถานะ</p>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <span id="result-status-badge" class="bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-full font-bold">-</span>
+                                    <i id="track-result-chevron" class="fa-solid fa-chevron-up text-slate-400"></i>
+                                </div>
+                            </div>
+                        </button>
+                        <div id="track-detail-panel" class="pt-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5 text-xs">
+                                <div class="bg-white rounded-xl border border-slate-100 p-3 sm:col-span-2"><p class="text-slate-400 font-bold">Current Location</p><p id="result-track-location" class="font-black text-emerald-700 mt-1 text-sm">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">ผู้ส่งเอกสาร / Sender</p><p id="result-track-sender" class="font-bold text-slate-700 mt-1">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">แผนกผู้รับ</p><p id="result-track-dept" class="font-bold text-slate-700 mt-1">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">เส้นทาง</p><p id="result-track-route" class="font-bold text-slate-700 mt-1">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">ผู้รับ</p><p id="result-track-recipient" class="font-bold text-slate-700 mt-1">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">เบอร์โทร</p><p id="result-track-phone" class="font-bold text-slate-700 mt-1">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">รหัสไปรษณีย์</p><p id="result-track-postcode" class="font-bold text-slate-700 mt-1">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">จำนวน</p><p id="result-track-qty" class="font-bold text-slate-700 mt-1">-</p></div>
+                                <div class="bg-white rounded-xl border border-slate-100 p-3"><p class="text-slate-400 font-bold">หมายเหตุ</p><p id="result-track-remarks" class="font-bold text-slate-700 mt-1 break-words">-</p></div>
+                            </div>
+                            <button type="button" id="track-evidence-btn" onclick="openEvidencePreview()" class="hidden mb-5 inline-flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 border border-indigo-100 px-3 py-2.5 rounded-xl active:scale-[0.98] transition min-h-[44px]">
+                                <i class="fa-regular fa-images"></i> <span id="track-evidence-btn-label">ดูรูปหลักฐาน</span>
+                            </button>
+                            <div id="result-track-timeline" class="space-y-4 text-xs"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 6: RETURN -->
+                <section id="page-return" class="page-section hidden max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 animate-fade-in">
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">Document Return Management</h3>
+                    <p class="text-xs text-slate-500 mb-6">บันทึกเอกสารตีกลับเพื่อดำเนินการส่งซ้ำ</p>
+
+                    <!-- Requirement 3: Redelivery card — appears only when the Tracking checked below is currently Status = Returned -->
+                    <div id="return-redelivery-card" class="hidden mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 md:p-5">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                            <h4 class="text-sm font-black text-amber-900">เอกสารนี้ถูกตีกลับ</h4>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 text-xs mb-4">
+                            <div><p class="text-amber-700 font-bold">Tracking</p><p id="return-redelivery-tracking" class="font-black text-slate-800 mt-0.5 break-all">-</p></div>
+                            <div><p class="text-amber-700 font-bold">แผนกเดิม</p><p id="return-redelivery-from-dept" class="font-black text-slate-800 mt-0.5">-</p></div>
+                            <div class="col-span-2"><p class="text-amber-700 font-bold">Return Reason</p><p id="return-redelivery-reason" class="font-bold text-slate-700 mt-0.5">-</p></div>
+                        </div>
+                        <div class="border-t border-amber-200 pt-4">
+                            <p class="text-xs font-black text-slate-800 mb-2">นำส่งเอกสารใหม่ / Redelivery</p>
+                            <label class="block text-[11px] font-bold text-slate-600 mb-1.5">แผนกปลายทางใหม่</label>
+                            <select id="return-redelivery-department" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-4">
+                                <option value="">-- กรุณาเลือกแผนก --</option>
+                            </select>
+
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-[11px] font-bold text-slate-600">ลายเซ็นยืนยันการรับเอกสารตีกลับ <span class="text-rose-500">*</span></label>
+                                <button type="button" onclick="clearReturnSignature()" class="text-[11px] font-bold text-rose-500 hover:underline cursor-pointer"><i class="fa-solid fa-eraser"></i> ล้างลายเซ็น</button>
+                            </div>
+                            <div class="border-2 border-dashed border-amber-300 rounded-2xl bg-white overflow-hidden touch-none relative mb-4">
+                                <canvas id="return-signature-pad" class="w-full h-40 block cursor-crosshair"></canvas>
+                                <p id="return-signature-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-slate-300 font-bold pointer-events-none">Sign Here</p>
+                            </div>
+
+                            <button type="button" id="return-redelivery-confirm-btn" onclick="confirmRedelivery()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 transition min-h-[44px]">ยืนยันนำส่งใหม่</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">Tracking Number ตีกลับ</label>
+                            <input type="text" id="return-tracking" onblur="checkReturnTrackingStatus()" placeholder="สแกนหรือระบุ Tracking / Barcode" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">ประเภทการตีกลับ</label>
+                            <select id="return-type" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                <option>Redelivery</option>
+                                <option>Rejected / Vendor</option>
+                                <option>Lost Document</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">สาเหตุการตีกลับ</label>
+                            <select id="return-reason" class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                <option>ไม่พบผู้รับปลายทาง</option>
+                                <option>ย้ายแผนก/ลาออก</option>
+                                <option>ปฏิเสธการรับเอกสาร</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">หมายเหตุเพิ่มเติม</label>
+                            <input type="text" id="return-remarks" placeholder="ระบุรายละเอียดเพิ่มเติม..." class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
+                        </div>
+                        <button onclick="submitReturnForm()" class="w-full bg-rose-600 text-white py-3 rounded-xl font-bold text-sm shadow hover:bg-rose-700 transition cursor-pointer">บันทึกข้อมูลตีกลับ</button>
+                    </div>
+                </section>
+
+                <!-- MODULE 7: REPORT -->
+                <section id="page-report" class="page-section hidden max-w-7xl mx-auto space-y-6 animate-fade-in">
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-sky-50 text-sky-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-chart-column"></i></div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-slate-800">รายงานสรุปผลการดำเนินงาน</h3>
+                                    <p class="text-xs text-slate-500">ภาพรวมครบถ้วน แยกตามรายวัน / รายเดือน / รายแผนก</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <button onclick="setReportRange('daily')" id="report-btn-daily" class="report-range-btn text-xs font-bold px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 transition cursor-pointer flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i> รายงานรายวัน</button>
+                                <button onclick="setReportRange('monthly')" id="report-btn-monthly" class="report-range-btn text-xs font-bold px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 transition cursor-pointer flex items-center gap-1.5"><i class="fa-regular fa-calendar-days"></i> รายงานรายเดือน</button>
+                                <button onclick="setReportRange('dept')" id="report-btn-dept" class="report-range-btn text-xs font-bold px-3 py-2 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-sky-50 hover:text-sky-600 transition cursor-pointer flex items-center gap-1.5"><i class="fa-solid fa-sitemap"></i> รายงานรายแผนก</button>
+                                <button onclick="openExportReportModal()" class="text-xs font-bold px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5 min-h-[40px]"><i class="fa-solid fa-file-export"></i> Export Report</button>
+                            </div>
+                        </div>
+
+                        <p id="report-range-label" class="text-xs text-slate-400 mb-4 font-medium">กำลังแสดง: รายงานรายเดือน (Default) — ใช้สำหรับปุ่ม Export ด้านบน</p>
+
+                        <!-- Online Report — real data from KeyIn via getReportSummary (Requirement 4) -->
+                        <div class="border-t border-slate-100 pt-5">
+                            <div class="flex flex-wrap items-end gap-3 mb-5">
+                                <div id="report-period-monthly-wrap">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">เลือกเดือน / Month</label>
+                                    <input type="month" id="report-month-input" onchange="onReportMonthChange()"
+                                        class="border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                </div>
+                                <div id="report-period-daily-wrap" class="hidden">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">วันที่ / Date</label>
+                                    <input type="date" id="report-date-input" onchange="onReportDateChange()"
+                                        class="border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                </div>
+                                <div id="report-period-dept-wrap" class="hidden">
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">แผนก / Department</label>
+                                    <select id="report-dept-period-select" onchange="onReportDeptModeChange()"
+                                        class="border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 min-w-[180px]">
+                                        <option value="__ALL__">ทุกแผนก / All Departments</option>
+                                    </select>
+                                </div>
+                                <span id="report-online-status" class="text-xs text-slate-400 pb-3"></span>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                                <div class="bg-slate-50 border border-slate-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase">Total</p>
+                                    <p id="report-kpi-total" class="text-xl font-black text-slate-800 mt-1">-</p>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-amber-600 uppercase">Pending</p>
+                                    <p id="report-kpi-pending" class="text-xl font-black text-amber-700 mt-1">-</p>
+                                </div>
+                                <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-emerald-600 uppercase">Delivered</p>
+                                    <p id="report-kpi-delivered" class="text-xl font-black text-emerald-700 mt-1">-</p>
+                                </div>
+                                <div class="bg-rose-50 border border-rose-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-rose-600 uppercase">Returned</p>
+                                    <p id="report-kpi-returned" class="text-xl font-black text-rose-700 mt-1">-</p>
+                                </div>
+                            </div>
+
+                            <!-- Requirement 12: Ari Hills → BTSVP breakdown + real Transit/Signature timing -->
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+                                <div class="bg-sky-50 border border-sky-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-sky-600 uppercase">Pending at Ari Hills</p>
+                                    <p id="report-kpi-pending-arihills" class="text-xl font-black text-sky-700 mt-1">-</p>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-amber-600 uppercase">In Transit</p>
+                                    <p id="report-kpi-intransit" class="text-xl font-black text-amber-700 mt-1">-</p>
+                                </div>
+                                <div class="bg-purple-50 border border-purple-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-purple-600 uppercase">Arrived / Awaiting E-Sign</p>
+                                    <p id="report-kpi-awaiting-esign" class="text-xl font-black text-purple-700 mt-1">-</p>
+                                </div>
+                                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-indigo-600 uppercase">Avg. Ari Hills → BTSVP</p>
+                                    <p id="report-kpi-avg-transit" class="text-lg font-black text-indigo-700 mt-1">-</p>
+                                </div>
+                                <div class="bg-teal-50 border border-teal-100 rounded-xl p-4 col-span-2 md:col-span-1">
+                                    <p class="text-[10px] font-bold text-teal-600 uppercase">Avg. BTSVP → E-Sign</p>
+                                    <p id="report-kpi-avg-wait-signature" class="text-lg font-black text-teal-700 mt-1">-</p>
+                                </div>
+                            </div>
+
+                            <p class="text-xs font-bold text-slate-700 mb-2">สรุปตามแผนก / Department Summary</p>
+                            <div class="overflow-x-auto border border-slate-100 rounded-xl mb-6">
+                                <table class="w-full text-xs min-w-[520px]">
+                                    <thead class="bg-slate-50 text-slate-500">
+                                        <tr>
+                                            <th class="text-left font-bold px-4 py-3">Department</th>
+                                            <th class="text-right font-bold px-4 py-3">Total</th>
+                                            <th class="text-right font-bold px-4 py-3">Pending</th>
+                                            <th class="text-right font-bold px-4 py-3">Delivered</th>
+                                            <th class="text-right font-bold px-4 py-3">Returned</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="report-dept-table-body" class="divide-y divide-slate-100">
+                                        <tr><td colspan="5" class="text-center text-slate-400 py-8">กำลังโหลดข้อมูล...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <p class="text-xs font-bold text-slate-700">รายการเอกสาร / Document Detail</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <input type="text" id="report-search-tracking" oninput="renderReportDocumentDetail()" placeholder="ค้นหา Tracking..."
+                                        class="border border-slate-200 px-3 py-2 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500 w-40">
+                                    <select id="report-filter-department" onchange="renderReportDocumentDetail()"
+                                        class="border border-slate-200 px-3 py-2 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                        <option value="">ทุกแผนก</option>
+                                    </select>
+                                    <select id="report-filter-status" onchange="renderReportDocumentDetail()"
+                                        class="border border-slate-200 px-3 py-2 rounded-lg text-xs bg-slate-50 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                        <option value="">ทุกสถานะ</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="delivered">Delivered</option>
+                                        <option value="returned">Returned</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto border border-slate-100 rounded-xl">
+                                <table class="w-full text-xs min-w-[760px]">
+                                    <thead class="bg-slate-50 text-slate-500">
+                                        <tr>
+                                            <th class="text-left font-bold px-4 py-3">Date</th>
+                                            <th class="text-left font-bold px-4 py-3">Tracking ID</th>
+                                            <th class="text-left font-bold px-4 py-3">Sender</th>
+                                            <th class="text-left font-bold px-4 py-3">Department</th>
+                                            <th class="text-left font-bold px-4 py-3">Recipient</th>
+                                            <th class="text-right font-bold px-4 py-3">Qty</th>
+                                            <th class="text-left font-bold px-4 py-3">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="report-detail-table-body" class="divide-y divide-slate-100">
+                                        <tr><td colspan="7" class="text-center text-slate-400 py-8">กำลังโหลดข้อมูล...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around items-center h-16 z-40 text-slate-400 text-xs">
+        <button onclick="navigateTo('home')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+            <i class="fa-solid fa-house text-base"></i>
+            <span class="text-[10px]">หน้าแรก</span>
+        </button>
+        <button onclick="navigateTo('keyin')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+            <i class="fa-solid fa-keyboard text-base"></i>
+            <span class="text-[10px]">Key In</span>
+        </button>
+        <button onclick="navigateTo('esign')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+            <i class="fa-solid fa-file-signature text-base"></i>
+            <span class="text-[10px]">E-Sign</span>
+        </button>
+        <button onclick="navigateTo('track')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+            <i class="fa-solid fa-map-location-dot text-base"></i>
+            <span class="text-[10px]">Track</span>
+        </button>
+        <button onclick="navigateTo('operations')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer"><i class="fa-solid fa-route text-base"></i><span class="text-[10px]">Ops</span></button>
+    </nav>
+
+    <!-- ================= JAVASCRIPT CONTROLLER ================= -->
+    <script>
+        // NTL Digital Mail Service — Production GAS Client v5.9
+        // No mock/offline fallback. Authentication and authorization are validated by Code.gs.
+
+        let capturedImages = [];
+        let signaturePad = null;
+        let scannerStream = null;
+        let scannerLoopTimer = null;
+        let latestOcrText = '';
+        let latestSmartCapture = null;
+        let activeOcrTargetField = '';
+        let liveBarcodeLocked = false;
+        let liveBarcodeLastValue = '';
+        let liveBarcodeLastAt = 0;
+        let zxingLiveReader = null;
+        let latestSavedDepartment = '';
+        let latestSavedTracking = '';
+        let trackingOcrWorker = null;
+        let trackingOcrWorkerPromise = null;
+        let parcelOcrWorker = null;
+        let parcelOcrWorkerPromise = null;
+        let parcelOcrQueue = Promise.resolve();
+        let serverOcrEnabled = false;
+        const SMART_DEPARTMENTS = ["ซองสัญญา","นายหน้าประกันภัย","ปฏิบัติการประกันภัย","ทะเบียน","บุคคล","บัญชี","BSCS","BDSM","CLD","Audit","Fraud","CRD","กำกับธุรกรรม","Legal","CAS","MKT","Falcon","IT","จัดซื้อ","MD","CS","DB","A&D","HeyGoody"];
+        let scanProgressCount = 0;
+        // v5.9.6 — Batch Key In Mode state (Requirement 14: separate from scan/OCR success).
+        // batchSavedCount only ever increments after a Backend-verified saveKeyIn() response.
+        // Requirement (2-Step Wizard): purely a Frontend presentation state — Next/Back/Step
+        // switching NEVER call the Backend. Only Save (Step 2) does.
+        let keyInCurrentStep = 1;
+
+        let batchActive = false;
+        let batchTotal = 1;
+        let batchSavedCount = 0;
+        let batchCurrentIndex = 1;
+        let batchSavedTrackingIds = [];
+        let batchId = '';
+        let scanProgressLastAt = 0;
+        let esignPendingItems = [];
+        let esignQueueAllItems = [];
+        let esignQueueLoadedAt = 0;
+        let esignSaveInFlight = false;
+
+        // Requirement 1: RecipientMaster — loaded once per Key In page visit, filtered in Browser.
+        let recipientMasterItems = [];
+        let recipientMasterLoadedAt = 0;
+        let recipientDropdownHideTimer = null;
+
+        // Requirement 4: Department Status Monitor — loaded once, filtered in Browser.
+        let deptStatusData = null;
+
+        // Requirement 5: Report — loaded once per Month selected.
+        let reportSummaryData = null;
+        let reportSelectedMonth = new Date().getMonth() + 1;
+        let reportSelectedYear = new Date().getFullYear();
+        let reportSelectedDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD, for Daily mode
+        let esignApiMode = 'unknown';
+        let esignLastSyncError = '';
+        let currentReportRange = 'monthly';
+        let currentUser = null;
+
+        const SESSION_KEY = 'ntl_dms_prod_session';
+        const THEME_KEY = 'ntl_dms_theme';
+
+        /**************************************************************
+         * STANDALONE FRONTEND CONFIG
+         * นำ URL ที่ได้จาก Apps Script > Deploy > Web app มาใส่ด้านล่าง
+         * ตัวอย่าง: https://script.google.com/macros/s/AKfycb.../exec
+         **************************************************************/
+        const GAS_WEB_APP_URL ='https://script.google.com/macros/s/AKfycbylQ1p2T5GxM6_DZM_b11mEWvlrzE6dvzS6pIe4vnrC94gU08_OHeDb_CrWnSaHHhohYg/exec';
+
+        const API_SOURCE = 'NTL_DMS_GAS_API';
+        const apiPending = new Map();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dateEl = document.getElementById('current-date');
+            if (dateEl) {
+                dateEl.innerText = new Date().toLocaleDateString('th-TH', {
+                    year: 'numeric', month: 'short', day: 'numeric'
+                });
+            }
+
+            const canvas = document.getElementById('signature-pad');
+            if (canvas) {
+                signaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgba(255, 255, 255, 0)',
+                    penColor: 'rgb(30, 27, 65)'
+                });
+            }
+
+            setReportRange('monthly');
+            applyTheme(getStoredTheme());
+
+            window.addEventListener('message', handleApiMessage);
+            document.addEventListener('keydown', function(event) {
+                const loginView = document.getElementById('view-login');
+                if (event.key === 'Enter' && loginView && !loginView.classList.contains('hidden')) {
+                    event.preventDefault();
+                    handleLogin();
+                }
+            });
+
+            setupOcrTapToFill();
+            bootstrapApplication(false);
+        });
+
+
+        function setStartupMessage(message, showRetry) {
+            const text = document.getElementById('startup-message');
+            const retry = document.getElementById('startup-retry-btn');
+            if (text) text.textContent = message || 'กำลังตรวจสอบการเข้าใช้งาน...';
+            if (retry) retry.classList.toggle('hidden', !showRetry);
+        }
+
+        function showStartupView(message) {
+            const startup = document.getElementById('view-startup');
+            const login = document.getElementById('view-login');
+            const app = document.getElementById('view-app');
+
+            if (startup) startup.classList.remove('hidden');
+            if (login) {
+                login.classList.add('hidden');
+                login.classList.remove('flex');
+            }
+            if (app) app.classList.add('hidden');
+
+            setStartupMessage(message || 'กำลังตรวจสอบการเข้าใช้งาน...', false);
+        }
+
+        function hideStartupView() {
+            const startup = document.getElementById('view-startup');
+            if (startup) startup.classList.add('hidden');
+        }
+
+        function showLoginView() {
+            const startup = document.getElementById('view-startup');
+            const login = document.getElementById('view-login');
+            const app = document.getElementById('view-app');
+
+            if (startup) startup.classList.add('hidden');
+            if (app) app.classList.add('hidden');
+
+            if (login) {
+                login.classList.remove('hidden');
+                login.classList.add('flex');
+            }
+        }
+
+        async function bootstrapApplication(isRetry) {
+            showStartupView(isRetry ? 'กำลังเชื่อมต่อระบบอีกครั้ง...' : 'กำลังตรวจสอบการเข้าใช้งาน...');
+
+            if (!isApiConfigured()) {
+                setStartupMessage('ยังไม่ได้ตั้งค่า Backend URL', false);
+                setTimeout(function() {
+                    hideStartupView();
+                    showApiConfigError();
+                    showLoginView();
+                }, 250);
+                return;
+            }
+
+            const savedSession = getSession();
+
+            // ไม่มี Session ที่เคย Login: แสดง Login เท่านั้นในกรณีนี้
+            if (!savedSession || !savedSession.token) {
+                showLoginView();
+                return;
+            }
+
+            currentUser = savedSession;
+            setStartupMessage('กำลังกู้คืน Session ของคุณ...', false);
+
+            try {
+                const res = await apiCall('validateSession', {
+                    token: savedSession.token
+                });
+
+                if (res && res.success) {
+                    saveSession({
+                        ...savedSession,
+                        ...res,
+                        token: savedSession.token
+                    });
+
+                    // showMainApp จะซ่อน Login และเปิด App
+                    showMainApp(res.role || savedSession.role);
+                    hideStartupView();
+                    return;
+                }
+
+                // Backend ยืนยันชัดเจนว่า Session ใช้ไม่ได้จริง
+                if (res && (
+                    res.code === 'AUTH_REQUIRED' ||
+                    res.code === 'SESSION_EXPIRED' ||
+                    res.code === 'ACCOUNT_DISABLED'
+                )) {
+                    clearSession();
+                    showLoginView();
+                    return;
+                }
+
+                // Response ไม่ชัดเจน: อย่าเด้ง Login
+                setStartupMessage(
+                    (res && res.message) || 'ไม่สามารถตรวจสอบ Session ได้ กรุณาลองใหม่',
+                    true
+                );
+
+            } catch (err) {
+                // Network ชั่วคราว: อย่าแสดง Login เพราะผู้ใช้ยังมี Session อยู่
+                console.error('bootstrapApplication:', err);
+                setStartupMessage(
+                    'เชื่อมต่อระบบไม่ได้ชั่วคราว กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง',
+                    true
+                );
+            }
+        }
+
+        function isApiConfigured() {
+            return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec(?:\?.*)?$/.test(GAS_WEB_APP_URL);
+        }
+
+        function showApiConfigError() {
+            alert(
+                'ยังไม่ได้ตั้งค่า Google Apps Script Web App URL\n\n' +
+                'เปิดไฟล์ index.html แล้วค้นหา GAS_WEB_APP_URL จากนั้นนำ URL /exec ที่ Deploy แล้วมาใส่'
+            );
+        }
+
+        function requireGas() {
+            if (!isApiConfigured()) {
+                showApiConfigError();
+                return false;
+            }
+            return true;
+        }
+
+        function handleApiMessage(event) {
+            const data = event.data;
+            if (!data || data.source !== API_SOURCE || !data.requestId) return;
+
+            const pending = apiPending.get(data.requestId);
+            if (!pending) return;
+
+            apiPending.delete(data.requestId);
+            clearTimeout(pending.timer);
+
+            if (data.ok === false) {
+                pending.reject(new Error(data.error || 'API request failed'));
+                return;
+            }
+
+            pending.resolve(data.result);
+        }
+
+        // Part 10 (v5.9.18) — apiCall() now accepts an optional 3rd `options.timeoutMs` so
+        // slower, legitimately-heavier actions (Batch E-Sign, Evidence Save, PDF/Excel Export)
+        // get a longer safety window than a normal Load/Login call — instead of solving every
+        // timeout complaint by blanket-raising everything to 3–5 minutes.
+        // Per-action timeout tiers. Performance Optimization comes first (the actual fix for
+        // E-Sign/Evidence being slow is the Backend batch rewrite, not a longer timeout) — these
+        // longer windows are only a safety margin for genuinely heavier calls.
+        const API_DEFAULT_TIMEOUT_MS = 60000; // Login/Session/normal page loads: ~60s
+        const API_ESIGN_TIMEOUT_MS = 90000; // E-Sign (single or batch up to ~100 Tracking): ~90s safety window
+        const API_EVIDENCE_TIMEOUT_MS = 90000; // Evidence Save (image upload): ~90s
+        const API_EXPORT_TIMEOUT_MS = 170000; // PDF/Excel Export — long only where genuinely needed, still well under Apps Script's own 6-minute ceiling
+
+        function generateClientRequestId(prefix) {
+            return (prefix || 'REQ') + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        }
+
+        function apiCall(action, payload, options) {
+            if (!isApiConfigured()) {
+                return Promise.reject(new Error('ยังไม่ได้ตั้งค่า GAS_WEB_APP_URL'));
+            }
+
+            const timeoutMs = (options && options.timeoutMs) || API_DEFAULT_TIMEOUT_MS;
+
+            return new Promise(function(resolve, reject) {
+                const requestId =
+                    'req_' + Date.now() + '_' +
+                    Math.random().toString(36).slice(2);
+
+                const iframe = document.createElement('iframe');
+                iframe.name = 'ntl_api_' + requestId;
+                iframe.style.display = 'none';
+
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = GAS_WEB_APP_URL;
+                form.target = iframe.name;
+                form.style.display = 'none';
+                form.acceptCharset = 'UTF-8';
+
+                const fields = {
+                    action: action,
+                    requestId: requestId,
+                    payload: JSON.stringify(payload || {})
+                };
+
+                Object.keys(fields).forEach(function(name) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = name;
+                    input.value = fields[name];
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(iframe);
+                document.body.appendChild(form);
+
+                const timer = setTimeout(function() {
+                    apiPending.delete(requestId);
+                    try { form.remove(); iframe.remove(); } catch (e) {}
+                    reject(new Error('เชื่อมต่อ Backend ไม่สำเร็จหรือใช้เวลานานเกินไป'));
+                }, timeoutMs);
+
+                apiPending.set(requestId, {
+                    resolve: function(value) {
+                        try { form.remove(); iframe.remove(); } catch (e) {}
+                        resolve(value);
+                    },
+                    reject: function(error) {
+                        try { form.remove(); iframe.remove(); } catch (e) {}
+                        reject(error);
+                    },
+                    timer: timer
+                });
+
+                form.submit();
+            });
+        }
+
+        function normalizeError(err) {
+            if (!err) return 'Unknown error';
+            return err.message || String(err);
+        }
+
+        function normalizeResponse(res, defaultMessage) {
+            if (!res) return { success: false, message: defaultMessage || 'ไม่พบผลลัพธ์จากระบบ' };
+            if (typeof res === 'string') return { success: true, message: res };
+            return {
+                ...res,
+                success: res.success !== false,
+                message: res.message || defaultMessage || 'สำเร็จ'
+            };
+        }
+
+        function getSession() {
+            try { return JSON.parse(localStorage.getItem(SESSION_KEY)) || null; }
+            catch (e) { return null; }
+        }
+
+        function saveSession(session) {
+            currentUser = {
+                username: session.username || '',
+                role: session.role || 'Operation Staff',
+                displayName: session.displayName || session.fullName || session.username || '',
+                token: session.token || ''
+            };
+            localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
+        }
+
+        function clearSession() {
+            currentUser = null;
+            try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+        }
+
+        function getAuthToken() {
+            const s = currentUser || getSession();
+            return s && s.token ? s.token : '';
+        }
+
+        function getAuditUser() {
+            const s = currentUser || getSession() || {};
+            return { username: s.username || '', role: s.role || '' };
+        }
+
+        function restoreSession() {
+            return bootstrapApplication(false);
+        }
+
+        function handleAuthFailure(res) {
+            if (res && (res.code === 'AUTH_REQUIRED' || res.code === 'SESSION_EXPIRED')) {
+                clearSession();
+                showLoginView();
+                alert(res.message || 'Session หมดอายุ กรุณาเข้าสู่ระบบใหม่');
+                return true;
+            }
+            return false;
+        }
+
+        function clearForm(ids) {
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (el.tagName === 'SELECT') el.selectedIndex = 0;
+                else el.value = '';
+            });
+        }
+
+        function getStoredTheme() {
+            try { return localStorage.getItem(THEME_KEY) || 'light'; }
+            catch (e) { return 'light'; }
+        }
+
+        function applyTheme(theme) {
+            const appView = document.getElementById('view-app');
+            const iconDesktop = document.getElementById('theme-icon-desktop');
+            const iconMobile = document.getElementById('theme-icon-mobile');
+            if (!appView) return;
+            if (theme === 'dark') {
+                appView.classList.add('dark-mode');
+                if (iconDesktop) iconDesktop.className = 'fa-solid fa-sun';
+                if (iconMobile) iconMobile.className = 'fa-solid fa-sun';
+            } else {
+                appView.classList.remove('dark-mode');
+                if (iconDesktop) iconDesktop.className = 'fa-solid fa-moon';
+                if (iconMobile) iconMobile.className = 'fa-solid fa-moon';
+            }
+            try { localStorage.setItem(THEME_KEY, theme); } catch (e) {}
+        }
+
+        function toggleTheme() {
+            const app = document.getElementById('view-app');
+            if (!app) return;
+            applyTheme(app.classList.contains('dark-mode') ? 'light' : 'dark');
+        }
+
+        function setLoginStatus(message, type) {
+            const box = document.getElementById('login-status');
+            if (!box) return;
+
+            if (!message) {
+                box.classList.add('hidden');
+                box.textContent = '';
+                return;
+            }
+
+            box.className = 'rounded-xl border px-3.5 py-3 text-xs font-bold ' +
+                (type === 'success'
+                    ? 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300'
+                    : type === 'warning'
+                    ? 'bg-amber-950/60 border-amber-700/60 text-amber-300'
+                    : 'bg-rose-950/60 border-rose-700/60 text-rose-300');
+
+            box.innerHTML =
+                '<i class="fa-solid ' +
+                (type === 'success' ? 'fa-circle-check' : type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-xmark') +
+                ' mr-2"></i>' + escapeHtml(message);
+
+            box.classList.remove('hidden');
+        }
+
+        function setLoginLoading(isLoading) {
+            const btn = document.getElementById('login-submit-btn');
+            const text = document.getElementById('login-submit-text');
+            const icon = document.getElementById('login-submit-icon');
+
+            if (btn) btn.disabled = !!isLoading;
+            if (text) text.textContent = isLoading ? 'กำลังตรวจสอบ...' : 'Sign In to Service';
+            if (icon) icon.className = isLoading
+                ? 'fa-solid fa-spinner fa-spin text-xs'
+                : 'fa-solid fa-arrow-right text-xs';
+        }
+
+        async function handleLogin() {
+            if (!requireGas()) return;
+
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            setLoginStatus('', '');
+
+            if (!username || !password) {
+                setLoginStatus('กรุณากรอก Username และ Password', 'error');
+                return;
+            }
+
+            setLoginLoading(true);
+
+            try {
+                const raw = await apiCall('checkLogin', { username: username, password: password });
+                const res = normalizeResponse(raw, 'เข้าสู่ระบบไม่สำเร็จ');
+
+                if (!res.success || !res.token) {
+                    if (res && res.code === 'ACCOUNT_DISABLED') {
+                        setLoginStatus('บัญชีนี้ถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแลระบบ', 'warning');
+                    } else {
+                        setLoginStatus(res.message || 'Username หรือ Password ไม่ถูกต้อง', 'error');
+                    }
+                    return;
+                }
+
+                saveSession(res);
+                document.getElementById('login-password').value = '';
+                setLoginStatus('Login สำเร็จ', 'success');
+                showSystemToast('Login สำเร็จ', 'success');
+
+                setTimeout(function() {
+                    setLoginStatus('', '');
+                    showMainApp(res.role);
+                }, 450);
+
+            } catch (err) {
+                setLoginStatus('เข้าสู่ระบบไม่สำเร็จ: ' + normalizeError(err), 'error');
+            } finally {
+                setLoginLoading(false);
+            }
+        }
+
+        function showMainApp(role) {
+            // Requirement 2: Username ≠ Role. currentUser (set by saveSession() before this is
+            // ever called, both on fresh Login and on Session Restore) already carries
+            // username/displayName — no extra API call needed to show it.
+            const user = currentUser || getSession() || {};
+            const displayName = user.displayName || user.username || 'User';
+
+            const sideName = document.getElementById('sidebar-user-name');
+            const sideRoleLabel = document.getElementById('sidebar-user-role-label');
+            const mobileName = document.getElementById('mobile-user-name');
+
+            if (sideName) sideName.innerText = displayName;
+            if (sideRoleLabel) sideRoleLabel.innerText = (role ? role + ' • ' : '') + 'Active session';
+            if (mobileName) mobileName.innerText = displayName;
+
+            const loginView = document.getElementById('view-login');
+            if (loginView) {
+                loginView.classList.add('hidden');
+                loginView.classList.remove('flex');
+            }
+            hideStartupView();
+            document.getElementById('view-app').classList.remove('hidden');
+            // Permission logic is untouched — still keyed on Role, never Username.
+            applyRoleVisibility(role);
+            navigateTo('home');
+            loadDashboardStats();
+            loadBackendCapabilities();
+            refreshNotificationBadge();
+        }
+
+        function applyRoleVisibility(role) {
+            document.body.classList.toggle('role-staff', role === 'Operation Staff');
+        }
+
+        function handleLogout() {
+            const token = getAuthToken();
+            clearSession();
+            document.body.classList.remove('role-staff');
+            showLoginView();
+            if (token && isApiConfigured()) apiCall('logoutSession', { token: token }).catch(function(){});
+        }
+
+        const titles = {
+            home: 'Digital Mail Service', dashboard: 'Executive Dashboard', operations: 'Operations Control', keyin: 'Document Entry (Key In)',
+            track: 'Track & Trace', esign: 'E-Signature', return: 'Document Return', report: 'Report',
+            deptstatus: 'Department Status Monitor / ตรวจสอบสถานะเอกสาร',
+            evidencecapture: 'Evidence Capture / แนบรูปหลักฐาน'
+        };
+
+        function navigateTo(pageId) {
+            const session = currentUser || getSession();
+            if (!session || !session.token) return;
+            if (session.role === 'Operation Staff' && ['report'].includes(pageId)) {
+                alert('บัญชี Operation Staff ไม่มีสิทธิ์เข้าเมนูนี้');
+                return;
+            }
+            document.querySelectorAll('.page-section').forEach(section => section.classList.add('hidden'));
+            const target = document.getElementById('page-' + pageId);
+            if (target) target.classList.remove('hidden');
+            document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('bg-indigo-600','text-white'));
+            const sideBtn = document.getElementById('side-' + pageId);
+            if (sideBtn) sideBtn.classList.add('bg-indigo-600','text-white');
+            if (titles[pageId]) {
+                const desktop = document.getElementById('desktop-header-title');
+                const mobile = document.getElementById('mobile-header-title');
+                if (desktop) desktop.innerText = titles[pageId];
+                if (mobile) mobile.innerText = titles[pageId];
+            }
+            if (pageId === 'esign') {
+                if (signaturePad) setTimeout(resizeCanvas, 100);
+                loadEsignDepartments();
+            }
+            if (pageId === 'deptstatus') loadDepartmentStatusMonitor();
+            if (pageId === 'evidencecapture') loadEvidenceCaptureQueue();
+            if (pageId === 'dashboard') loadDashboardStats();
+            if (pageId === 'operations') loadOperationsControl();
+            if (pageId === 'report') loadReportSummaryForSelectedMonth();
+
+            // Requirement (2-Step Wizard): fresh visits to Key In always start at Step 1 — but a
+            // Batch Entry already in progress must never be knocked back to Step 1 just because
+            // navigateTo('keyin') fires again (e.g. clicking the sidebar item while mid-batch).
+            if (pageId === 'keyin' && !batchActive) {
+                showKeyInStep(1);
+            }
+
+            if (pageId === 'track' && latestSavedTracking) {
+                const trackInput = document.getElementById('track-search-input');
+                if (trackInput && !trackInput.value.trim()) {
+                    trackInput.value = latestSavedTracking;
+                }
+            }
+        }
+
+        async function loadBackendCapabilities() {
+            try {
+                const res = await apiCall('getSystemVersion', {
+                    authToken: getAuthToken()
+                });
+                serverOcrEnabled = !!(res && res.serverOcrEnabled);
+            } catch (err) {
+                serverOcrEnabled = false;
+                console.warn('Backend capabilities unavailable:', normalizeError(err));
+            }
+        }
+
+        function showSystemToast(message, type) {
+            const old = document.getElementById('ntl-system-toast'); if (old) old.remove();
+            const toast = document.createElement('div'); toast.id = 'ntl-system-toast';
+            toast.className = 'fixed z-[10000] left-1/2 -translate-x-1/2 top-5 max-w-[92vw] sm:max-w-md px-4 py-3 rounded-xl shadow-2xl text-sm font-bold border ' +
+                (type === 'success' ? 'bg-emerald-600 text-white border-emerald-500' : type === 'error' ? 'bg-rose-600 text-white border-rose-500' : 'bg-slate-900 text-white border-slate-700');
+            toast.innerHTML = '<i class="fa-solid ' + (type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-bell') + ' mr-2"></i>' + escapeHtml(message);
+            document.body.appendChild(toast); setTimeout(function(){ toast.remove(); }, 2800);
+        }
+
+        // Requirement 14: this is PURELY an "evidence captured for the current item" indicator —
+        // it must never be confused with, or gate, the actual Document-saved count. That count
+        // now lives in batchSavedCount, which only advances after a Backend-verified save.
+        function updateScanProgress() {
+            const text = document.getElementById('scan-progress-text');
+            if (text) text.textContent = 'สแกน/แนบหลักฐานแล้ว ' + scanProgressCount + ' ครั้ง';
+        }
+
+        // v5.9.5 — Requirement: NaN-safe Qty parsing. A stray/non-numeric value in the Qty field
+        // (e.g. left over from a paste or a mobile keyboard quirk) used to turn Math.max(1,
+        // Number(value || 1)) into NaN, which then silently broke the scan-progress bar and the
+        // Save payload. This always resolves to a clamped whole number between 1 and 50.
+        function getKeyInQty() {
+            const raw = document.getElementById('keyin-qty')?.value;
+            const n = Number(raw);
+            if (!isFinite(n) || isNaN(n) || n < 1) return 1;
+            return Math.min(50, Math.round(n));
+        }
+
+        // Part 4: DocumentCount is DISTINCT from Qty — "how many physical documents exist under
+        // THIS ONE Tracking" (Bundle case), never "how many Tracking Records this batch collects".
+        // Same NaN-safe clamping pattern as getKeyInQty(); default 1 for the common case.
+        function getKeyInDocumentCount() {
+            const raw = document.getElementById('keyin-document-count')?.value;
+            const n = Number(raw);
+            if (!isFinite(n) || isNaN(n) || n < 1) return 1;
+            return Math.min(999, Math.round(n));
+        }
+
+        function registerSuccessfulScan(detail) {
+            const now = Date.now(); if (now - scanProgressLastAt < 450) return; scanProgressLastAt = now; scanProgressCount++; updateScanProgress();
+            showSystemToast('สแกนสำเร็จ' + (detail ? ' • ' + detail : ''), 'info');
+        }
+
+        function resetScanProgress() { scanProgressCount = 0; scanProgressLastAt = 0; updateScanProgress(); showSystemToast('รีเซ็ตตัวนับการสแกนแล้ว', 'info'); }
+
+
+        function setScannerStatus(message, type) {
+            const el = document.getElementById('scanner-status');
+            if (!el) return;
+            el.classList.remove('hidden','bg-cyan-50','text-cyan-800','border-cyan-100','bg-rose-50','text-rose-700','border-rose-100','bg-emerald-50','text-emerald-700','border-emerald-100');
+            if (type === 'error') el.classList.add('bg-rose-50','text-rose-700','border-rose-100');
+            else if (type === 'success') el.classList.add('bg-emerald-50','text-emerald-700','border-emerald-100');
+            else el.classList.add('bg-cyan-50','text-cyan-800','border-cyan-100');
+            el.textContent = message;
+        }
+
+        async function startParcelScanner() {
+            const panel = document.getElementById('scanner-panel');
+            const video = document.getElementById('parcel-scanner-video');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.isSecureContext) {
+                setScannerStatus('เบราว์เซอร์ไม่อนุญาต Live Camera บนหน้านี้ กรุณาเปิดผ่าน HTTPS หรือใช้ปุ่มถ่าย/เลือกรูป', 'error');
+                document.getElementById('camera-file-input').click();
+                return;
+            }
+
+            try {
+                stopParcelScanner();
+                liveBarcodeLocked = false;
+                liveBarcodeLastValue = '';
+
+                scannerStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: { ideal: 'environment' },
+                        width: { ideal: 2560 },
+                        height: { ideal: 1440 },
+                        frameRate: { ideal: 30 }
+                    },
+                    audio: false
+                });
+
+                video.srcObject = scannerStream;
+                await video.play().catch(function(){});
+                panel.classList.remove('hidden');
+
+                // Apply advanced camera capabilities only when the browser/device supports them.
+                try {
+                    const track = scannerStream.getVideoTracks()[0];
+                    if (track && typeof track.getCapabilities === 'function') {
+                        const caps = track.getCapabilities() || {};
+                        const advanced = {};
+
+                        if (Array.isArray(caps.focusMode) && caps.focusMode.includes('continuous')) {
+                            advanced.focusMode = 'continuous';
+                        }
+
+                        if (caps.zoom && typeof caps.zoom.min === 'number') {
+                            const targetZoom = Math.min(
+                                Number(caps.zoom.max || caps.zoom.min),
+                                Math.max(Number(caps.zoom.min), 1.15)
+                            );
+                            advanced.zoom = targetZoom;
+                        }
+
+                        if (Object.keys(advanced).length) {
+                            await track.applyConstraints({ advanced: [advanced] });
+                        }
+                    }
+                } catch (cameraConstraintError) {
+                    console.warn('Advanced camera constraints unavailable', cameraConstraintError);
+                }
+
+                setScannerStatus(
+                    'กำลังค้นหา Barcode / Tracking อัตโนมัติ… วาง Barcode ให้อยู่กลางกรอบ',
+                    'info'
+                );
+
+                startLiveBarcodeDetection();
+
+            } catch (err) {
+                setScannerStatus(
+                    'เปิดกล้องไม่สำเร็จ: ' + normalizeError(err) + ' — ตรวจสิทธิ์ Camera หรือใช้ปุ่มถ่าย/เลือกรูป',
+                    'error'
+                );
+            }
+        }
+
+        function stopLiveBarcodeDetection() {
+            if (scannerLoopTimer) {
+                clearTimeout(scannerLoopTimer);
+                scannerLoopTimer = null;
+            }
+
+            if (zxingLiveReader) {
+                try {
+                    if (typeof zxingLiveReader.stopContinuousDecode === 'function') {
+                        zxingLiveReader.stopContinuousDecode();
+                    }
+                    if (typeof zxingLiveReader.reset === 'function') {
+                        zxingLiveReader.reset();
+                    }
+                } catch (e) {}
+                zxingLiveReader = null;
+            }
+        }
+
+        function stopParcelScanner() {
+            stopLiveBarcodeDetection();
+
+            if (scannerStream) {
+                scannerStream.getTracks().forEach(track => track.stop());
+                scannerStream = null;
+            }
+
+            const video = document.getElementById('parcel-scanner-video');
+            if (video) video.srcObject = null;
+
+            const panel = document.getElementById('scanner-panel');
+            if (panel) panel.classList.add('hidden');
+
+            liveBarcodeLocked = false;
+        }
+
+        async function createBarcodeDetector() {
+            if (!('BarcodeDetector' in window)) return null;
+
+            try {
+                const desired = [
+                    'aztec','code_128','code_39','code_93','codabar',
+                    'data_matrix','ean_13','ean_8','itf','pdf417',
+                    'qr_code','upc_a','upc_e'
+                ];
+
+                if (typeof BarcodeDetector.getSupportedFormats === 'function') {
+                    const supported = await BarcodeDetector.getSupportedFormats();
+                    const formats = desired.filter(format => supported.includes(format));
+                    return new BarcodeDetector(formats.length ? { formats: formats } : undefined);
+                }
+
+                return new BarcodeDetector();
+            } catch (err) {
+                console.warn('BarcodeDetector init failed', err);
+                return null;
+            }
+        }
+
+        function captureTrackingRoiCanvas(video) {
+            if (!video || !video.videoWidth || !video.videoHeight) return null;
+
+            // Match the visual ROI: center 86% width x 34% height.
+            const roiW = Math.round(video.videoWidth * 0.86);
+            const roiH = Math.round(video.videoHeight * 0.34);
+            const sx = Math.round((video.videoWidth - roiW) / 2);
+            const sy = Math.round((video.videoHeight - roiH) / 2);
+
+            const canvas = document.createElement('canvas');
+
+            // Preserve ROI detail instead of shrinking the whole camera frame.
+            const upscale = roiW < 1500 ? Math.min(1.8, 1500 / Math.max(1, roiW)) : 1;
+            canvas.width = Math.round(roiW * upscale);
+            canvas.height = Math.round(roiH * upscale);
+
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(
+                video,
+                sx, sy, roiW, roiH,
+                0, 0, canvas.width, canvas.height
+            );
+
+            return canvas;
+        }
+
+        function acceptLiveTracking(rawValue, source) {
+            const value = normalizeTrackingOcrValue(rawValue);
+            const candidate = {
+                value: value,
+                source: source || 'Barcode',
+                score: source === 'Barcode' ? 99 : 86
+            };
+
+            if (!isValidTrackingCandidate(candidate)) return false;
+
+            const now = Date.now();
+            if (value === liveBarcodeLastValue && now - liveBarcodeLastAt < 800) {
+                return false;
+            }
+
+            liveBarcodeLastValue = value;
+            liveBarcodeLastAt = now;
+            liveBarcodeLocked = true;
+
+            applyDetectedTracking(value, source || 'Barcode');
+
+            const input = document.getElementById('keyin-tracking');
+            if (input) {
+                input.dataset.source = source || 'Barcode';
+                setFieldSmartState('keyin-tracking', 99);
+            }
+
+            stopLiveBarcodeDetection();
+
+            if (navigator.vibrate) navigator.vibrate([70, 40, 100]);
+
+            setScannerStatus(
+                'Tracking detected: ' + value + ' • จับเลขสำเร็จแล้ว กด “ถ่ายและอ่านข้อมูล” เพื่ออ่านชื่อ/ที่อยู่',
+                'success'
+            );
+
+            showSystemToast('Tracking detected • ' + value, 'success');
+            return true;
+        }
+
+        async function startNativeBarcodeLoop(video, detector) {
+            const loop = async function() {
+                if (!scannerStream || liveBarcodeLocked) return;
+
+                if (!video || video.readyState < 2 || !video.videoWidth) {
+                    scannerLoopTimer = setTimeout(loop, 300);
+                    return;
+                }
+
+                try {
+                    const roi = captureTrackingRoiCanvas(video);
+                    if (roi) {
+                        const codes = await detector.detect(roi);
+
+                        if (codes && codes.length) {
+                            const valid = codes
+                                .map(code => ({
+                                    value: String(code.rawValue || '').trim(),
+                                    format: code.format || ''
+                                }))
+                                .filter(item => isValidTrackingCandidate({ value: item.value }))
+                                .sort((a,b) => b.value.length - a.value.length);
+
+                            if (valid.length && acceptLiveTracking(valid[0].value, 'Barcode')) {
+                                return;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Native barcode live scan', err);
+                }
+
+                scannerLoopTimer = setTimeout(loop, 320);
+            };
+
+            loop();
+        }
+
+        async function startZxingLiveLoop(video) {
+            if (!window.ZXing || liveBarcodeLocked) return false;
+
+            try {
+                zxingLiveReader = new ZXing.BrowserMultiFormatReader();
+
+                await zxingLiveReader.decodeFromVideoElementContinuously(
+                    video,
+                    function(result, error) {
+                        if (!scannerStream || liveBarcodeLocked) return;
+
+                        if (result) {
+                            const value = typeof result.getText === 'function'
+                                ? result.getText()
+                                : String(result.text || '');
+
+                            acceptLiveTracking(value, 'Barcode');
+                        }
+                    }
+                );
+
+                return true;
+            } catch (err) {
+                console.warn('ZXing live scan unavailable', err);
+                zxingLiveReader = null;
+                return false;
+            }
+        }
+
+        async function startLiveBarcodeDetection() {
+            const video = document.getElementById('parcel-scanner-video');
+            if (!video) return;
+
+            liveBarcodeLocked = false;
+
+            // Native BarcodeDetector is preferred because we can decode only the high-resolution ROI.
+            const detector = await createBarcodeDetector();
+
+            if (detector) {
+                startNativeBarcodeLoop(video, detector);
+                return;
+            }
+
+            // Safari/iOS fallback: ZXing continuously decodes the live video stream.
+            const started = await startZxingLiveLoop(video);
+
+            if (!started) {
+                setScannerStatus(
+                    'Live Barcode ยังไม่รองรับใน Browser นี้ • จัด Barcode ในกรอบแล้วกด “ถ่ายและอ่านข้อมูล”',
+                    'info'
+                );
+            }
+        }
+
+        async function captureScannerFrame() {
+            const video = document.getElementById('parcel-scanner-video');
+            if (!video || !video.videoWidth) {
+                setScannerStatus('กล้องยังไม่พร้อม กรุณารอสักครู่', 'error');
+                return;
+            }
+
+            setScannerStatus('กำลังเตรียมภาพสำหรับอ่านข้อมูล…', 'info');
+
+            const dataUrl = captureVideoFrameOptimized(video, 1800, 0.88);
+            capturedImages.push(dataUrl);
+            renderImagePreviews();
+
+            const existingTracking = document.getElementById('keyin-tracking')?.value.trim() || '';
+            const existingSource = document.getElementById('keyin-tracking')?.dataset.source || '';
+
+            const ok = await analyzeParcelImage(dataUrl, {
+                skipTracking: !!existingTracking && existingSource === 'Barcode',
+                existingTracking: existingTracking
+            });
+
+            if (ok) {
+                registerSuccessfulScan(
+                    document.getElementById('keyin-tracking')?.value || 'Captured'
+                );
+            }
+        }
+
+
+        async function handleImageCapture(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            try {
+                setScannerStatus('กำลังปรับขนาดภาพเพื่อให้ประมวลผลเร็วขึ้น…', 'info');
+                const rawDataUrl = await readFileAsDataUrl(file);
+                const optimizedDataUrl = await normalizeEvidenceDataUrl(rawDataUrl, 1800, 0.88);
+
+                capturedImages.push(optimizedDataUrl);
+                renderImagePreviews();
+
+                const existingTracking = document.getElementById('keyin-tracking')?.value.trim() || '';
+                const existingSource = document.getElementById('keyin-tracking')?.dataset.source || '';
+
+                const ok = await analyzeParcelImage(optimizedDataUrl, {
+                    skipTracking: !!existingTracking && existingSource === 'Barcode',
+                    existingTracking: existingTracking
+                });
+
+                if (ok) {
+                    registerSuccessfulScan(
+                        document.getElementById('keyin-tracking')?.value || 'Image'
+                    );
+                }
+            } catch (err) {
+                console.error('handleImageCapture:', err);
+                setScannerStatus('ไม่สามารถอ่านรูปภาพได้: ' + normalizeError(err), 'error');
+            } finally {
+                event.target.value = '';
+            }
+        }
+
+
+        function readFileAsDataUrl(file) {
+            return new Promise(function(resolve, reject) {
+                const reader = new FileReader();
+                reader.onload = function(event) { resolve(event.target.result); };
+                reader.onerror = function() { reject(reader.error || new Error('อ่านไฟล์ไม่สำเร็จ')); };
+                reader.readAsDataURL(file);
+            });
+        }
+
+
+        function captureVideoFrameOptimized(video, maxSide, quality) {
+            const srcW = video.videoWidth;
+            const srcH = video.videoHeight;
+            const scale = Math.min(1, Number(maxSide || 1800) / Math.max(srcW, srcH));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(srcW * scale));
+            canvas.height = Math.max(1, Math.round(srcH * scale));
+            const ctx = canvas.getContext('2d', { alpha: false });
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', Number(quality || 0.88));
+        }
+
+
+        async function normalizeEvidenceDataUrl(dataUrl, maxSide, quality) {
+            const img = await loadSmartImage(dataUrl);
+            const srcW = img.naturalWidth || img.width;
+            const srcH = img.naturalHeight || img.height;
+            const scale = Math.min(1, Number(maxSide || 1800) / Math.max(srcW, srcH));
+
+            if (scale >= 0.995 && /^data:image\/jpeg/i.test(dataUrl)) {
+                return dataUrl;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(srcW * scale));
+            canvas.height = Math.max(1, Math.round(srcH * scale));
+            const ctx = canvas.getContext('2d', { alpha: false });
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', Number(quality || 0.88));
+        }
+
+
+        async function analyzeParcelImage(dataUrl, options) {
+            options = options || {};
+            const existingTracking = String(options.existingTracking || '').trim();
+            let trackingCandidates = [];
+            let recipientOcrPromise = null;
+
+            const original = await loadSmartImage(dataUrl);
+            const variants = await buildSmartImageVariants(original);
+
+            if (options.skipTracking && existingTracking) {
+                trackingCandidates = [{
+                    value: existingTracking,
+                    score: 99,
+                    source: 'Barcode'
+                }];
+                setScannerStatus('Tracking ยืนยันแล้ว • กำลังตรวจแผนก/เส้นทางจากภาพ…', 'info');
+                // Tracking is already confirmed — a light OCR pass is still worth it only to
+                // auto-fill Department/Route (Recipient data no longer exists at all).
+                recipientOcrPromise = runPreferredRecipientOcr(dataUrl, variants);
+            } else {
+                setScannerStatus('กำลังตรวจ Barcode / QR ในภาพ…', 'info');
+
+                const barcodeCandidates = await scanBarcodeCandidatesFromVariants(variants);
+                trackingCandidates = rankBarcodeCandidates(barcodeCandidates)
+                    .filter(isValidTrackingCandidate);
+
+                const barcodeFound = trackingCandidates.some(function(c) { return c.source === 'Barcode'; });
+
+                if (!trackingCandidates.length) {
+                    setScannerStatus('ยังไม่พบ Barcode • กำลังอ่านเลข Tracking เฉพาะบริเวณฉลาก…', 'info');
+
+                    try {
+                        const trackingOcrCandidates = await runTrackingOcrPasses(variants);
+                        trackingOcrCandidates.forEach(function(item) {
+                            if (
+                                isValidTrackingCandidate(item) &&
+                                !trackingCandidates.some(x => x.value === item.value)
+                            ) {
+                                trackingCandidates.push(item);
+                            }
+                        });
+                    } catch (err) {
+                        console.warn('Tracking OCR fallback failed', err);
+                    }
+                }
+
+                trackingCandidates = trackingCandidates
+                    .filter(isValidTrackingCandidate)
+                    .sort((a,b) => Number(b.score || 0) - Number(a.score || 0))
+                    .slice(0, 6);
+
+                const top = trackingCandidates[0];
+
+                // Barcode is authoritative. OCR may suggest alternatives but cannot overwrite a decoded barcode.
+                if (top && (top.source === 'Barcode' || top.score >= 82)) {
+                    applyDetectedTracking(top.value, top.source);
+                    const input = document.getElementById('keyin-tracking');
+                    if (input) input.dataset.source = top.source;
+                }
+
+                // Requirement — IMPORTANT PERFORMANCE TARGET: once Barcode has already decoded
+                // the Tracking, do NOT run the general Tesseract tha+eng pass at all — that pass
+                // only ever existed to extract Recipient/Phone/Postcode/Address, which are gone.
+                // Only run it when Barcode failed, since the user is already on the slower
+                // Tracking-OCR-fallback path regardless, so a Department/Route auto-fill pass
+                // there still earns its cost.
+                if (!barcodeFound) {
+                    recipientOcrPromise = runPreferredRecipientOcr(dataUrl, variants);
+                }
+            }
+
+            const ocrBest = recipientOcrPromise ? await recipientOcrPromise : null;
+            const text = ocrBest ? ocrBest.text : '';
+            latestOcrText = text;
+
+            const extracted = extractParcelFields(text, ocrBest?.lines || []);
+
+            const topTracking = trackingCandidates[0] || (
+                existingTracking
+                    ? { value: existingTracking, score: 99, source: 'Barcode' }
+                    : null
+            );
+
+            renderOcrTrackingCandidates(trackingCandidates);
+            applySmartParcelFields(extracted);
+
+            latestSmartCapture = {
+                tracking: topTracking,
+                trackingCandidates: trackingCandidates,
+                fields: extracted,
+                ocr: ocrBest
+            };
+
+            renderSmartCaptureResult(latestSmartCapture);
+
+            const hasUsefulData = !!(
+                topTracking ||
+                extracted.department ||
+                extracted.route
+            );
+
+            if (hasUsefulData) {
+                setScannerStatus(
+                    topTracking
+                        ? 'วิเคราะห์สำเร็จ • Tracking: ' + topTracking.value + ' • ตรวจข้อมูลที่ไฮไลต์ก่อนบันทึก'
+                        : 'อ่านข้อมูลแล้ว แต่ยังไม่ยืนยัน Tracking • กรุณาสแกน Barcode ในกรอบอีกครั้ง',
+                    topTracking ? 'success' : 'info'
+                );
+            } else {
+                setScannerStatus(
+                    'ยังอ่านข้อมูลไม่ชัด กรุณาจัดฉลากให้อยู่ตรงกรอบ ไม่เบลอ/สะท้อนแสง แล้วลองใหม่',
+                    'error'
+                );
+            }
+
+            return hasUsefulData;
+        }
+
+
+        async function runPreferredRecipientOcr(dataUrl, variants) {
+            const baseVariant =
+                (variants || []).find(v => v.rotation === 0) ||
+                (variants || [])[0];
+
+            // Google Cloud Vision is optional. If configured in Code.gs Script Properties,
+            // it is preferred for Thai names/addresses because it is faster on iPad/mobile.
+            if (serverOcrEnabled && baseVariant) {
+                try {
+                    setScannerStatus('กำลังอ่านข้อความด้วย Server OCR…', 'info');
+
+                    const serverRes = await promiseWithTimeout(
+                        apiCall('analyzeEvidenceOcr', {
+                            imageData: baseVariant.dataUrl,
+                            authToken: getAuthToken()
+                        }),
+                        10000,
+                        'Server OCR timeout'
+                    );
+
+                    if (serverRes && serverRes.success && serverRes.text) {
+                        const confidence = Number(serverRes.confidence || 0);
+                        const lines = String(serverRes.text)
+                            .split(/\r?\n/)
+                            .map(function(line) {
+                                return {
+                                    text: line.replace(/\s+/g, ' ').trim(),
+                                    confidence: confidence || 75,
+                                    bbox: null
+                                };
+                            })
+                            .filter(function(line) { return line.text; });
+
+                        return {
+                            text: serverRes.text,
+                            confidence: confidence,
+                            lines: lines,
+                            score: scoreParcelOcrText(serverRes.text, confidence, lines),
+                            rotation: 0,
+                            mode: 'server-document-ocr',
+                            engine: serverRes.engine || 'Server OCR'
+                        };
+                    }
+                } catch (err) {
+                    console.warn('Server OCR unavailable; fallback to client OCR', err);
+                }
+            }
+
+            if (window.Tesseract) {
+                return runSmartOcrPasses(variants);
+            }
+
+            return {
+                text: '',
+                confidence: 0,
+                lines: [],
+                score: 0,
+                rotation: 0,
+                mode: 'none',
+                engine: 'None'
+            };
+        }
+
+
+        function promiseWithTimeout(promise, timeoutMs, message) {
+            return new Promise(function(resolve, reject) {
+                const timer = setTimeout(function() {
+                    reject(new Error(message || 'Timeout'));
+                }, Number(timeoutMs || 10000));
+
+                Promise.resolve(promise).then(
+                    function(value) {
+                        clearTimeout(timer);
+                        resolve(value);
+                    },
+                    function(error) {
+                        clearTimeout(timer);
+                        reject(error);
+                    }
+                );
+            });
+        }
+
+        function loadSmartImage(dataUrl) {
+            return new Promise(function(resolve, reject) {
+                const img = new Image();
+                img.onload = function() { resolve(img); };
+                img.onerror = reject;
+                img.src = dataUrl;
+            });
+        }
+
+        function drawSmartVariant(img, rotation, mode) {
+            const maxSide = 1650;
+            const srcW = img.naturalWidth || img.width;
+            const srcH = img.naturalHeight || img.height;
+            const scale = Math.min(1, maxSide / Math.max(srcW, srcH));
+            const w = Math.max(1, Math.round(srcW * scale));
+            const h = Math.max(1, Math.round(srcH * scale));
+
+            const swap = rotation === 90 || rotation === 270;
+            const canvas = document.createElement('canvas');
+            canvas.width = swap ? h : w;
+            canvas.height = swap ? w : h;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+            ctx.save();
+            if (rotation === 90) {
+                ctx.translate(canvas.width, 0);
+                ctx.rotate(Math.PI / 2);
+            } else if (rotation === 180) {
+                ctx.translate(canvas.width, canvas.height);
+                ctx.rotate(Math.PI);
+            } else if (rotation === 270) {
+                ctx.translate(0, canvas.height);
+                ctx.rotate(-Math.PI / 2);
+            }
+            ctx.drawImage(img, 0, 0, w, h);
+            ctx.restore();
+
+            if (mode === 'ocr') {
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const d = imageData.data;
+                let min = 255, max = 0;
+
+                for (let i = 0; i < d.length; i += 4) {
+                    const y = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+                    if (y < min) min = y;
+                    if (y > max) max = y;
+                }
+
+                const range = Math.max(40, max - min);
+                for (let i = 0; i < d.length; i += 4) {
+                    let y = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+                    y = ((y - min) / range) * 255;
+                    y = Math.max(0, Math.min(255, (y - 128) * 1.28 + 128));
+                    d[i] = d[i+1] = d[i+2] = y;
+                }
+                ctx.putImageData(imageData, 0, 0);
+            }
+
+            return {
+                rotation: rotation,
+                mode: mode,
+                canvas: canvas,
+                dataUrl: canvas.toDataURL('image/jpeg', 0.88)
+            };
+        }
+
+        async function buildSmartImageVariants(img) {
+            return [0, 90, 270, 180].map(rotation => drawSmartVariant(img, rotation, 'color'));
+        }
+
+        async function scanBarcodeCandidatesFromVariants(variants) {
+            const found = new Map();
+
+            // FAST BARCODE MODE: try full frame at 0/90 first.
+            const preferred = variants.filter(v => v.rotation === 0 || v.rotation === 90);
+
+            for (const variant of preferred) {
+                const regions = [
+                    variant,
+                    cropSmartRegion(variant, 0.00, 0.00, 1.00, 0.58, 'top'),
+                    cropSmartRegion(variant, 0.00, 0.42, 1.00, 0.58, 'bottom')
+                ];
+
+                for (const region of regions) {
+                    const values = await scanAllBarcodesFromImage(region.dataUrl);
+                    values.forEach(function(raw) {
+                        const value = String(raw || '').trim();
+                        if (!value) return;
+                        const current = found.get(value) || {
+                            value, hits: 0, rotations: [], regions: [], source: 'Barcode'
+                        };
+                        current.hits += 1;
+                        current.rotations.push(variant.rotation);
+                        current.regions.push(region.region || 'full');
+                        found.set(value, current);
+                    });
+
+                    // Barcode decoder result is authoritative; no need to scan every crop.
+                    if (found.size) return Array.from(found.values());
+                }
+            }
+            return Array.from(found.values());
+        }
+
+        async function scanAllBarcodesFromImage(dataUrl) {
+            const values = [];
+
+            if ('BarcodeDetector' in window) {
+                try {
+                    const detector = await createBarcodeDetector();
+                    if (detector) {
+                        const blob = await (await fetch(dataUrl)).blob();
+                        const bitmap = await createImageBitmap(blob);
+                        const codes = await detector.detect(bitmap);
+                        (codes || []).forEach(code => {
+                            if (code?.rawValue) values.push(code.rawValue);
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            if (!values.length && window.ZXing) {
+                try {
+                    const reader = new ZXing.BrowserMultiFormatReader();
+                    const img = new Image();
+                    img.src = dataUrl;
+                    await new Promise((resolve, reject) => {
+                        img.onload = resolve;
+                        img.onerror = reject;
+                    });
+                    const result = await reader.decodeFromImageElement(img);
+                    if (result?.getText()) values.push(result.getText());
+                } catch (e) {}
+            }
+
+            return Array.from(new Set(values.map(v => String(v).trim()).filter(Boolean)));
+        }
+
+
+        function cropSmartRegion(variant, xRatio, yRatio, wRatio, hRatio, label) {
+            const src = variant.canvas;
+            const x = Math.max(0, Math.round(src.width * xRatio));
+            const y = Math.max(0, Math.round(src.height * yRatio));
+            const w = Math.max(1, Math.min(src.width - x, Math.round(src.width * wRatio)));
+            const h = Math.max(1, Math.min(src.height - y, Math.round(src.height * hRatio)));
+
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(src, x, y, w, h, 0, 0, w, h);
+
+            return {
+                rotation: variant.rotation,
+                region: label || 'crop',
+                canvas: canvas,
+                dataUrl: canvas.toDataURL('image/jpeg', 0.92)
+            };
+        }
+
+        function buildBarcodeScanRegions(variant) {
+            // Full frame first, then common label zones.
+            return [
+                variant,
+                cropSmartRegion(variant, 0.00, 0.00, 1.00, 0.55, 'top'),
+                cropSmartRegion(variant, 0.00, 0.45, 1.00, 0.55, 'bottom'),
+                cropSmartRegion(variant, 0.00, 0.10, 0.62, 0.80, 'left'),
+                cropSmartRegion(variant, 0.38, 0.10, 0.62, 0.80, 'right'),
+                cropSmartRegion(variant, 0.18, 0.18, 0.64, 0.64, 'center')
+            ];
+        }
+
+        function normalizeTrackingOcrValue(value) {
+            let text = String(value == null ? '' : value)
+                .toUpperCase()
+                .replace(/[|]/g, 'I')
+                .replace(/[“”"'`]/g, '')
+                .trim();
+
+            // OCR often inserts spaces between characters printed below a barcode.
+            // Collapse spaces only for strings that otherwise look like Tracking IDs.
+            const compact = text.replace(/\s+/g, '');
+            if (/^[A-Z0-9._/#:+\-]{6,50}$/.test(compact) && /\d/.test(compact)) {
+                text = compact;
+            }
+
+            return text;
+        }
+
+        function isValidTrackingCandidate(item) {
+            const raw = typeof item === 'string' ? item : item?.value;
+            const value = normalizeTrackingOcrValue(raw);
+
+            if (!value || value.length < 6 || value.length > 100) return false;
+
+            // CRITICAL: Tracking candidate MUST contain at least one digit.
+            // This prevents Thai/English words from becoming Tracking IDs.
+            if (!/\d/.test(value)) return false;
+
+            // Reject common non-tracking parcel values.
+            if (/^\d{5}$/.test(value)) return false;                       // postcode
+            if (/^\d{1,3}(?:\.\d{1,3})?$/.test(value)) return false;      // weight/quantity
+            if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}$/.test(value)) return false; // date
+            if (/^\d{1,2}:\d{2}(?::\d{2})?$/.test(value)) return false;   // time
+            if (/@/.test(value)) return false;
+            if (/[ก-๙]/.test(value)) return false;                         // Tracking OCR should not contain Thai
+            if (!/^[A-Z0-9._/#:+\-]+$/i.test(value)) return false;
+
+            const digitCount = (value.match(/\d/g) || []).length;
+            if (digitCount < 4) return false;
+
+            return true;
+        }
+
+        async function getTrackingOcrWorker() {
+            if (trackingOcrWorker) return trackingOcrWorker;
+            if (trackingOcrWorkerPromise) return trackingOcrWorkerPromise;
+
+            trackingOcrWorkerPromise = (async function() {
+                const worker = await Tesseract.createWorker('eng', 1, {
+                    logger: function(m) {
+                        if (m.status === 'recognizing text') {
+                            const pct = Math.round((m.progress || 0) * 100);
+                            setScannerStatus('กำลังอ่านเลข Tracking ' + pct + '%', 'info');
+                        }
+                    }
+                });
+
+                await worker.setParameters({
+                    tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._/#:+',
+                    preserve_interword_spaces: '1',
+                    tessedit_pageseg_mode: '11'
+                });
+
+                trackingOcrWorker = worker;
+                return worker;
+            })();
+
+            try {
+                return await trackingOcrWorkerPromise;
+            } finally {
+                trackingOcrWorkerPromise = null;
+            }
+        }
+
+        function createTrackingOcrVariants(colorVariant) {
+            const img = colorVariant.canvas;
+            const variants = [];
+
+            function makeVariant(thresholdMode) {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(img, 0, 0);
+
+                const data = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const d = data.data;
+
+                let sum = 0;
+                for (let i = 0; i < d.length; i += 4) {
+                    sum += 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+                }
+                const avg = sum / Math.max(1, d.length / 4);
+
+                for (let i = 0; i < d.length; i += 4) {
+                    let y = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+
+                    if (thresholdMode === 'binary') {
+                        const threshold = Math.max(105, Math.min(205, avg * 0.92));
+                        y = y > threshold ? 255 : 0;
+                    } else {
+                        y = Math.max(0, Math.min(255, (y - 128) * 1.55 + 128));
+                    }
+
+                    d[i] = d[i+1] = d[i+2] = y;
+                }
+
+                ctx.putImageData(data, 0, 0);
+
+                return {
+                    rotation: colorVariant.rotation,
+                    mode: thresholdMode,
+                    canvas: canvas,
+                    dataUrl: canvas.toDataURL('image/png')
+                };
+            }
+
+            variants.push(makeVariant('contrast'));
+            variants.push(makeVariant('binary'));
+            return variants;
+        }
+
+        function extractTrackingFromDedicatedOcr(text, baseConfidence) {
+            const raw = String(text || '').toUpperCase();
+            const candidates = new Map();
+
+            function add(value, score) {
+                value = normalizeTrackingOcrValue(value);
+                const item = { value: value, score: score, source: 'Tracking OCR' };
+                if (!isValidTrackingCandidate(item)) return;
+
+                // Strong boosts for common postal/vendor shapes.
+                if (/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(value)) score += 18;
+                if (/^[A-Z]{1,6}\d{7,25}[A-Z]{0,4}$/.test(value)) score += 10;
+                if (/^\d{8,30}$/.test(value)) score += 7;
+
+                score = Math.max(0, Math.min(96, score));
+                const old = candidates.get(value);
+                if (!old || score > old.score) {
+                    candidates.set(value, { value: value, score: score, source: 'Tracking OCR' });
+                }
+            }
+
+            // UPU postal item, including OCR spaces: ET 3107 8580 5 TH
+            const upuLoose = raw.match(/[A-Z]{2}\s*(?:\d[\s]*){9}[A-Z]{2}/g) || [];
+            upuLoose.forEach(v => add(v, Math.max(78, baseConfidence)));
+
+            // Alphanumeric / numeric generic Tracking candidates.
+            const lines = raw.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
+            lines.forEach(function(line) {
+                const compactLine = line.replace(/\s+/g, '');
+
+                if (isValidTrackingCandidate({ value: compactLine })) {
+                    add(compactLine, Math.max(62, baseConfidence - 4));
+                }
+
+                const tokens = line.match(/[A-Z0-9][A-Z0-9._/#:+\-]{5,60}/g) || [];
+                tokens.forEach(v => add(v, Math.max(58, baseConfidence - 8)));
+            });
+
+            return Array.from(candidates.values()).sort((a,b) => b.score - a.score);
+        }
+
+        async function runTrackingOcrPasses(colorVariants) {
+            if (!window.Tesseract) return [];
+
+            const worker = await getTrackingOcrWorker();
+            const found = new Map();
+            const byRotation = new Map(colorVariants.map(v => [v.rotation, v]));
+
+            // Only 0° and 90°, one ROI each. Tracking OCR is a fallback, not the primary scanner.
+            for (const rotation of [0, 90]) {
+                const full = byRotation.get(rotation);
+                if (!full) continue;
+
+                const roi = cropSmartRegion(full, 0.05, 0.28, 0.90, 0.44, 'tracking-roi');
+                const processed = createTrackingOcrVariants(roi)[0];
+
+                try {
+                    const result = await worker.recognize(processed.dataUrl);
+                    const text = result?.data?.text || '';
+                    const confidence = Number(result?.data?.confidence || 0);
+
+                    extractTrackingFromDedicatedOcr(text, confidence)
+                        .filter(isValidTrackingCandidate)
+                        .forEach(function(item) {
+                            const old = found.get(item.value);
+                            if (!old || item.score > old.score) found.set(item.value, item);
+                        });
+
+                    if (Array.from(found.values()).some(x => x.score >= 82)) break;
+
+                } catch (err) {
+                    console.warn('Tracking OCR ROI failed', err);
+                }
+            }
+
+            return Array.from(found.values())
+                .sort((a,b) => b.score - a.score)
+                .slice(0, 6);
+        }
+
+        function rankBarcodeCandidates(items) {
+            return (items || []).map(function(item) {
+                const value = item.value;
+                let score = 65 + Math.min(18, (item.hits || 1) * 8);
+
+                if (/^[A-Z]{2}\d{9}[A-Z]{2}$/i.test(value)) score += 18;
+                if (/[A-Za-z]/.test(value) && /\d/.test(value)) score += 8;
+                if (/^\d{8,30}$/.test(value)) score += 4;
+                if (value.length < 6) score -= 25;
+                if (/^\d{5}$/.test(value)) score -= 30;
+
+                return {
+                    value: value,
+                    score: Math.max(0, Math.min(100, score)),
+                    source: 'Barcode',
+                    hits: item.hits || 1
+                };
+            }).sort((a,b) => b.score - a.score);
+        }
+
+        async function getParcelOcrWorker() {
+            if (parcelOcrWorker) return parcelOcrWorker;
+            if (parcelOcrWorkerPromise) return parcelOcrWorkerPromise;
+
+            parcelOcrWorkerPromise = (async function() {
+                const worker = await Tesseract.createWorker('tha+eng', 1, {
+                    logger: function(m) {
+                        if (m.status === 'recognizing text') {
+                            const pct = Math.round((m.progress || 0) * 100);
+                            setScannerStatus('กำลังอ่านข้อความ ' + pct + '%', 'info');
+                        }
+                    }
+                });
+
+                await worker.setParameters({
+                    preserve_interword_spaces: '1',
+                    tessedit_pageseg_mode: '6'
+                });
+
+                parcelOcrWorker = worker;
+                return worker;
+            })();
+
+            try {
+                return await parcelOcrWorkerPromise;
+            } finally {
+                parcelOcrWorkerPromise = null;
+            }
+        }
+
+
+        function recognizeParcelOcrQueued(dataUrl) {
+            const task = parcelOcrQueue.then(async function() {
+                const worker = await getParcelOcrWorker();
+                return worker.recognize(dataUrl);
+            });
+
+            parcelOcrQueue = task.catch(function() {});
+            return task;
+        }
+
+
+        async function runSmartOcrPasses(colorVariants) {
+            const order = [0, 90];
+            const byRotation = new Map(colorVariants.map(v => [v.rotation, v]));
+            let best = null;
+
+            for (let idx = 0; idx < order.length; idx++) {
+                const color = byRotation.get(order[idx]);
+                if (!color) continue;
+
+                setScannerStatus('กำลังอ่านชื่อและข้อมูลผู้รับ…', 'info');
+
+                try {
+                    const result = await recognizeParcelOcrQueued(color.dataUrl);
+
+                    const text = result?.data?.text?.trim() || '';
+                    const confidence = Number(result?.data?.confidence || 0);
+                    const lines = (result?.data?.lines || []).map(function(line) {
+                        return {
+                            text: String(line?.text || '').replace(/\s+/g, ' ').trim(),
+                            confidence: Number(line?.confidence || 0),
+                            bbox: line?.bbox || null
+                        };
+                    }).filter(line => line.text);
+
+                    const candidate = {
+                        text: text,
+                        confidence: confidence,
+                        lines: lines,
+                        score: scoreParcelOcrText(text, confidence, lines),
+                        rotation: order[idx],
+                        mode: 'persistent-client-worker',
+                        engine: 'Tesseract.js'
+                    };
+
+                    if (!best || candidate.score > best.score) best = candidate;
+
+                    // Good first pass = do not spend time rotating the same image again.
+                    if (candidate.score >= 62 || confidence >= 55) break;
+
+                } catch (err) {
+                    console.warn('General OCR pass failed', err);
+                }
+            }
+
+            return best || {
+                text: '',
+                confidence: 0,
+                lines: [],
+                score: 0,
+                rotation: 0,
+                mode: 'persistent-client-worker',
+                engine: 'Tesseract.js'
+            };
+        }
+
+        function scoreParcelOcrText(text, confidence, lines) {
+            if (!text) return 0;
+
+            let score = Math.max(0, Math.min(35, Number(confidence || 0) * 0.35));
+
+            [
+                /ชื่อและที่อยู่ผู้รับ|\/\s*TO/i,
+                /ชื่อและที่อยู่ผู้ฝาก|\/\s*FROM/i,
+                /THAILAND/i,
+                /POSTAGE/i,
+                /รหัสไปรษณีย์|POSTCODE/i,
+                /โทร|TEL|PHONE/i,
+                /กรุงเทพ|จังหวัด|อำเภอ|เขต|แขวง|ตำบล/i,
+                /บริษัท|จำกัด|มหาชน|แผนก/i
+            ].forEach(p => { if (p.test(text)) score += 6; });
+
+            const thaiCount = (text.match(/[ก-๙]/g) || []).length;
+            const digitCount = (text.match(/\d/g) || []).length;
+            const weirdCount = (text.match(/[^\sA-Za-z0-9ก-๙.,()\/\-:]/g) || []).length;
+            const charCount = Math.max(1, text.replace(/\s/g,'').length);
+
+            if (thaiCount >= 20) score += 9;
+            if (digitCount >= 8) score += 4;
+            if (text.split(/\r?\n/).filter(Boolean).length >= 4) score += 4;
+
+            // Penalize garbled OCR.
+            const weirdRatio = weirdCount / charCount;
+            if (weirdRatio > 0.08) score -= 12;
+            if (weirdRatio > 0.16) score -= 15;
+
+            const reliableLines = (lines || []).filter(x => Number(x.confidence || 0) >= 55);
+            if (reliableLines.length >= 2) score += 7;
+            if (reliableLines.length >= 4) score += 5;
+
+            return Math.max(0, Math.min(100, score));
+        }
+
+        // v5.9.10 — Requirement: Recipient Name/Phone/Postcode/Address OCR extraction removed
+        // entirely (not just hidden) — this used to run an expensive per-line Thai-text scoring
+        // pass on every single image even after a Barcode/QR Tracking was already found. Now this
+        // only ever detects Department (alias match) and Route (keyword match) — both cheap,
+        // single-pass regex checks — keeping Barcode → Tracking the fast, primary path.
+        function extractParcelFields(text, ocrLines) {
+            const raw = String(text || '');
+
+            const result = {
+                department: '',
+                departmentConfidence: 0,
+                route: '',
+                overallConfidence: 0
+            };
+
+            // DEPARTMENT
+            const normalizedRaw = raw.toLowerCase().replace(/\s+/g, '');
+            const aliases = {
+                'ซองสัญญา':['ซองสัญญา'],
+                'นายหน้าประกันภัย':['นายหน้าประกันภัย'],
+                'ปฏิบัติการประกันภัย':['ปฏิบัติการประกันภัย','operationinsurance'],
+                'ทะเบียน':['ทะเบียน'],
+                'บุคคล':['ฝ่ายบุคคล','แผนกบุคคล','humanresource'],
+                'บัญชี':['ฝ่ายบัญชี','แผนกบัญชี','accounting'],
+                'BSCS':['bscs'],'BDSM':['bdsm'],'CLD':['cld'],
+                'Audit':['audit','ฝ่ายตรวจสอบ'],
+                'Fraud':['fraud','ทุจริต'],
+                'CRD':['crd'],
+                'กำกับธุรกรรม':['กำกับธุรกรรม'],
+                'Legal':['legal','ฝ่ายกฎหมาย'],
+                'CAS':['cas'],
+                'MKT':['mkt','marketing','ฝ่ายการตลาด'],
+                'Falcon':['falcon'],
+                'IT':['informationtechnology','เทคโนโลยีสารสนเทศ','ฝ่ายit','แผนกit'],
+                'จัดซื้อ':['จัดซื้อ','procurement'],
+                'MD':['md'],'CS':['cs'],'DB':['db'],
+                'A&D':['a&d'],
+                'HeyGoody':['heygoody']
+            };
+
+            let deptBest = null;
+
+            Object.keys(aliases).forEach(function(dept) {
+                aliases[dept].forEach(function(alias) {
+                    const a = alias.toLowerCase().replace(/\s+/g,'');
+
+                    // Avoid ambiguous 2-letter matches inside ordinary words.
+                    if (a.length <= 2) {
+                        const tokenRegex = new RegExp('(^|[^a-z])' + a.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-z]|$)', 'i');
+                        if (!tokenRegex.test(raw)) return;
+                    } else if (!normalizedRaw.includes(a)) {
+                        return;
+                    }
+
+                    const score = Math.min(96, 74 + Math.min(18, a.length));
+                    if (!deptBest || score > deptBest.score) {
+                        deptBest = { dept: dept, score: score };
+                    }
+                });
+            });
+
+            if (deptBest) {
+                result.department = deptBest.dept;
+                result.departmentConfidence = deptBest.score;
+            }
+
+            // ROUTE — canonical values match the Key In dropdown ("Ari Hills" / "BTSVP").
+            if (/BTS\s*TOWER|BTSVP|บีทีเอส\s*ทาวเวอร์/i.test(raw)) {
+                result.route = 'BTSVP';
+            } else if (/ARI\s*HILL(S)?|อารีย์\s*ฮิล/i.test(raw)) {
+                result.route = 'Ari Hills';
+            }
+
+            const conf = [];
+            if (result.department) conf.push(result.departmentConfidence);
+
+            result.overallConfidence = conf.length
+                ? Math.round(conf.reduce((a,b)=>a+b,0) / conf.length)
+                : 0;
+
+            return result;
+        }
+
+        function setFieldSmartState(id, confidence) {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            el.classList.remove('ring-2','ring-amber-300','ring-emerald-300','bg-amber-50','bg-emerald-50');
+
+            if (confidence >= 80) {
+                el.classList.add('ring-2','ring-emerald-300','bg-emerald-50');
+            } else if (confidence > 0) {
+                el.classList.add('ring-2','ring-amber-300','bg-amber-50');
+            }
+        }
+
+        // v5.9.10 — Requirement: Recipient Name/Phone/Postcode/Address removed from Key In —
+        // Smart Capture now only ever auto-fills Department/Route, never runs recipient OCR at all
+        // (see extractParcelFields()/analyzeEvidenceOcr() for the matching Backend-side reduction).
+        function applySmartParcelFields(fields) {
+            if (!fields) return;
+
+            const dept = document.getElementById('keyin-dept');
+            const route = document.getElementById('keyin-route');
+
+            if (fields.department && dept && !dept.value) {
+                dept.value = fields.department;
+                setFieldSmartState('keyin-dept', fields.departmentConfidence);
+            }
+            if (fields.route && route && !route.value) {
+                route.value = fields.route;
+                setFieldSmartState('keyin-route', 92);
+                onKeyInRouteChange();
+            }
+
+            setupOcrTapToFill();
+        }
+
+        function renderSmartCaptureResult(data) {
+            document.getElementById('ocr-result-box')?.classList.remove('hidden');
+
+            const tracking = data?.tracking || null;
+            const f = data?.fields || {};
+
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value || '-';
+            };
+
+            setText(
+                'smart-tracking-value',
+                tracking
+                    ? tracking.value + (tracking.source ? ' • ' + tracking.source : '')
+                    : 'ยังไม่พบ Tracking ที่น่าเชื่อถือ'
+            );
+            setText('smart-route-value', f.route || '-');
+            setText('smart-department-value', f.department || '-');
+
+            const tc = document.getElementById('smart-tracking-confidence');
+            if (tc) tc.textContent = tracking ? Math.round(tracking.score) + '%' : '-';
+
+            const vals = [];
+            if (tracking) vals.push(tracking.score);
+            if (f.overallConfidence) vals.push(f.overallConfidence);
+            const overall = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0)/vals.length) : 0;
+
+            const oe = document.getElementById('smart-overall-confidence');
+            if (oe) {
+                oe.textContent = overall ? 'Confidence ' + overall + '%' : 'ตรวจสอบข้อมูล';
+                oe.className = 'text-[10px] font-black px-2.5 py-1 rounded-full ' +
+                    (overall >= 82 ? 'bg-emerald-100 text-emerald-700' :
+                     overall >= 60 ? 'bg-amber-100 text-amber-700' :
+                     'bg-rose-100 text-rose-700');
+            }
+
+            // Requirement: review prompt now only cares whether Tracking itself is confident —
+            // Recipient/Phone/Postcode/Address no longer factor into "needs review" at all.
+            const needsReview = (
+                !tracking ||
+                (data?.trackingCandidates?.length > 1 && data.trackingCandidates[1].score >= (tracking?.score || 0) - 10)
+            );
+
+            document.getElementById('smart-review-note')?.classList.toggle('hidden', !needsReview);
+
+            const status = document.getElementById('smart-capture-status');
+            if (status) {
+                status.textContent = needsReview
+                    ? 'ระบบเติมข้อมูลให้แล้ว กรุณาตรวจเฉพาะช่องที่ไฮไลต์'
+                    : 'ข้อมูลสำคัญถูกตรวจพบและเติมลงแบบฟอร์มแล้ว';
+            }
+
+            const raw = document.getElementById('ocr-raw-text');
+            if (raw) raw.textContent = data?.ocr?.text || '';
+        }
+
+        async function scanBarcodeFromImage(dataUrl) {
+            if ('BarcodeDetector' in window) {
+                try {
+                    const detector = await createBarcodeDetector();
+                    if (!detector) throw new Error('BarcodeDetector unavailable');
+                    const blob = await (await fetch(dataUrl)).blob();
+                    const bitmap = await createImageBitmap(blob);
+                    const codes = await detector.detect(bitmap);
+                    if (codes && codes.length) return codes[0].rawValue || '';
+                } catch (e) {}
+            }
+            if (window.ZXing) {
+                try {
+                    const reader = new ZXing.BrowserMultiFormatReader();
+                    const img = new Image();
+                    img.src = dataUrl;
+                    await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
+                    const result = await reader.decodeFromImageElement(img);
+                    return result ? result.getText() : '';
+                } catch (e) {}
+            }
+            return '';
+        }
+
+        function applyDetectedTracking(value, source) {
+            const tracking = String(value == null ? '' : value).trim();
+            if (!tracking) return;
+
+            const input = document.getElementById('keyin-tracking');
+            if (input && (!input.value.trim() || source === 'Barcode' || source === 'QR')) {
+                input.value = tracking;
+                input.dataset.source = source || '';
+            }
+
+            updateOcrSummary();
+        }
+
+        function cleanOcrCandidate(value) {
+            return String(value || '')
+                .trim()
+                .replace(/^[\s"'`([{<]+/, '')
+                .replace(/[\s"'`\])}>.,;:]+$/, '')
+                .trim();
+        }
+
+        function extractGenericTrackingCandidates(text) {
+            if (!text) return [];
+
+            const candidateMap = new Map();
+            const rawText = String(text || '').toUpperCase();
+
+            function addCandidate(raw, score) {
+                const value = normalizeTrackingOcrValue(raw);
+                const item = { value: value, score: score, source: 'OCR Fallback' };
+
+                if (!isValidTrackingCandidate(item)) return;
+
+                if (/^[A-Z]{2}\d{9}[A-Z]{2}$/.test(value)) score += 16;
+                if (/^[A-Z]{1,6}\d{7,25}[A-Z]{0,4}$/.test(value)) score += 9;
+                if (/^\d{8,30}$/.test(value)) score += 6;
+
+                const old = candidateMap.get(value);
+                if (!old || score > old.score) {
+                    candidateMap.set(value, {
+                        value: value,
+                        score: Math.max(0, Math.min(80, score)),
+                        source: 'OCR Fallback'
+                    });
+                }
+            }
+
+            // UPU-style postal Tracking with spaces created by OCR.
+            const upuMatches = rawText.match(/[A-Z]{2}\s*(?:\d[\s]*){9}[A-Z]{2}/g) || [];
+            upuMatches.forEach(v => addCandidate(v, 64));
+
+            rawText.split(/\r?\n/).forEach(function(line) {
+                const compact = line.replace(/\s+/g, '');
+                if (isValidTrackingCandidate({ value: compact })) {
+                    addCandidate(compact, 52);
+                }
+
+                const tokens = line.match(/[A-Z0-9][A-Z0-9._/#:+\-]{5,60}/g) || [];
+                tokens.forEach(v => addCandidate(v, 48));
+            });
+
+            return Array.from(candidateMap.values())
+                .sort((a,b) => b.score - a.score)
+                .slice(0, 8);
+        }
+
+        function renderOcrTrackingCandidates(candidates) {
+            const wrap = document.getElementById('ocr-tracking-candidates');
+            const list = document.getElementById('ocr-tracking-candidate-list');
+            if (!wrap || !list) return;
+
+            if (!candidates || candidates.length <= 1) {
+                wrap.classList.add('hidden');
+                list.innerHTML = '';
+                return;
+            }
+
+            list.innerHTML = candidates.map(function(item) {
+                const value = item.value || '';
+                const score = Math.round(Number(item.score || 0));
+                const source = item.source || 'OCR';
+
+                return '<button type="button" data-tracking="' + encodeURIComponent(value) + '" ' +
+                    'onclick="selectOcrTrackingCandidate(this)" ' +
+                    'class="max-w-full break-all px-2.5 py-2 rounded-lg bg-white border border-indigo-200 text-indigo-700 text-[10px] font-bold hover:bg-indigo-50">' +
+                    escapeHtml(value) +
+                    '<span class="ml-1 text-slate-400">(' + escapeHtml(source) + (score ? ' ' + score + '%' : '') + ')</span></button>';
+            }).join('');
+
+            wrap.classList.remove('hidden');
+        }
+
+        function selectOcrTrackingCandidate(button) {
+            const value = decodeURIComponent(button.getAttribute('data-tracking') || '');
+            if (!value) return;
+
+            applyDetectedTracking(value, 'OCR');
+            showSystemToast('เลือก Tracking จาก OCR แล้ว กรุณาตรวจสอบก่อนบันทึก', 'info');
+        }
+
+        function applyOcrData(text) {
+            if (!text) return;
+
+            const fields = extractParcelFields(text);
+            applySmartParcelFields(fields);
+            latestOcrText = text;
+
+            const raw = document.getElementById('ocr-raw-text');
+            if (raw) raw.textContent = text;
+
+            updateOcrSummary();
+        }
+
+        function updateOcrSummary() {
+            const summary = document.getElementById('ocr-summary');
+            if (!summary) return;
+            const tracking = document.getElementById('keyin-tracking')?.value || '-';
+            summary.textContent = `Tracking: ${tracking}`;
+        }
+
+        function toggleOcrRawText() {
+            document.getElementById('ocr-raw-text')?.classList.toggle('hidden');
+        }
+
+
+        // v5.9.10 — Requirement: OCR now targets Tracking ID only (plus Department/Route tap-to-fill
+        // assist) — Recipient Name/Phone/Postcode/Address extraction was removed entirely along
+        // with the fields themselves, so general Thai-text OCR no longer runs on every image.
+        const OCR_FIELD_CONFIG = {
+            'keyin-tracking': { label: 'Tracking ID', type: 'tracking' },
+            'keyin-dept': { label: 'Department / แผนกผู้รับ', type: 'department' },
+            'keyin-route': { label: 'Route / เส้นทาง', type: 'route' }
+        };
+
+        function setupOcrTapToFill() {
+            Object.keys(OCR_FIELD_CONFIG).forEach(function(id) {
+                const field = document.getElementById(id);
+                if (!field || field.dataset.ocrTapReady === '1') return;
+                field.dataset.ocrTapReady = '1';
+
+                // OCR must be an assistive/opt-in helper only — it must NEVER hijack a click or
+                // focus into the field. Users can always tap the field and type immediately.
+                // The explicit "ใช้ข้อมูล OCR" button below is the ONLY way to open the picker.
+
+                // Add explicit OCR button for every field; especially useful for SELECT fields.
+                const wrapper = field.closest('div');
+                if (wrapper && !wrapper.querySelector('[data-ocr-button-for="' + id + '"]')) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.dataset.ocrButtonFor = id;
+                    button.className = 'mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-800 active:scale-[0.98]';
+                    button.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i><span>ใช้ข้อมูล OCR</span>';
+                    button.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        openOcrFieldPicker(id);
+                    });
+                    wrapper.appendChild(button);
+                }
+            });
+        }
+
+        function getUsefulOcrLines() {
+            const text = String(latestOcrText || '');
+            const seen = new Set();
+            const result = [];
+
+            text.split(/\r?\n/).forEach(function(raw) {
+                const line = String(raw || '')
+                    .replace(/[|_=~]{2,}/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                if (!line || line.length < 2 || line.length > 160) return;
+                const key = line.toLowerCase();
+                if (seen.has(key)) return;
+
+                // Avoid obvious OCR noise.
+                const visibleChars = (line.match(/[A-Za-z0-9ก-๙]/g) || []).length;
+                if (visibleChars < Math.min(3, line.length)) return;
+
+                seen.add(key);
+                result.push(line);
+            });
+
+            return result.slice(0, 40);
+        }
+
+        function candidateObject(value, source, score, hint) {
+            value = String(value == null ? '' : value).trim();
+            if (!value) return null;
+            return {
+                value: value,
+                source: source || 'OCR',
+                score: Number(score || 0),
+                hint: hint || ''
+            };
+        }
+
+        function uniqueOcrCandidates(items) {
+            const map = new Map();
+            (items || []).forEach(function(item) {
+                if (!item || !item.value) return;
+                const key = item.value.trim().toLowerCase();
+                const old = map.get(key);
+                if (!old || Number(item.score || 0) > Number(old.score || 0)) {
+                    map.set(key, item);
+                }
+            });
+            return Array.from(map.values())
+                .sort(function(a,b) { return Number(b.score || 0) - Number(a.score || 0); })
+                .slice(0, 24);
+        }
+
+        function buildOcrCandidatesForField(fieldId) {
+            const cfg = OCR_FIELD_CONFIG[fieldId];
+            if (!cfg) return [];
+
+            const smart = latestSmartCapture || {};
+            const fields = smart.fields || {};
+            const rawLines = getUsefulOcrLines();
+            const candidates = [];
+
+            if (cfg.type === 'tracking') {
+                (smart.trackingCandidates || [])
+                    .filter(isValidTrackingCandidate)
+                    .forEach(function(item) {
+                        candidates.push(candidateObject(
+                            item.value,
+                            item.source || 'Barcode/OCR',
+                            item.score || 0,
+                            item.source === 'Barcode'
+                                ? 'อ่านจาก Barcode / QR โดยตรง'
+                                : 'ตรวจพบจาก OCR สำหรับ Tracking'
+                        ));
+                    });
+            }
+
+            if (cfg.type === 'department') {
+                candidates.push(candidateObject(fields.department, 'Smart Extract', fields.departmentConfidence || 0, 'จับคู่กับ Master Department'));
+                const sourceText = (latestOcrText || '').toLowerCase().replace(/\s+/g,'');
+                SMART_DEPARTMENTS.forEach(function(dept) {
+                    const key = dept.toLowerCase().replace(/\s+/g,'');
+                    if (key.length >= 2 && sourceText.includes(key)) {
+                        candidates.push(candidateObject(dept, 'Department Match', 82, 'พบชื่อแผนกในหน้าพัสดุ'));
+                    }
+                });
+            }
+
+            if (cfg.type === 'route') {
+                candidates.push(candidateObject(fields.route, 'Smart Extract', fields.route ? 92 : 0, 'ตรวจพบสถานที่จากหน้าพัสดุ'));
+                const raw = latestOcrText || '';
+                if (/BTS\s*TOWER|BTSVP|บีทีเอส\s*ทาวเวอร์/i.test(raw)) {
+                    candidates.push(candidateObject('BTSVP', 'Route Match', 92, 'พบ BTSVP'));
+                }
+                if (/ARI\s*HILL(S)?|อารีย์\s*ฮิล/i.test(raw)) {
+                    candidates.push(candidateObject('Ari Hills', 'Route Match', 92, 'พบ Ari Hills'));
+                }
+            }
+
+            return uniqueOcrCandidates(candidates.filter(Boolean));
+        }
+
+        function openOcrFieldPicker(fieldId) {
+            const cfg = OCR_FIELD_CONFIG[fieldId];
+            if (!cfg) return;
+
+            const picker = document.getElementById('ocr-field-picker');
+            const list = document.getElementById('ocr-picker-list');
+            const title = document.getElementById('ocr-picker-title');
+            const subtitle = document.getElementById('ocr-picker-subtitle');
+            if (!picker || !list) return;
+
+            activeOcrTargetField = fieldId;
+            if (title) title.textContent = 'เลือกข้อมูลสำหรับ ' + cfg.label;
+            if (subtitle) subtitle.textContent = 'แตะ Candidate ที่ถูกต้องเพื่อเติมลงช่องทันที';
+
+            const candidates = buildOcrCandidatesForField(fieldId);
+
+            if (!candidates.length) {
+                list.innerHTML =
+                    '<div class="py-8 px-4 text-center">' +
+                    '<i class="fa-solid fa-magnifying-glass text-2xl text-slate-300"></i>' +
+                    '<p class="text-sm font-bold text-slate-600 mt-3">ยังไม่มี Candidate ที่เหมาะกับช่องนี้</p>' +
+                    '<p class="text-xs text-slate-400 mt-1">ถ่ายภาพใหม่ให้ข้อความชัดขึ้น หรือสามารถพิมพ์ข้อมูลเองได้ตามปกติ</p>' +
+                    '</div>';
+            } else {
+                list.innerHTML = candidates.map(function(item, index) {
+                    const confidence = Math.round(Number(item.score || 0));
+                    const badgeClass = confidence >= 80
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : confidence >= 60
+                        ? 'bg-amber-100 text-amber-700'
+                        : 'bg-slate-200 text-slate-600';
+
+                    return '<button type="button" data-ocr-picker-index="' + index + '" ' +
+                        'class="w-full text-left bg-white border border-slate-200 rounded-2xl p-3.5 hover:border-indigo-300 hover:shadow-sm active:scale-[0.99] transition">' +
+                        '<div class="flex items-start justify-between gap-3">' +
+                            '<div class="min-w-0 flex-1">' +
+                                '<p class="text-sm font-black text-slate-800 break-words">' + escapeHtml(item.value) + '</p>' +
+                                '<p class="text-[10px] text-slate-400 mt-1">' + escapeHtml(item.source + (item.hint ? ' • ' + item.hint : '')) + '</p>' +
+                            '</div>' +
+                            (confidence
+                                ? '<span class="text-[10px] font-black px-2 py-1 rounded-full shrink-0 ' + badgeClass + '">' + confidence + '%</span>'
+                                : '') +
+                        '</div>' +
+                    '</button>';
+                }).join('');
+
+                list.querySelectorAll('[data-ocr-picker-index]').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        const index = Number(button.dataset.ocrPickerIndex);
+                        const item = candidates[index];
+                        if (item) assignOcrCandidateToField(fieldId, item.value);
+                    });
+                });
+            }
+
+            picker.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function assignOcrCandidateToField(fieldId, value) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+
+            const text = String(value == null ? '' : value).trim();
+            if (!text) return;
+
+            if (field.tagName === 'SELECT') {
+                const exactOption = Array.from(field.options).find(function(option) {
+                    return option.value === text || option.text.trim() === text;
+                });
+
+                if (!exactOption) {
+                    showSystemToast('ข้อมูล OCR นี้ไม่ตรงกับตัวเลือกของระบบ กรุณาเลือกจากรายการ', 'error');
+                    return;
+                }
+
+                field.value = exactOption.value;
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                field.value = text;
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            setFieldSmartState(fieldId, 85);
+            updateOcrSummary();
+            closeOcrFieldPicker();
+            showSystemToast('เติมข้อมูลจาก OCR แล้ว • ' + (OCR_FIELD_CONFIG[fieldId]?.label || 'Field'), 'success');
+        }
+
+        function closeOcrFieldPicker() {
+            const picker = document.getElementById('ocr-field-picker');
+            const fieldToRefocus = activeOcrTargetField;
+
+            if (picker) picker.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            activeOcrTargetField = '';
+
+            // Requirement 2: closing OCR must hand control straight back to manual typing —
+            // no lingering overlay, no scroll lock, and (where sensible) focus returns to the
+            // field the user was working on so the on-screen keyboard reappears normally.
+            if (fieldToRefocus) {
+                const field = document.getElementById(fieldToRefocus);
+                if (field && field.tagName !== 'SELECT') {
+                    setTimeout(function() { field.focus(); }, 0);
+                }
+            }
+        }
+
+        function renderImagePreviews() {
+            const container = document.getElementById('image-preview-container');
+            if (!container) return;
+            container.innerHTML = '';
+            capturedImages.forEach((imgSrc, index) => {
+                const imgWrap = document.createElement('div');
+                imgWrap.className = 'relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-slate-200 bg-white';
+                imgWrap.innerHTML = `<button type="button" onclick="openParcelImage(${index})" class="block w-full h-full cursor-zoom-in" aria-label="เปิดดูรูปพัสดุ"><img src="${imgSrc}" class="w-full h-full object-cover" alt="Parcel image ${index + 1}"></button><button type="button" onclick="removeImage(${index})" class="absolute top-1 right-1 bg-rose-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[9px]"><i class="fa-solid fa-xmark"></i></button>`;
+                container.appendChild(imgWrap);
+            });
+            const count = document.getElementById('photo-count');
+            if (count) count.innerText = `${capturedImages.length} แนบแล้ว`;
+        }
+
+        function removeImage(index) { capturedImages.splice(index, 1); renderImagePreviews(); }
+
+
+        function setKeyInSaving(isSaving) {
+            const button = document.getElementById('keyin-save-btn');
+            if (!button) return;
+            button.disabled = !!isSaving;
+            button.classList.toggle('opacity-60', !!isSaving);
+            button.classList.toggle('cursor-wait', !!isSaving);
+            if (isSaving) {
+                button.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังบันทึกและ Sync...';
+            } else {
+                // Requirement 3: the resting label always reflects current Batch state — never a
+                // stale cached string — so it correctly shows "บันทึกรายการที่ X / N" once active.
+                renderBatchProgressUI();
+            }
+        }
+
+        // v5.9.10 — Performance Optimization #1: saveKeyIn() already computes and returns the
+        // full workflow snapshot (`res.sync`, `res.operationsRequired`, `res.esignReady`) in its
+        // ONE response — this derives the Frontend's readiness flags directly from that, with
+        // ZERO extra network round trip (previously called verifyWorkflowModules() again here).
+        function deriveWorkflowResultsFromSave(res) {
+            latestSavedTracking = res.trackingId || '';
+            latestSavedDepartment = res.sync && res.sync.department ? res.sync.department : latestSavedDepartment;
+
+            const sync = res.sync || {};
+            const results = {
+                track: !!sync.trackReady,
+                esign: !!(res.esignReady != null ? res.esignReady : sync.esignReady),
+                operations: !!sync.operationsReady,
+                operationsRequired: res.operationsRequired != null ? !!res.operationsRequired : !!sync.operationsRequired,
+                dashboard: !!sync.dashboardReady,
+                report: !!sync.reportReady
+            };
+
+            // Force E-Sign page to fetch the newly-saved KeyIn record on next open.
+            esignQueueLoadedAt = 0;
+            esignQueueAllItems = [];
+            // Part 3/9 (v5.9.18): Dashboard is NOT refreshed here — this function runs after
+            // EVERY Key In save, including every item inside a 100-Tracking Batch session, which
+            // previously meant up to 100 unnecessary Dashboard API calls in one Batch. Dashboard
+            // already fetches fresh data unconditionally the moment navigateTo('dashboard') runs.
+
+            return results;
+        }
+
+        function showWorkflowSyncToast(sync, trackingId) {
+            if (!sync) {
+                showSystemToast('บันทึกสำเร็จ • ' + trackingId, 'success');
+                return;
+            }
+
+            const ready = [
+                sync.trackReady,
+                sync.operationsReady,
+                sync.esignReady,
+                sync.reportReady,
+                sync.dashboardReady
+            ].filter(Boolean).length;
+
+            if (ready >= 5) {
+                showSystemToast('บันทึกและ Sync สำเร็จทุก Module • ' + trackingId, 'success');
+            } else {
+                showSystemToast('บันทึกสำเร็จ • Sync พร้อมใช้ ' + ready + '/5 Module', ready >= 3 ? 'info' : 'error');
+            }
+        }
+
+        /** ===================== RECIPIENT MASTER (Requirement 1) ===================== **/
+        // v5.9.10 — Requirement: Key In no longer has a Recipient Name field, so this is no
+        // longer auto-loaded on page open (see navigateTo()). The function itself, and the
+        // RecipientMaster Sheet / Backend API, are intentionally kept intact for potential
+        // reuse elsewhere — only the Key In autocomplete UI that consumed it has been removed.
+        async function loadRecipientMaster(forceRefresh) {
+            if (!requireGas() || !getAuthToken()) return;
+            // Loaded once per session unless forced — never re-fetch per keystroke.
+            if (!forceRefresh && recipientMasterItems.length && (Date.now() - recipientMasterLoadedAt) < 10 * 60 * 1000) return;
+
+            try {
+                const res = await apiCall('getRecipientMaster', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดรายชื่อผู้รับไม่สำเร็จ');
+                recipientMasterItems = Array.isArray(res.items) ? res.items : [];
+                recipientMasterLoadedAt = Date.now();
+            } catch (err) {
+                console.warn('loadRecipientMaster:', normalizeError(err));
+                recipientMasterItems = [];
+            }
+        }
+
+        /** ===================== BATCH KEY IN MODE (v5.9.6) ===================== **/
+        // Business rule: 1 Tracking ID = 1 Document = 1 KeyIn Row = 1 item in Operations/E-Sign/Track.
+        // Quantity > 1 means "how many separate Tracking Documents to enter in this session" —
+        // it NEVER means "how many physical pieces share one Tracking". Each item is saved to the
+        // Backend individually and verified before the UI advances (Requirement 7).
+
+        /** ===================== 2-STEP WIZARD (v5.9.14) ===================== **/
+        // Presentation-only. Same DOM fields, same collectKeyInPayload()/saveKeyIn() as before —
+        // this just controls which half of the existing form is visible at any moment.
+
+        function showKeyInStep(step) {
+            keyInCurrentStep = step;
+            document.getElementById('keyin-step-1')?.classList.toggle('hidden', step !== 1);
+            document.getElementById('keyin-step-2')?.classList.toggle('hidden', step !== 2);
+            document.getElementById('keyin-step-1-footer')?.classList.toggle('hidden', step !== 1);
+            document.getElementById('keyin-step-2-footer')?.classList.toggle('hidden', step !== 2);
+
+            const badge1 = document.getElementById('keyin-step-badge-1');
+            const badge2 = document.getElementById('keyin-step-badge-2');
+            const ind1 = document.getElementById('keyin-step-indicator-1');
+            const ind2 = document.getElementById('keyin-step-indicator-2');
+            const label = document.getElementById('keyin-step-label');
+
+            if (step === 1) {
+                if (badge1) { badge1.textContent = '1'; badge1.className = 'w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0'; }
+                if (badge2) { badge2.textContent = '2'; badge2.className = 'w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0'; }
+                if (ind1) ind1.className = 'text-xs font-bold text-indigo-600';
+                if (ind2) ind2.className = 'text-xs font-bold text-slate-400';
+                if (label) label.textContent = 'ขั้นตอนที่ 1 จาก 2 — เลือกอาคาร ผู้ส่ง และแผนก';
+            } else {
+                if (badge1) { badge1.innerHTML = '<i class="fa-solid fa-check"></i>'; badge1.className = 'w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold shrink-0'; }
+                if (badge2) { badge2.textContent = '2'; badge2.className = 'w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0'; }
+                if (ind1) ind1.className = 'text-xs font-bold text-emerald-600';
+                if (ind2) ind2.className = 'text-xs font-bold text-indigo-600';
+                if (label) label.textContent = 'ขั้นตอนที่ 2 จาก 2 — สแกน Tracking และถ่ายรูปเอกสาร';
+            }
+
+            // Long form on mobile — keep the user oriented at the top of the card, not stranded
+            // mid-scroll on the field that used to be further down the old single-page layout.
+            document.getElementById('page-keyin')?.scrollIntoView({ block: 'start' });
+        }
+
+        // Only the fields that actually live in Step 1 — never calls the Backend.
+        function validateKeyInStep1() {
+            const route = document.getElementById('keyin-route')?.value || '';
+            const sender = document.getElementById('keyin-sender')?.value.trim() || '';
+            const department = document.getElementById('keyin-dept')?.value || '';
+
+            if (!route) { showSystemToast('กรุณาเลือกเส้นทาง', 'error'); return false; }
+            if (!sender) { showSystemToast('กรุณาระบุชื่อผู้ส่งเอกสาร', 'error'); return false; }
+            if (!department) { showSystemToast('กรุณาเลือกแผนกผู้รับ', 'error'); return false; }
+            return true;
+        }
+
+        function goToKeyInNextStep() {
+            if (!validateKeyInStep1()) return; // Frontend-only check — never apiCall()/saveKeyIn() here.
+            showKeyInStep(2);
+            // Lazy: only focuses the Tracking field — Camera/Scanner/OCR still don't start until
+            // the user explicitly taps "เปิดกล้องสแกนพัสดุ" (Requirement: Camera Performance).
+            setTimeout(function() { document.getElementById('keyin-tracking')?.focus(); }, 60);
+        }
+
+        function goToKeyInPreviousStep() {
+            // No data is cleared — Step 1's fields (Route/Sender/Department/Qty) and Step 2's
+            // in-progress Tracking/Evidence all remain exactly as the user left them.
+            showKeyInStep(1);
+        }
+
+        function resetKeyInWizard() {
+            showKeyInStep(1);
+        }
+
+        // v5.9.10 — Requirement 3: purely informational — Route decides the actual workflow
+        // server-side inside saveKeyIn(); this only keeps the on-screen hint in sync so the user
+        // understands what will happen next (Backend is the source of truth, never the Frontend).
+        function onKeyInRouteChange() {
+            const route = document.getElementById('keyin-route')?.value || '';
+            const hint = document.getElementById('keyin-route-hint');
+            if (!hint) return;
+
+            if (route === 'Ari Hills') {
+                hint.textContent = 'Ari Hills = นำส่งภายในอาคาร — เอกสารจะพร้อมสำหรับ E-Sign ทันทีหลัง Key In (ข้าม Operations Control)';
+                hint.className = 'text-[10px] text-emerald-600 font-bold mt-1.5';
+            } else if (route === 'BTSVP') {
+                hint.textContent = 'BTSVP = ต้องผ่าน Operations Control (Dispatch → Confirm Arrival) ก่อนจึงเข้าสู่ E-Sign ได้';
+                hint.className = 'text-[10px] text-amber-600 font-bold mt-1.5';
+            } else {
+                hint.textContent = 'Ari Hills = นำส่งภายในอาคาร พร้อมเซ็นรับทันทีหลัง Key In • BTSVP = ต้องผ่าน Operations Control (Dispatch → Confirm Arrival) ก่อนจึงเซ็นรับได้';
+                hint.className = 'text-[10px] text-slate-400 mt-1.5';
+            }
+        }
+
+        function onKeyInQtyChange() {
+            const qty = getKeyInQty();
+
+            if (qty <= 1) {
+                // Dropping back to 1: if nothing has been saved yet, just exit Batch Mode quietly.
+                if (batchActive && batchSavedCount > 0) {
+                    const proceed = confirm(
+                        'คุณบันทึกสำเร็จแล้ว ' + batchSavedCount + ' จาก ' + batchTotal + ' รายการ\n' +
+                        'ต้องการยกเลิก Batch ที่เหลือหรือไม่? (รายการที่บันทึกแล้วจะยังอยู่ใน Google Sheet)'
+                    );
+                    if (!proceed) {
+                        document.getElementById('keyin-qty').value = batchTotal;
+                        return;
+                    }
+                }
+                resetBatchState();
+                renderBatchProgressUI();
+                return;
+            }
+
+            if (!batchActive) {
+                startBatchMode(qty);
+            } else {
+                // Adjusting batch size mid-batch — never allow shrinking below what's already saved.
+                batchTotal = Math.max(qty, batchSavedCount, 1);
+                renderBatchProgressUI();
+            }
+        }
+
+        function startBatchMode(qty) {
+            batchActive = true;
+            batchTotal = qty;
+            batchSavedCount = 0;
+            batchCurrentIndex = 1;
+            batchSavedTrackingIds = [];
+            batchId = 'KEYIN-' + Utilities_formatBatchDate() + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+            renderBatchProgressUI();
+        }
+
+        function Utilities_formatBatchDate() {
+            const d = new Date();
+            const pad = function(n) { return String(n).padStart(2, '0'); };
+            return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes());
+        }
+
+        function resetBatchState() {
+            batchActive = false;
+            batchTotal = 1;
+            batchSavedCount = 0;
+            batchCurrentIndex = 1;
+            batchSavedTrackingIds = [];
+            batchId = '';
+        }
+
+        function renderBatchProgressUI() {
+            const sticky = document.getElementById('keyin-batch-sticky');
+            const card = document.getElementById('batch-progress-card');
+            const saveBtn = document.getElementById('keyin-save-btn');
+            const remaining = Math.max(0, batchTotal - batchSavedCount);
+
+            if (!batchActive) {
+                sticky?.classList.add('hidden');
+                card?.classList.add('hidden');
+                if (saveBtn) saveBtn.innerHTML = 'บันทึกข้อมูลเข้าระบบ';
+                return;
+            }
+
+            sticky?.classList.remove('hidden');
+            card?.classList.remove('hidden');
+
+            const stickyText = 'รายการ ' + batchCurrentIndex + '/' + batchTotal + ' | บันทึกแล้ว ' + batchSavedCount + ' | เหลือ ' + remaining;
+            const stickyEl = document.getElementById('keyin-batch-sticky-text');
+            if (stickyEl) stickyEl.textContent = stickyText;
+
+            const progressText = document.getElementById('batch-progress-text');
+            if (progressText) progressText.textContent = 'รายการปัจจุบัน ' + batchCurrentIndex + ' / ' + batchTotal + ' • บันทึกสำเร็จ ' + batchSavedCount + ' • คงเหลือ ' + remaining;
+
+            const bar = document.getElementById('batch-progress-bar');
+            if (bar) bar.style.width = Math.min(100, Math.round((batchSavedCount / batchTotal) * 100)) + '%';
+
+            const list = document.getElementById('batch-saved-list');
+            if (list) {
+                list.innerHTML = batchSavedTrackingIds.map(function(id) {
+                    return '<span class="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md"><i class="fa-solid fa-check"></i>' + escapeHtml(id) + '</span>';
+                }).join('');
+            }
+
+            if (saveBtn) saveBtn.innerHTML = 'บันทึกรายการที่ ' + batchCurrentIndex + ' / ' + batchTotal;
+        }
+
+        function cancelKeyInForm() {
+            if (batchActive && batchSavedCount > 0) {
+                const proceed = confirm(
+                    'คุณบันทึกสำเร็จแล้ว ' + batchSavedCount + ' จาก ' + batchTotal + ' รายการ\n' +
+                    'ต้องการยกเลิก Batch ที่เหลือหรือไม่? (รายการที่บันทึกแล้วจะยังอยู่ใน Google Sheet)'
+                );
+                if (!proceed) return;
+            }
+            resetBatchState();
+            document.getElementById('keyin-qty').value = 1;
+            renderBatchProgressUI();
+            resetKeyInWizard();
+            navigateTo('home');
+        }
+
+        function closeBatchCompleteModal() {
+            document.getElementById('batch-complete-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            resetBatchState();
+            document.getElementById('keyin-qty').value = 1;
+            renderBatchProgressUI();
+            resetKeyInWizard(); // Acceptance Test 8: back to Step 1 once the Batch (N/N) is complete.
+            navigateTo('home');
+        }
+
+        function collectKeyInPayload() {
+            const audit = getAuditUser();
+            const payload = {
+                route: document.getElementById('keyin-route').value,
+                senderName: document.getElementById('keyin-sender').value.trim(),
+                department: document.getElementById('keyin-dept').value,
+                // v5.9.10 — Requirement 1: Recipient Name/Email/Phone/Postcode/Address removed
+                // from the Key In UI entirely. Sent as '' only for Backend/Sheet compatibility —
+                // saveKeyIn() and the KeyIn sheet columns still accept and preserve them for
+                // historical rows; no DOM element for these is ever read anymore.
+                recipientName: '',
+                recipientEmail: '',
+                recipientPhone: '',
+                recipientPostcode: '',
+                recipientAddress: '',
+                ocrConfidence: latestSmartCapture ? Math.round(((latestSmartCapture.tracking?.score || 0) + (latestSmartCapture.fields?.overallConfidence || 0)) / ((latestSmartCapture.tracking && latestSmartCapture.fields?.overallConfidence) ? 2 : 1)) : '',
+                // Requirement 5: every KeyIn row is exactly 1 Document RECORD. The "Quantity" field
+                // only ever controls how many separate Tracking Records this Batch session will
+                // collect — that is a completely different concept from DocumentCount below.
+                qty: 1,
+                // Part 4/6: how many physical documents exist under THIS ONE Tracking (Bundle case).
+                // Defaults to 1 — the common case never needs the user to touch this at all.
+                documentCount: getKeyInDocumentCount(),
+                trackingId: document.getElementById('keyin-tracking').value.trim(),
+                remarks: document.getElementById('keyin-remarks').value.trim(), images: capturedImages.slice(), status: 'Registered', createdBy: audit.username, createdByRole: audit.role, authToken: getAuthToken()
+            };
+            if (batchActive) {
+                payload.batchId = batchId;
+                payload.batchTotal = batchTotal;
+                payload.batchSequence = batchCurrentIndex;
+            }
+            return payload;
+        }
+
+        function submitKeyInForm() {
+            if (!requireGas()) return;
+            const payload = collectKeyInPayload();
+
+            // Requirement 4: validation is per CURRENT ITEM only — Tracking, Route, Sender,
+            // Department present, and this item hasn't already been saved. Never gate on
+            // scan/photo counts.
+            if (!payload.route || !payload.department || !payload.trackingId) { showSystemToast('กรุณากรอกเส้นทาง แผนก และ Tracking / Barcode ให้ครบ','error'); return; }
+            if (!payload.senderName) { showSystemToast('กรุณาเลือกผู้ส่งเอกสาร','error'); return; }
+
+            if (batchActive && batchSavedTrackingIds.includes(payload.trackingId)) {
+                showSystemToast('Tracking นี้ถูกบันทึกไปแล้วในชุดนี้: ' + payload.trackingId, 'error');
+                return;
+            }
+
+            if (!batchActive) {
+                // Quantity === 1: unchanged existing single-item review-before-save flow.
+                const summary=document.getElementById('keyin-confirm-summary');
+                if(summary) summary.innerHTML = [
+                  ['Tracking ID',payload.trackingId],['Sender',payload.senderName||'-'],['Route',payload.route],['Department',payload.department],['Remarks',payload.remarks||'-'],['รูปพัสดุ',payload.images.length+' รูป']
+                ].map(x=>'<div class="grid grid-cols-3 gap-2 py-2 border-b border-slate-100"><span class="text-xs font-bold text-slate-500">'+escapeHtml(x[0])+'</span><span class="col-span-2 text-sm text-slate-800 break-words">'+escapeHtml(String(x[1]))+'</span></div>').join('');
+                window.pendingKeyInPayload=payload; document.getElementById('keyin-confirm-modal')?.classList.remove('hidden'); document.body.classList.add('overflow-hidden');
+                return;
+            }
+
+            // Batch mode: save this item directly — minimal taps for repeated scanning (Requirement 1/15).
+            performConfirmedKeyInSave(payload);
+        }
+        function closeKeyInConfirm(){ document.getElementById('keyin-confirm-modal')?.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); window.pendingKeyInPayload=null; }
+        function confirmKeyInSave(){ const p=window.pendingKeyInPayload; if(!p)return; document.getElementById('keyin-confirm-modal')?.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); window.pendingKeyInPayload=null; performConfirmedKeyInSave(p); }
+        function openParcelImage(index){ const src=capturedImages[index]; if(!src)return; const img=document.getElementById('parcel-lightbox-image'); img.src=src; img.alt='Parcel image '+(index+1); document.getElementById('parcel-lightbox')?.classList.remove('hidden'); document.body.classList.add('overflow-hidden'); }
+        function closeParcelImage(){ document.getElementById('parcel-lightbox')?.classList.add('hidden'); document.body.classList.remove('overflow-hidden'); }
+
+        // Requirement 13 / Part 5: reset only ITEM-specific state after each successful save.
+        // Common fields (Route/Sender/Department/Quantity) are deliberately left untouched;
+        // DocumentCount is per-Tracking, so it resets back to the default 1 (Reset Rule).
+        function resetItemSpecificFields() {
+            capturedImages = [];
+            renderImagePreviews();
+            document.getElementById('keyin-tracking').value = '';
+            document.getElementById('keyin-document-count').value = 1;
+            scanProgressCount = 0;
+            updateScanProgress();
+            renderOcrTrackingCandidates([]);
+            latestSmartCapture = null;
+            latestOcrText = '';
+            document.getElementById('ocr-result-box')?.classList.add('hidden');
+        }
+
+        async function performConfirmedKeyInSave(payload) {
+            setKeyInSaving(true);
+
+            try {
+                // Requirement 7: Frontend NEVER advances the Batch counter until the Backend
+                // responds verified:true — LockService + duplicate check + flush + read-back all
+                // happen server-side inside saveKeyIn().
+                const raw = await apiCall('saveKeyIn', payload);
+                const res = normalizeResponse(raw, 'บันทึก KeyIn ไม่สำเร็จ');
+
+                if (handleAuthFailure(res)) return;
+
+                if (!res.success || !res.verified) {
+                    // Requirement 6: a rejected/duplicate item must NOT advance the Batch counter —
+                    // the current item slot (and any already-saved items) are left exactly as-is.
+                    showSystemToast(
+                        res.message || 'Backend ยังไม่ยืนยันการบันทึก ข้อมูลในฟอร์มจะยังคงอยู่ กรุณาลองใหม่',
+                        'error'
+                    );
+                    return;
+                }
+
+                // Performance Optimization #1: derive readiness directly from saveKeyIn()'s own
+                // response — zero extra network round trip (no second verifyWorkflowModules call).
+                const workflowResults = deriveWorkflowResultsFromSave(res);
+
+                // Requirement 15 / Route: E-Sign is a workflow STAGE, not a pass/fail signal — a
+                // fresh BTSVP Key In is expected to NOT be esignReady yet (still needs Dispatch +
+                // Arrival Confirmation), while a fresh Ari Hills Key In IS expected to be
+                // esignReady immediately. Operations is only relevant at all when the Route
+                // requires it — Ari Hills must never be penalized for skipping a stage it doesn't need.
+                const coreReady = workflowResults.track && workflowResults.dashboard && workflowResults.report &&
+                    (!workflowResults.operationsRequired || workflowResults.operations);
+
+                if (batchActive) {
+                    // ----- Batch Entry Mode: advance ONLY after this verified save (Requirement 7) -----
+                    batchSavedCount++;
+                    batchSavedTrackingIds.push(res.trackingId || payload.trackingId);
+
+                    if (batchSavedCount >= batchTotal) {
+                        // Requirement 11: Batch complete popup.
+                        const msgList = document.getElementById('batch-complete-tracking-list');
+                        if (msgList) msgList.innerHTML = batchSavedTrackingIds.map(function(id) { return '<div>' + escapeHtml(id) + '</div>'; }).join('');
+                        const msgText = document.getElementById('batch-complete-message');
+                        if (msgText) msgText.textContent = 'บันทึกสำเร็จ ' + batchSavedCount + ' รายการ';
+                        document.getElementById('batch-complete-modal')?.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        resetItemSpecificFields();
+                    } else {
+                        batchCurrentIndex = batchSavedCount + 1;
+                        showSystemToast('✓ บันทึกรายการที่ ' + batchSavedCount + '/' + batchTotal + ' สำเร็จ (' + (res.trackingId || payload.trackingId) + (res.documentCount > 1 ? ' • ' + res.documentCount + ' เอกสาร' : '') + ')', 'success');
+                        resetItemSpecificFields();
+                        renderBatchProgressUI();
+                        // Keep the user on Key In, ready to scan the next item — no navigation away.
+                        document.getElementById('keyin-tracking')?.focus();
+                    }
+                    return;
+                }
+
+                // ----- Single-item Mode (Qty === 1): unchanged existing behaviour -----
+                if (coreReady) {
+                    // Requirement 3: message reflects the actual Route decision the Backend made.
+                    const isAriHillsRoute = String(res.route || '').toLowerCase() === 'ari hills';
+                    showSystemToast(
+                        res.message || (isAriHillsRoute
+                            ? '✓ บันทึกเอกสารสำเร็จ • Route: Ari Hills • เอกสารพร้อมสำหรับ E-Sign'
+                            : 'Key In สำเร็จ พร้อมดำเนินการ Dispatch • ' + (res.trackingId || payload.trackingId)),
+                        'success'
+                    );
+                } else {
+                    // Count only the 4 core modules that actually matter for this Route
+                    // (Operations auto-counts as satisfied when the Route doesn't require it).
+                    const coreModules = [
+                        workflowResults.track,
+                        workflowResults.dashboard,
+                        workflowResults.report,
+                        (!workflowResults.operationsRequired || workflowResults.operations)
+                    ];
+                    const readyCount = coreModules.filter(Boolean).length;
+                    showSystemToast(
+                        'บันทึกสำเร็จ • เชื่อมข้อมูลพร้อมใช้ ' + readyCount + '/4 Module',
+                        readyCount >= 3 ? 'info' : 'error'
+                    );
+                }
+
+                // Clear only after verified save + workflow refresh.
+                resetItemSpecificFields();
+                clearForm([
+                    'keyin-route','keyin-sender','keyin-dept',
+                    'keyin-remarks'
+                ]);
+                document.getElementById('keyin-qty').value = 1;
+                resetKeyInWizard(); // Acceptance Test 6: back to Step 1 on single-document success.
+
+                // Stay briefly so user sees confirmed state; then return Home.
+                setTimeout(function() {
+                    navigateTo('home');
+                }, 750);
+
+            } catch (err) {
+                // Do not clear form/images on any error.
+                showSystemToast('บันทึกไม่สำเร็จ: ' + normalizeError(err) + ' • ข้อมูลยังอยู่ในฟอร์ม', 'error');
+            } finally {
+                setKeyInSaving(false);
+            }
+        }
+
+        async function loadOperationsControl() {
+            if (!requireGas() || !getAuthToken()) return;
+            const list = document.getElementById('ops-pending-list'); if (list) list.innerHTML = '<div class="p-6 text-center text-sm text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</div>';
+            const transitList = document.getElementById('ops-transit-list'); if (transitList) transitList.innerHTML = '<div class="p-6 text-center text-sm text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</div>';
+            try {
+                const res = await apiCall('getOperationsSummary', { authToken: getAuthToken() }); if (handleAuthFailure(res)) return;
+                if (!res || !res.success) {
+                    const msg = '<div class="p-6 text-center text-sm text-rose-500">' + escapeHtml((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ') + '</div>';
+                    if (list) list.innerHTML = msg;
+                    if (transitList) transitList.innerHTML = msg;
+                    return;
+                }
+                const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = Number(value || 0).toLocaleString('th-TH'); };
+                setText('ops-received', res.receivedAtAriHills);
+                setText('ops-pending', res.pendingDispatch);
+                setText('ops-transit', res.inTransit);
+                setText('ops-awaiting-esign', res.awaitingEsign);
+                setText('ops-delivered-small', res.delivered);
+                setText('ops-returned', res.returned);
+                const completion = Math.max(0, Math.min(100, Number(res.completionPercent || 0))); const label = document.getElementById('ops-completion-label'), bar = document.getElementById('ops-completion-bar'); if (label) label.textContent = completion.toFixed(0) + '%'; if (bar) bar.style.width = completion + '%';
+                renderOperationsPending(res.waitingDispatchItems || res.pendingItems || []);
+                renderOperationsInTransit(res.inTransitItems || []);
+            } catch (err) {
+                const msg = '<div class="p-6 text-center text-sm text-rose-500">เชื่อมต่อ Operations ไม่สำเร็จ</div>';
+                if (list) list.innerHTML = msg;
+                if (transitList) transitList.innerHTML = msg;
+                console.error(err);
+            }
+        }
+
+        // Requirement 13: SLA/Aging groundwork — no hard-coded threshold yet, just a readable
+        // "elapsed since X" label computed from the real timestamp already returned by the API.
+        function formatAgingLabel(fromValue) {
+            if (!fromValue) return '';
+            const from = new Date(fromValue);
+            if (isNaN(from.getTime())) return '';
+            const minutes = Math.max(0, Math.round((Date.now() - from.getTime()) / 60000));
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            if (hours > 0) return hours + ' ชั่วโมง' + (mins > 0 ? ' ' + mins + ' นาที' : '');
+            return mins + ' นาที';
+        }
+
+        function renderOperationsPending(items) {
+            const list = document.getElementById('ops-pending-list'); if (!list) return;
+            if (!items.length) { list.innerHTML = '<div class="p-8 text-center"><i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><p class="text-sm font-bold text-slate-700 mt-3">ไม่มีรายการรอ Dispatch</p><p class="text-xs text-slate-400 mt-1">รายการรับเข้าถูกส่งออกครบแล้ว</p></div>'; return; }
+            list.innerHTML = items.map(function(item) { return '<label class="flex items-start gap-3 p-4 hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="ops-dispatch-check mt-1 w-4 h-4" value="' + escapeHtml(item.trackingId) + '"><div class="flex-1 min-w-0"><div class="flex flex-wrap items-center justify-between gap-2"><p class="font-black text-slate-800 text-sm break-all">' + escapeHtml(item.trackingId) + '</p><span class="text-[10px] font-bold bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md shrink-0">' + Number(item.qty || 1) + ' ชิ้น</span></div><p class="text-xs text-slate-600 mt-1">' + escapeHtml(item.department || '-') + (item.recipientName ? ' • ' + escapeHtml(item.recipientName) : '') + '</p><p class="text-[10px] text-slate-400 mt-1">รับเข้า Ari Hills • ' + escapeHtml(item.timeLabel || '') + '</p></div></label>'; }).join('');
+        }
+
+        function toggleAllDispatchItems(checked) { document.querySelectorAll('.ops-dispatch-check').forEach(function(cb){ cb.checked = !!checked; }); }
+
+        async function markSelectedDispatch() {
+            const selected = Array.from(document.querySelectorAll('.ops-dispatch-check:checked')).map(function(cb){ return cb.value; });
+            if (!selected.length) { alert('กรุณาเลือกรายการที่จะส่งออกไป BTSVP อย่างน้อย 1 รายการ'); return; }
+            if (!confirm('ยืนยัน Dispatch ไป BTSVP จำนวน ' + selected.length + ' Tracking?')) return;
+            try {
+                const res = await apiCall('markDispatchToBTS', { trackingIds: selected, clientRequestId: generateClientRequestId('DISPATCH'), authToken: getAuthToken() }, { timeoutMs: API_ESIGN_TIMEOUT_MS }); if (handleAuthFailure(res)) return;
+                if (!res || !res.success) { alert((res && res.message) || 'บันทึก Dispatch ไม่สำเร็จ'); return; }
+                showOpsResultModal({
+                    icon: 'fa-truck-fast',
+                    color: 'blue',
+                    title: 'บันทึกการส่งออกสำเร็จ',
+                    lines: [
+                        'ส่งเอกสารจาก Ari Hills ไป BTSVP',
+                        'จำนวน ' + res.count + ' รายการ',
+                        'เวลา ' + (res.dispatchAt ? formatTrackTime(res.dispatchAt) : '')
+                    ]
+                });
+                loadOperationsControl(); // legitimate — user is on this exact page and wants to see Stage A/B update
+            } catch (err) { alert('บันทึก Dispatch ไม่สำเร็จ: ' + normalizeError(err)); }
+        }
+
+        function renderOperationsInTransit(items) {
+            const list = document.getElementById('ops-transit-list'); if (!list) return;
+            if (!items.length) { list.innerHTML = '<div class="p-8 text-center"><i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><p class="text-sm font-bold text-slate-700 mt-3">ไม่มีรายการรอยืนยันถึง BTSVP</p><p class="text-xs text-slate-400 mt-1">ทุกรายการที่ Dispatch แล้วถูกยืนยันรับเข้าครบ</p></div>'; return; }
+            list.innerHTML = items.map(function(item) {
+                const aging = formatAgingLabel(item.dispatchAt);
+                return '<label class="flex items-start gap-3 p-4 hover:bg-slate-50 cursor-pointer"><input type="checkbox" class="ops-arrival-check mt-1 w-4 h-4" value="' + escapeHtml(item.trackingId) + '"><div class="flex-1 min-w-0"><div class="flex flex-wrap items-center justify-between gap-2"><p class="font-black text-slate-800 text-sm break-all">' + escapeHtml(item.trackingId) + '</p><span class="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-1 rounded-md shrink-0">' + Number(item.qty || 1) + ' ชิ้น</span></div><p class="text-xs text-slate-600 mt-1">' + escapeHtml(item.department || '-') + (item.recipientName ? ' • ' + escapeHtml(item.recipientName) : '') + '</p><p class="text-[10px] text-slate-400 mt-1">ส่งออกเมื่อ ' + escapeHtml(item.timeLabel || '') + (aging ? ' • In Transit — ' + escapeHtml(aging) : '') + '</p></div></label>';
+            }).join('');
+        }
+
+        function toggleAllArrivalItems(checked) { document.querySelectorAll('.ops-arrival-check').forEach(function(cb){ cb.checked = !!checked; }); }
+
+        async function confirmSelectedArrival() {
+            const selected = Array.from(document.querySelectorAll('.ops-arrival-check:checked')).map(function(cb){ return cb.value; });
+            if (!selected.length) { alert('กรุณาเลือกรายการที่ถึง BTSVP แล้วอย่างน้อย 1 รายการ'); return; }
+            if (!confirm('ยืนยันรับเอกสารที่ BTSVP จำนวน ' + selected.length + ' Tracking?')) return;
+            try {
+                const res = await apiCall('confirmArrivalAtBTSVP', { trackingIds: selected, clientRequestId: generateClientRequestId('ARRIVAL'), authToken: getAuthToken() }, { timeoutMs: API_ESIGN_TIMEOUT_MS }); if (handleAuthFailure(res)) return;
+                if (!res || !res.success) { alert((res && res.message) || 'ยืนยันรับเอกสารไม่สำเร็จ'); return; }
+                showOpsResultModal({
+                    icon: 'fa-building-shield',
+                    color: 'purple',
+                    title: 'ยืนยันรับเอกสารที่ BTSVP สำเร็จ',
+                    lines: [
+                        'จำนวน ' + res.count + ' รายการ',
+                        'เวลา ' + (res.arrivedAt || ''),
+                        'รายการพร้อมเข้าสู่ขั้นตอน E-Sign'
+                    ]
+                });
+                loadOperationsControl(); // legitimate — user is on this exact page and wants to see Stage B/C update
+                esignQueueLoadedAt = 0; esignQueueAllItems = []; // Mark E-Sign Queue stale — it will refetch fresh next time the user opens it, per Part 3/11 (never poll, never force-refresh an unrelated module now)
+            } catch (err) { alert('ยืนยันรับเอกสารไม่สำเร็จ: ' + normalizeError(err)); }
+        }
+
+        function showOpsResultModal(opts) {
+            const modal = document.getElementById('ops-result-modal');
+            const icon = document.getElementById('ops-result-icon');
+            const title = document.getElementById('ops-result-title');
+            const message = document.getElementById('ops-result-message');
+            if (!modal) { showSystemToast(opts.lines.join(' • '), 'success'); return; }
+
+            const colorClass = opts.color === 'purple' ? 'bg-purple-100 text-purple-600' : 'bg-blue-100 text-blue-600';
+            if (icon) { icon.className = 'w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4 ' + colorClass; icon.innerHTML = '<i class="fa-solid ' + opts.icon + '"></i>'; }
+            if (title) title.textContent = '✓ ' + opts.title;
+            if (message) message.textContent = opts.lines.filter(Boolean).join('\n');
+
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeOpsResultModal() {
+            document.getElementById('ops-result-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Part 4 (v5.9.18) — Signature Payload Optimization: crop the SignaturePad canvas down
+        // to just its drawn bounding box (plus a small margin) before sending to the Backend. A
+        // typical signature only fills a small fraction of the full pad area — cropping shrinks
+        // the PNG (and therefore the Base64 payload sent over the API bridge) substantially
+        // without touching pixel quality/resolution, since this crops rather than downscales.
+        function cropSignatureCanvasToDataUrl(pad) {
+            if (!pad) return '';
+            const sourceCanvas = pad.canvas;
+            if (!sourceCanvas || (typeof pad.isEmpty === 'function' && pad.isEmpty())) {
+                return pad.toDataURL ? pad.toDataURL('image/png') : '';
+            }
+
+            try {
+                const ctx = sourceCanvas.getContext('2d');
+                const w = sourceCanvas.width, h = sourceCanvas.height;
+                const imageData = ctx.getImageData(0, 0, w, h).data;
+
+                let minX = w, minY = h, maxX = 0, maxY = 0;
+                let found = false;
+
+                // Sample every 2nd pixel in each direction for speed — a pen stroke is many
+                // pixels wide, so this never meaningfully changes the detected bounding box.
+                const step = 2;
+                for (let y = 0; y < h; y += step) {
+                    for (let x = 0; x < w; x += step) {
+                        const alpha = imageData[(y * w + x) * 4 + 3];
+                        if (alpha > 10) {
+                            found = true;
+                            if (x < minX) minX = x;
+                            if (x > maxX) maxX = x;
+                            if (y < minY) minY = y;
+                            if (y > maxY) maxY = y;
+                        }
+                    }
+                }
+
+                if (!found) return sourceCanvas.toDataURL('image/png');
+
+                const margin = 12;
+                minX = Math.max(0, minX - margin);
+                minY = Math.max(0, minY - margin);
+                maxX = Math.min(w, maxX + margin);
+                maxY = Math.min(h, maxY + margin);
+
+                const cropW = Math.max(1, maxX - minX);
+                const cropH = Math.max(1, maxY - minY);
+
+                const cropCanvas = document.createElement('canvas');
+                cropCanvas.width = cropW;
+                cropCanvas.height = cropH;
+                cropCanvas.getContext('2d').drawImage(sourceCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+                return cropCanvas.toDataURL('image/png');
+            } catch (err) {
+                console.warn('cropSignatureCanvasToDataUrl:', err);
+                return sourceCanvas.toDataURL('image/png');
+            }
+        }
+
+        function resizeCanvas() {
+            const canvas = document.getElementById('signature-pad');
+            if (!canvas || !signaturePad) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext('2d').scale(ratio, ratio); signaturePad.clear();
+        }
+        function clearSignatureCanvas() { if (signaturePad) signaturePad.clear(); }
+
+        const NTL_DEPARTMENTS = ["ซองสัญญา", "นายหน้าประกันภัย", "ปฏิบัติการประกันภัย", "ทะเบียน", "บุคคล", "บัญชี", "BSCS", "BDSM", "CLD", "Audit", "Fraud", "CRD", "กำกับธุรกรรม", "Legal", "CAS", "MKT", "Falcon", "IT", "จัดซื้อ", "MD", "CS", "DB", "A&D", "HeyGoody"];
+
+        function renderEsignDepartmentOptions(counts) {
+            const select = document.getElementById('esign-department');
+            if (!select) return;
+
+            const previous = select.value || '';
+            const countMap = counts || {};
+            const totalCount = Object.values(countMap)
+                .reduce(function(sum, value) {
+                    return sum + Number(value || 0);
+                }, 0);
+
+            const departments = Array.from(new Set(
+                NTL_DEPARTMENTS.concat(
+                    Object.keys(countMap).filter(Boolean)
+                )
+            ));
+
+            select.innerHTML =
+                '<option value="">-- เลือกแผนกผู้รับ --</option>' +
+                (totalCount > 0
+                    ? '<option value="__ALL__">ทุกแผนก (ทั้งหมด) — รอเซ็น ' + totalCount + ' รายการ</option>'
+                    : '') +
+                departments.map(function(department) {
+                    const count = Number(countMap[department] || 0);
+                    const suffix = count > 0 ? ' — รอเซ็น ' + count + ' รายการ' : '';
+                    return '<option value="' + escapeHtml(department) + '">' +
+                        escapeHtml(department + suffix) +
+                        '</option>';
+                }).join('');
+
+            let preferred = '';
+
+            if (latestSavedDepartment && Number(countMap[latestSavedDepartment] || 0) > 0) {
+                preferred = latestSavedDepartment;
+            } else if (previous === '__ALL__' && totalCount > 0) {
+                preferred = '__ALL__';
+            } else if (previous && Number(countMap[previous] || 0) > 0) {
+                preferred = previous;
+            } else if (totalCount > 0) {
+                // E-Sign is the central receiving screen: default to all pending documents.
+                preferred = '__ALL__';
+            }
+
+            if (preferred) {
+                select.value = preferred;
+            }
+        }
+
+        function buildEsignDepartmentCounts(items) {
+            const counts = {};
+
+            NTL_DEPARTMENTS.forEach(function(department) {
+                counts[department] = 0;
+            });
+
+            (items || []).forEach(function(item) {
+                const department = String(item.department || '').trim();
+                if (!department) return;
+                if (counts[department] == null) counts[department] = 0;
+                counts[department]++;
+            });
+
+            return counts;
+        }
+
+
+        function isUnknownApiActionError(error, actionName) {
+            const message = normalizeError(error || '');
+            return (
+                /Unknown API action/i.test(message) &&
+                (!actionName || message.indexOf(actionName) !== -1)
+            );
+        }
+
+        function normalizeEsignQueueItem(item, fallbackDepartment) {
+            item = item || {};
+            return {
+                trackingId: String(item.trackingId || '').trim(),
+                route: item.route || '',
+                department: String(item.department || fallbackDepartment || 'ไม่ระบุแผนก').trim(),
+                recipientName: item.recipientName || '',
+                recipientEmail: item.recipientEmail || '',
+                recipientPhone: item.recipientPhone || '',
+                qty: Math.max(1, Number(item.qty || 1)),
+                remarks: item.remarks || '',
+                status: item.status || 'Registered',
+                timestamp: item.timestamp || '',
+                imageUrls: Array.isArray(item.imageUrls)
+                    ? item.imageUrls
+                    : (String(item.imageUrls || '')
+                        ? String(item.imageUrls).split(',').map(v => v.trim()).filter(Boolean)
+                        : [])
+            };
+        }
+
+        function dedupeEsignQueue(items) {
+            const map = new Map();
+
+            (items || []).forEach(function(item) {
+                const normalized = normalizeEsignQueueItem(item);
+                if (!normalized.trackingId) return;
+
+                const existing = map.get(normalized.trackingId);
+
+                // Prefer the richer row if the same Tracking appears more than once.
+                if (!existing) {
+                    map.set(normalized.trackingId, normalized);
+                    return;
+                }
+
+                const existingScore = [
+                    existing.department,
+                    existing.recipientName,
+                    existing.recipientEmail,
+                    existing.route,
+                    existing.imageUrls && existing.imageUrls.length
+                ].filter(Boolean).length;
+
+                const newScore = [
+                    normalized.department,
+                    normalized.recipientName,
+                    normalized.recipientEmail,
+                    normalized.route,
+                    normalized.imageUrls && normalized.imageUrls.length
+                ].filter(Boolean).length;
+
+                if (newScore > existingScore) {
+                    map.set(normalized.trackingId, normalized);
+                }
+            });
+
+            return Array.from(map.values()).sort(function(a, b) {
+                const at = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+                const bt = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+                return at - bt;
+            });
+        }
+
+        async function loadEsignQueueLegacyCompat() {
+            const departmentsRes = await apiCall('getPendingEsignDepartments', {
+                authToken: getAuthToken()
+            });
+
+            if (handleAuthFailure(departmentsRes)) {
+                return { success: false, items: [] };
+            }
+
+            if (!departmentsRes || departmentsRes.success === false) {
+                throw new Error(
+                    (departmentsRes && departmentsRes.message) ||
+                    'โหลดรายชื่อแผนก E-Sign ไม่สำเร็จ'
+                );
+            }
+
+            const departments = (departmentsRes.departments || [])
+                .filter(function(item) {
+                    return item && item.department && Number(item.count || 0) > 0;
+                });
+
+            if (!departments.length) {
+                return {
+                    success: true,
+                    items: [],
+                    totalPending: 0,
+                    compatibilityMode: true
+                };
+            }
+
+            // Parallel load by department. This works with v5.4/v5.5 backends.
+            const responses = await Promise.all(
+                departments.map(function(item) {
+                    return apiCall('getPendingEsignByDepartment', {
+                        department: item.department,
+                        authToken: getAuthToken()
+                    })
+                    .then(function(res) {
+                        return {
+                            department: item.department,
+                            response: res
+                        };
+                    })
+                    .catch(function(error) {
+                        return {
+                            department: item.department,
+                            error: error
+                        };
+                    });
+                })
+            );
+
+            let items = [];
+
+            responses.forEach(function(entry) {
+                if (
+                    entry.response &&
+                    entry.response.success &&
+                    Array.isArray(entry.response.items)
+                ) {
+                    items = items.concat(
+                        entry.response.items.map(function(item) {
+                            return normalizeEsignQueueItem(item, entry.department);
+                        })
+                    );
+                }
+            });
+
+            items = dedupeEsignQueue(items);
+
+            return {
+                success: true,
+                items: items,
+                totalPending: items.length,
+                compatibilityMode: true
+            };
+        }
+
+        async function fetchEsignQueueCompatible() {
+            try {
+                const res = await apiCall('getEsignQueue', {
+                    authToken: getAuthToken()
+                });
+
+                if (handleAuthFailure(res)) {
+                    return { success: false, items: [] };
+                }
+
+                if (!res || res.success === false) {
+                    throw new Error((res && res.message) || 'โหลด E-Sign Queue ไม่สำเร็จ');
+                }
+
+                esignApiMode = 'queue';
+                esignLastSyncError = '';
+
+                return {
+                    ...res,
+                    items: dedupeEsignQueue(res.items || []),
+                    compatibilityMode: false
+                };
+
+            } catch (error) {
+                // Critical compatibility path:
+                // old backend deployments do not know getEsignQueue yet.
+                if (!isUnknownApiActionError(error, 'getEsignQueue')) {
+                    throw error;
+                }
+
+                console.warn('getEsignQueue unavailable; using legacy E-Sign APIs', error);
+
+                const legacy = await loadEsignQueueLegacyCompat();
+                esignApiMode = 'legacy';
+                esignLastSyncError = normalizeError(error);
+
+                return legacy;
+            }
+        }
+
+        async function loadEsignDepartments(forceRefresh) {
+            if (!requireGas() || !getAuthToken()) return;
+
+            const badge = document.getElementById('esign-pending-badge');
+            const list = document.getElementById('esign-parcel-list');
+
+            if (badge) badge.textContent = 'กำลัง Sync Key In → E-Sign…';
+
+            if (list) {
+                list.innerHTML =
+                    '<div class="p-8 text-center text-xs text-slate-500">' +
+                    '<i class="fa-solid fa-spinner fa-spin mr-1"></i>' +
+                    'กำลังดึงเอกสารที่ยังไม่ปิดงานจาก Key In…' +
+                    '</div>';
+            }
+
+            try {
+                const res = await fetchEsignQueueCompatible();
+
+                if (!res || res.success === false) {
+                    throw new Error((res && res.message) || 'โหลด E-Sign Queue ไม่สำเร็จ');
+                }
+
+                esignQueueAllItems = dedupeEsignQueue(
+                    Array.isArray(res.items) ? res.items : []
+                );
+                esignQueueLoadedAt = Date.now();
+
+                const counts = buildEsignDepartmentCounts(esignQueueAllItems);
+                renderEsignDepartmentOptions(counts);
+
+                const total = esignQueueAllItems.length;
+
+                if (badge) {
+                    if (total > 0) {
+                        badge.textContent =
+                            'รอรับ ' + total + ' รายการ' +
+                            (esignApiMode === 'legacy' ? ' • Compatibility' : '');
+                    } else {
+                        badge.textContent =
+                            'ไม่มีรายการรอเซ็น' +
+                            (esignApiMode === 'legacy' ? ' • Compatibility' : '');
+                    }
+                }
+
+                loadEsignParcels();
+
+            } catch (err) {
+                console.error('loadEsignDepartments:', err);
+                esignLastSyncError = normalizeError(err);
+
+                if (badge) badge.textContent = 'Sync E-Sign ไม่สำเร็จ';
+
+                if (list) {
+                    list.innerHTML =
+                        '<div class="p-6 text-center rounded-xl border border-rose-100 bg-rose-50">' +
+                        '<i class="fa-solid fa-triangle-exclamation text-rose-500 text-xl"></i>' +
+                        '<p class="text-xs font-bold text-rose-700 mt-2">ไม่สามารถดึงรายการจาก Key In ได้</p>' +
+                        '<p class="text-[10px] text-rose-500 mt-1">' +
+                            escapeHtml(normalizeError(err)) +
+                        '</p>' +
+                        '<p class="text-[10px] text-slate-500 mt-2">' +
+                        'ตรวจว่า HTML และ Apps Script ใช้ Deployment ล่าสุด หรือกด Sync ใหม่เพื่อใช้ Compatibility Mode' +
+                        '</p>' +
+                        '<button type="button" onclick="loadEsignDepartments(true)" ' +
+                        'class="mt-3 px-4 py-2 rounded-lg bg-rose-600 text-white text-xs font-bold">' +
+                        'ลอง Sync ใหม่' +
+                        '</button>' +
+                        '</div>';
+                }
+            }
+        }
+
+        async function loadEsignParcels() {
+            const department = document.getElementById('esign-department')?.value || '';
+            const isAllDepartments = department === '__ALL__';
+
+            if (!department) {
+                esignPendingItems = [];
+                renderEsignParcels();
+                return;
+            }
+
+            const sourceItems = department === '__ALL__'
+                ? esignQueueAllItems
+                : esignQueueAllItems.filter(function(item) {
+                    return String(item.department || '').trim() === department;
+                });
+
+            esignPendingItems = sourceItems.map(function(item) {
+                return { ...item, selected: true };
+            });
+
+            renderEsignParcels();
+        }
+
+        function renderEsignParcels() {
+            const list = document.getElementById('esign-parcel-list');
+            const btn = document.getElementById('esign-save-btn');
+            const all = document.getElementById('esign-select-all');
+            if (!list) return;
+
+            const department = document.getElementById('esign-department')?.value || '';
+            const isAllDepartments = department === '__ALL__';
+
+            if (!department) {
+                list.innerHTML =
+                    '<div class="text-center p-8 rounded-xl border border-dashed border-slate-200 bg-slate-50">' +
+                    '<i class="fa-solid fa-layer-group text-slate-300 text-2xl"></i>' +
+                    '<p class="text-xs font-bold text-slate-600 mt-2">เลือกรายการตามแผนกผู้รับ</p>' +
+                    '<p class="text-[10px] text-slate-400 mt-1">ระบบ Sync งานที่บันทึกจาก Key In มาไว้ในหน้านี้แล้ว</p>' +
+                    '</div>';
+                if (btn) btn.disabled = true;
+                return;
+            }
+
+            if (!esignPendingItems.length) {
+                list.innerHTML =
+                    '<div class="text-center p-8 rounded-xl border border-dashed border-slate-200 bg-slate-50">' +
+                    '<i class="fa-solid fa-box-open text-slate-300 text-2xl"></i>' +
+                    '<p class="text-xs text-slate-500 mt-2">ไม่มีรายการที่อยู่ในสถานะรอเซ็นรับในแผนกนี้</p>' +
+                    '</div>';
+                if (btn) btn.disabled = true;
+                if (all) all.checked = false;
+                return;
+            }
+
+            const summaryHtml =
+                '<div class="mb-3 px-3 py-2.5 rounded-xl bg-indigo-50 border border-indigo-100 flex flex-wrap items-center justify-between gap-2">' +
+                    '<div>' +
+                        '<p class="text-xs font-black text-indigo-800">' +
+                            (isAllDepartments ? 'เอกสารรอเซ็นทุกแผนก' : 'แผนก ' + escapeHtml(department)) +
+                        '</p>' +
+                        '<p class="text-[10px] text-indigo-500 mt-0.5">' +
+                            esignPendingItems.length + ' รายการ • ข้อมูลมาจาก Key In โดยตรง' +
+                        '</p>' +
+                    '</div>' +
+                    '<span class="text-[10px] font-black px-2.5 py-1 rounded-full bg-white text-indigo-700 border border-indigo-100">' +
+                        (esignApiMode === 'legacy' ? 'Compatibility API' : 'Live Queue') +
+                    '</span>' +
+                '</div>';
+
+            list.innerHTML = summaryHtml + esignPendingItems.map(function(item, idx) {
+                const image = item.imageUrls && item.imageUrls.length
+                    ? '<a href="' + escapeHtml(item.imageUrls[0]) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()" ' +
+                      'class="w-14 h-14 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">' +
+                      '<i class="fa-regular fa-image"></i></a>'
+                    : '<div class="w-14 h-14 rounded-lg bg-slate-100 text-slate-400 flex items-center justify-center flex-shrink-0">' +
+                      '<i class="fa-solid fa-box"></i></div>';
+
+                return '<label class="flex gap-3 p-3 rounded-xl border ' +
+                    (item.selected ? 'border-purple-200 bg-purple-50/40' : 'border-slate-200 bg-white') +
+                    ' cursor-pointer">' +
+                    '<input type="checkbox" ' + (item.selected ? 'checked' : '') +
+                    ' onchange="setEsignItemSelected(' + idx + ',this.checked)" class="mt-1 w-4 h-4 accent-purple-600">' +
+                    image +
+                    '<div class="min-w-0 flex-1">' +
+                        '<div class="flex flex-wrap items-center justify-between gap-1">' +
+                            '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(item.trackingId) + '</p>' +
+                            '<span class="text-[10px] font-bold text-slate-500">' + escapeHtml(item.route || '') + '</span>' +
+                        '</div>' +
+                        '<p class="text-xs text-slate-700 mt-1"><i class="fa-regular fa-user w-4 text-slate-400"></i>' +
+                            escapeHtml(item.recipientName || '-') + '</p>' +
+                        '<p class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-building-user w-4"></i>' +
+                            escapeHtml(item.department || '-') + '</p>' +
+                        '<p class="text-[11px] text-slate-500 mt-0.5"><i class="fa-regular fa-envelope w-4"></i>' +
+                            escapeHtml(item.recipientEmail || '-') + '</p>' +
+                        (item.remarks
+                            ? '<p class="text-[11px] text-slate-400 mt-1 truncate">หมายเหตุ: ' + escapeHtml(item.remarks) + '</p>'
+                            : '') +
+                    '</div>' +
+                '</label>';
+            }).join('');
+
+            const selectedCount = esignPendingItems.filter(function(item) {
+                return item.selected;
+            }).length;
+
+            if (btn) {
+                btn.disabled = selectedCount === 0;
+                btn.innerHTML =
+                    '<i class="fa-solid fa-file-signature mr-1"></i> เซ็นรับ ' +
+                    selectedCount + ' รายการที่เลือก';
+            }
+
+            if (all) {
+                all.checked =
+                    esignPendingItems.length > 0 &&
+                    selectedCount === esignPendingItems.length;
+            }
+        }
+
+        function setEsignItemSelected(index, checked) {
+            if (esignPendingItems[index]) esignPendingItems[index].selected = checked;
+            renderEsignParcels();
+        }
+
+        function toggleEsignSelectAll(checked) {
+            esignPendingItems.forEach(x => x.selected = checked);
+            renderEsignParcels();
+        }
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+        }
+
+        async function saveEsignature() {
+            if (!requireGas()) return;
+            if (esignSaveInFlight) return; // Prevent double click / double tap
+            if (!signaturePad || signaturePad.isEmpty()) { alert('กรุณาเซ็นชื่อก่อนกดบันทึก'); return; }
+            const department = document.getElementById('esign-department')?.value || '';
+            const recipientName = document.getElementById('esign-recipient-name')?.value.trim() || '';
+            const trackingIds = esignPendingItems.filter(x=>x.selected).map(x=>x.trackingId);
+            if (!department) { alert('กรุณาเลือกแผนกผู้รับ'); return; }
+            if (!recipientName) { alert('กรุณากรอกชื่อผู้เซ็นรับ'); return; }
+            if (!trackingIds.length) { alert('กรุณาเลือกรายการพัสดุอย่างน้อย 1 รายการ'); return; }
+
+            const audit = getAuditUser();
+            const payload = {
+                department, trackingIds, recipientName,
+                signatureImage: cropSignatureCanvasToDataUrl(signaturePad),
+                status: 'Delivered',
+                signedBy: audit.username, signedByRole: audit.role,
+                clientRequestId: generateClientRequestId('ESIGN'),
+                authToken: getAuthToken()
+            };
+
+            const btn = document.getElementById('esign-save-btn');
+            setEsignSaving(true, btn);
+
+            try {
+                // Frontend must NOT show success before Backend has written, flushed and verified the data.
+                const raw = await apiCall('saveBatchEsignature', payload, { timeoutMs: API_ESIGN_TIMEOUT_MS });
+                const res = normalizeResponse(raw, 'บันทึก E-Sign ไม่สำเร็จ');
+                if (handleAuthFailure(res)) return;
+
+                const completed = Array.isArray(res.completed) ? res.completed : [];
+                const skipped = Array.isArray(res.skipped) ? res.skipped : [];
+
+                if (!completed.length) {
+                    showEsignResultModal({ ok: false, completedCount: 0, totalCount: trackingIds.length, skipped: skipped, message: res.message });
+                    return;
+                }
+
+                // Remove only the successfully-signed items from the local queue immediately —
+                // KeyIn rows are NOT moved/deleted, this only updates the in-memory E-Sign view.
+                const completedSet = new Set(completed);
+                esignQueueAllItems = esignQueueAllItems.filter(function(item) { return !completedSet.has(item.trackingId); });
+                esignPendingItems = esignPendingItems.filter(function(item) { return !completedSet.has(item.trackingId); });
+                renderEsignParcels();
+
+                document.getElementById('esign-recipient-name').value = '';
+                clearSignatureCanvas();
+
+                showEsignResultModal({
+                    ok: skipped.length === 0,
+                    completedCount: completed.length,
+                    totalCount: trackingIds.length,
+                    skipped: skipped,
+                    message: res.message
+                });
+
+                // Part 3 (v5.9.18): do NOT force-refresh Dashboard/Operations here — the user is
+                // still on the E-Sign page. Both loadDashboardStats() and loadOperationsControl()
+                // already fetch fresh data unconditionally the moment navigateTo('dashboard') /
+                // navigateTo('operations') actually runs, so this was two unnecessary Backend
+                // calls after every single E-Sign action for no benefit the user could see yet.
+                const badge = document.getElementById('esign-pending-badge');
+                if (badge) badge.textContent = 'รอรับ ' + esignQueueAllItems.length + ' รายการ';
+                renderEsignDepartmentOptions(buildEsignDepartmentCounts(esignQueueAllItems));
+
+            } catch (err) {
+                showEsignResultModal({ ok: false, completedCount: 0, totalCount: trackingIds.length, skipped: [], message: 'บันทึก E-Sign ไม่สำเร็จ: ' + normalizeError(err) });
+            } finally {
+                setEsignSaving(false, btn);
+            }
+        }
+
+        function setEsignSaving(saving, btn) {
+            esignSaveInFlight = saving;
+            if (!btn) btn = document.getElementById('esign-save-btn');
+            if (!btn) return;
+            btn.disabled = saving;
+            if (saving) {
+                btn.dataset.originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> กำลังบันทึก...';
+            } else if (btn.dataset.originalHtml) {
+                btn.innerHTML = btn.dataset.originalHtml;
+            }
+        }
+
+        function showEsignResultModal(result) {
+            const modal = document.getElementById('esign-result-modal');
+            const icon = document.getElementById('esign-result-icon');
+            const title = document.getElementById('esign-result-title');
+            const message = document.getElementById('esign-result-message');
+            const failedList = document.getElementById('esign-result-failed-list');
+            if (!modal) return;
+
+            const failedCount = (result.skipped || []).length;
+            const success = result.completedCount > 0 && failedCount === 0;
+
+            if (icon) {
+                icon.className = 'w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4 ' +
+                    (success ? 'bg-emerald-100 text-emerald-600' : (result.completedCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'));
+                icon.innerHTML = '<i class="fa-solid ' + (success ? 'fa-circle-check' : (result.completedCount > 0 ? 'fa-triangle-exclamation' : 'fa-circle-xmark')) + '"></i>';
+            }
+
+            if (title) title.textContent = success ? 'บันทึกข้อมูลสำเร็จ' : (result.completedCount > 0 ? 'บันทึกข้อมูลสำเร็จบางส่วน' : 'บันทึกข้อมูลไม่สำเร็จ');
+
+            if (message) {
+                if (success) {
+                    message.textContent = 'บันทึกลายเซ็นรับเอกสารเรียบร้อยแล้ว\nจำนวน ' + result.completedCount + ' รายการ';
+                } else if (result.completedCount > 0) {
+                    message.textContent = 'บันทึกสำเร็จ ' + result.completedCount + ' รายการ\nไม่สำเร็จ ' + failedCount + ' รายการ';
+                } else {
+                    message.textContent = result.message || 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง';
+                }
+            }
+
+            if (failedList) {
+                if (failedCount > 0) {
+                    failedList.innerHTML = (result.skipped || []).map(function(item) {
+                        return '<div class="text-xs py-1 border-b border-rose-100 last:border-b-0">' +
+                            '<span class="font-bold text-rose-700">' + escapeHtml(item.trackingId) + '</span>' +
+                            '<span class="text-rose-500"> — ' + escapeHtml(item.reason || 'ไม่สามารถบันทึกได้') + '</span>' +
+                        '</div>';
+                    }).join('');
+                    failedList.classList.remove('hidden');
+                } else {
+                    failedList.innerHTML = '';
+                    failedList.classList.add('hidden');
+                }
+            }
+
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeEsignResultModal() {
+            document.getElementById('esign-result-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        /** ===================== DEPARTMENT STATUS MONITOR (Requirement 4) ===================== **/
+
+        /** ===================== EVIDENCE CAPTURE MODULE (v5.9.16) ===================== **/
+        // Critical Principle: attach Evidence to an EXISTING KeyIn Tracking. NEVER calls
+        // saveKeyIn() (Duplicate Tracking Protection would reject it anyway) and NEVER runs
+        // OCR/Barcode/Route/Department detection — the Tracking is already known.
+        let evidenceCaptureQueueItems = [];
+        let evidenceCaptureActiveTracking = null;
+        let evidenceCaptureNewImages = [];
+        let evidenceCaptureSeenFileKeys = []; // Requirement 16: index-aligned with evidenceCaptureNewImages
+        let evidenceCaptureSaving = false; // Frontend in-flight lock — Requirement 21
+
+        async function loadEvidenceCaptureQueue() {
+            if (!requireGas() || !getAuthToken()) return;
+
+            const deptSelect = document.getElementById('evidencecapture-filter-department');
+            if (deptSelect && deptSelect.options.length <= 1) {
+                deptSelect.innerHTML = '<option value="__ALL__">ทุกแผนก</option>' +
+                    SMART_DEPARTMENTS.map(function(name) {
+                        return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+                    }).join('');
+            }
+
+            // Requirement 6: default Date = today, only the first time the page is opened this
+            // session — Refresh/filter changes afterward never silently reset the user's choice.
+            const dateInput = document.getElementById('evidencecapture-filter-date');
+            if (dateInput && dateInput.dataset.initialized !== '1') {
+                dateInput.value = new Date().toISOString().slice(0, 10);
+                dateInput.dataset.initialized = '1';
+            }
+
+            const status = document.getElementById('evidencecapture-status-line');
+            const list = document.getElementById('evidencecapture-list');
+            if (status) status.textContent = 'กำลังโหลดข้อมูล...';
+            if (list) list.innerHTML = '<div class="sm:col-span-2 lg:col-span-3 text-center text-slate-400 text-xs py-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</div>';
+
+            try {
+                const res = await apiCall('getEvidenceCaptureQueue', {
+                    date: dateInput?.value || '',
+                    department: document.getElementById('evidencecapture-filter-department')?.value || '__ALL__',
+                    route: document.getElementById('evidencecapture-filter-route')?.value || '__ALL__',
+                    evidenceStatus: document.getElementById('evidencecapture-filter-status')?.value || 'pending',
+                    authToken: getAuthToken()
+                });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ');
+
+                evidenceCaptureQueueItems = res.items || [];
+                const pendingEl = document.getElementById('evidencecapture-pending-count');
+                const completedEl = document.getElementById('evidencecapture-completed-count');
+                if (pendingEl) pendingEl.textContent = res.pendingCount;
+                if (completedEl) completedEl.textContent = res.completedCount;
+
+                renderEvidenceCaptureQueue();
+            } catch (err) {
+                if (list) list.innerHTML = '<div class="sm:col-span-2 lg:col-span-3 text-center text-rose-500 text-xs py-10">โหลดข้อมูลไม่สำเร็จ: ' + escapeHtml(normalizeError(err)) + '</div>';
+                if (status) status.textContent = '';
+            }
+        }
+
+        function onEvidenceCaptureFilterChange() {
+            loadEvidenceCaptureQueue();
+        }
+
+        function clearEvidenceCaptureDateFilter() {
+            const dateInput = document.getElementById('evidencecapture-filter-date');
+            if (dateInput) { dateInput.value = ''; dateInput.dataset.initialized = '1'; }
+            loadEvidenceCaptureQueue();
+        }
+
+        function renderEvidenceCaptureQueue() {
+            const list = document.getElementById('evidencecapture-list');
+            const statusLine = document.getElementById('evidencecapture-status-line');
+            if (!list) return;
+
+            if (!evidenceCaptureQueueItems.length) {
+                list.innerHTML = '<div class="sm:col-span-2 lg:col-span-3 text-center text-slate-400 text-xs py-10"><i class="fa-solid fa-circle-check text-2xl text-emerald-400 block mb-2"></i>ไม่พบรายการตามเงื่อนไขที่เลือก</div>';
+                if (statusLine) statusLine.textContent = 'ไม่พบรายการ';
+                return;
+            }
+
+            if (statusLine) statusLine.textContent = 'พบ ' + evidenceCaptureQueueItems.length + ' รายการ';
+
+            list.innerHTML = evidenceCaptureQueueItems.map(function(item, idx) {
+                const badge = item.hasEvidence
+                    ? '<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 shrink-0">แนบแล้ว ' + item.evidenceCount + '</span>'
+                    : '<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700 shrink-0">รอแนบรูป</span>';
+                return '<button type="button" onclick="openEvidenceCaptureDetail(' + idx + ')" class="text-left bg-white border border-slate-200 rounded-xl p-3.5 hover:border-orange-300 hover:shadow-md transition active:scale-[0.99] min-h-[44px]">' +
+                    '<div class="flex items-center justify-between gap-2 mb-1.5"><p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(item.trackingId) + '</p>' + badge + '</div>' +
+                    '<p class="text-xs text-slate-500">' + escapeHtml(item.department || '-') + ' • ' + escapeHtml(item.route || '-') + '</p>' +
+                    '<p class="text-[11px] text-slate-400 mt-1">เอกสาร ' + Number(item.documentCount || 1) + ' ฉบับ' + (item.isIncomplete ? ' • <span class="text-amber-600 font-bold">ข้อมูลยังไม่ครบ</span>' : '') + '</p>' +
+                    '<div class="mt-2.5 text-[11px] font-bold text-orange-600 flex items-center gap-1"><i class="fa-solid fa-camera"></i> แตะเพื่อแนบรูปหลักฐาน</div>' +
+                '</button>';
+            }).join('');
+        }
+
+        function openEvidenceCaptureDetail(idx) {
+            const item = evidenceCaptureQueueItems[idx];
+            if (!item) return;
+            evidenceCaptureActiveTracking = item;
+            evidenceCaptureNewImages = [];
+            evidenceCaptureSeenFileKeys = [];
+            setEvidenceProcessingState(0, 0);
+
+            document.getElementById('evidencecapture-detail-tracking').textContent = item.trackingId;
+            document.getElementById('evidencecapture-detail-meta').textContent = (item.department || '-') + ' • ' + (item.route || '-');
+            document.getElementById('evidencecapture-detail-docs').textContent = 'เอกสารในชุด: ' + Number(item.documentCount || 1) + ' ฉบับ';
+            document.getElementById('evidencecapture-detail-incomplete')?.classList.toggle('hidden', !item.isIncomplete);
+
+            const existingList = document.getElementById('evidencecapture-existing-list');
+            if (existingList) {
+                existingList.innerHTML = item.evidenceCount > 0
+                    ? '<button type="button" onclick="openEvidencePreviewForTracking(\'' + String(item.trackingId).replace(/'/g, "\\'") + '\')" class="text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-lg min-h-[40px]"><i class="fa-regular fa-images mr-1"></i>ดูรูปเดิม (' + item.evidenceCount + ')</button>'
+                    : '<span class="text-xs text-slate-400">ยังไม่มีรูป</span>';
+            }
+
+            renderEvidenceCaptureNewPreview();
+            document.getElementById('evidencecapture-detail-modal')?.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        // Reuses the SAME Secure Evidence Preview already built for Track & Trace — one Backend
+        // API (getEvidenceImages), one preview UI, never a second implementation.
+        function openEvidencePreviewForTracking(trackingId) {
+            evidencePreviewTrackingId = trackingId;
+            evidencePreviewImages = [];
+            evidencePreviewIndex = 0;
+            openEvidencePreview();
+        }
+
+        function closeEvidenceCaptureDetail() {
+            document.getElementById('evidencecapture-detail-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            evidenceCaptureActiveTracking = null;
+            evidenceCaptureNewImages = [];
+            evidenceCaptureSeenFileKeys = [];
+        }
+
+        function renderEvidenceCaptureNewPreview() {
+            const wrap = document.getElementById('evidencecapture-new-preview-list');
+            const label = document.getElementById('evidencecapture-new-preview-label');
+            const count = document.getElementById('evidencecapture-new-preview-count');
+            if (!wrap) return;
+
+            label?.classList.toggle('hidden', evidenceCaptureNewImages.length === 0);
+            if (count) count.textContent = evidenceCaptureNewImages.length ? '(' + evidenceCaptureNewImages.length + ')' : '';
+
+            wrap.innerHTML = evidenceCaptureNewImages.map(function(dataUrl, i) {
+                return '<div class="relative rounded-lg overflow-hidden border border-slate-200 aspect-square bg-slate-50">' +
+                    '<img src="' + dataUrl + '" class="w-full h-full object-cover">' +
+                    '<button type="button" onclick="removeEvidenceCaptureNewImage(' + i + ')" class="absolute top-1 right-1 w-7 h-7 rounded-full bg-slate-900/70 text-white flex items-center justify-center text-xs"><i class="fa-solid fa-xmark"></i></button>' +
+                '</div>';
+            }).join('');
+        }
+
+        function removeEvidenceCaptureNewImage(index) {
+            evidenceCaptureNewImages.splice(index, 1);
+            evidenceCaptureSeenFileKeys.splice(index, 1); // keep the two arrays index-aligned
+            renderEvidenceCaptureNewPreview();
+        }
+
+        function setEvidenceProcessingState(current, total) {
+            const status = document.getElementById('evidencecapture-processing-status');
+            const text = document.getElementById('evidencecapture-processing-status-text');
+            if (!status) return;
+            if (!current) { status.classList.add('hidden'); return; }
+            status.classList.remove('hidden');
+            if (text) {
+                text.textContent = (current <= total)
+                    ? 'กำลังเตรียมรูป ' + current + ' / ' + total + '...'
+                    : 'พร้อมบันทึก ' + total + ' รูป';
+            }
+        }
+
+        // Requirement 2/4: Camera and Gallery are two SEPARATE <input> elements — both funnel
+        // into this one shared pipeline, so compression/duplicate-checking/error-handling never
+        // has to be written twice.
+        function handleEvidenceCameraCapture(event) {
+            processEvidenceFiles(event.target.files);
+            event.target.value = '';
+        }
+
+        function handleEvidenceGallerySelect(event) {
+            processEvidenceFiles(event.target.files);
+            event.target.value = '';
+        }
+
+        // Requirement 5 — CRITICAL for iPad memory: images are processed ONE AT A TIME, never
+        // Promise.all() on a batch of full-resolution photos. Each file is read → resized/
+        // compressed → pushed to evidenceCaptureNewImages → the original File/dataURL reference
+        // is dropped before moving to the next one, so peak memory stays roughly constant
+        // regardless of how many photos were selected (2 vs 20).
+        //
+        // Requirement 7 — CRITICAL: this is the ONLY pipeline Camera and Gallery ever use, and
+        // it never calls analyzeParcelImage()/OCR/Barcode detection — the Tracking is already
+        // fixed to whichever item openEvidenceCaptureDetail() opened; Gallery photos are attached
+        // to that SAME TrackingID only, regardless of selection order or filename.
+        async function processEvidenceFiles(fileList) {
+            const files = Array.from(fileList || []).filter(function(f) { return f && f.type && f.type.indexOf('image/') === 0; });
+            if (!files.length) return;
+
+            const total = files.length;
+            let processed = 0;
+            let failedCount = 0;
+
+            for (const file of files) {
+                processed++;
+                setEvidenceProcessingState(processed, total);
+
+                // Requirement 16: duplicate check within this same selection — name+size+lastModified,
+                // never used to associate a photo with a Tracking, only to avoid adding the exact
+                // same file twice.
+                const fileKey = [file.name, file.size, file.lastModified].join('::');
+                if (evidenceCaptureSeenFileKeys.indexOf(fileKey) !== -1) continue;
+
+                try {
+                    const rawDataUrl = await readFileAsDataUrl(file);
+                    const optimizedDataUrl = await normalizeEvidenceDataUrl(rawDataUrl, 1800, 0.88);
+                    evidenceCaptureNewImages.push(optimizedDataUrl);
+                    evidenceCaptureSeenFileKeys.push(fileKey);
+                    renderEvidenceCaptureNewPreview(); // progressive — thumbnails appear as each one finishes
+                } catch (err) {
+                    // Requirement 17: one unreadable file must never lose the others in the batch.
+                    failedCount++;
+                    console.warn('processEvidenceFiles:', file.name, normalizeError(err));
+                }
+            }
+
+            setEvidenceProcessingState(0, 0); // hide the "กำลังเตรียมรูป..." status
+
+            if (failedCount > 0) {
+                showSystemToast(
+                    failedCount === total
+                        ? 'ไม่สามารถอ่านรูปนี้ได้ กรุณาเลือกรูป JPG/PNG หรือถ่ายใหม่'
+                        : 'อ่านรูปไม่สำเร็จ ' + failedCount + ' รูป • รูปอื่นเตรียมพร้อมแล้ว',
+                    'error'
+                );
+            }
+        }
+
+        async function saveEvidenceCaptureAndNext() { await performEvidenceCaptureSave(true); }
+        async function saveEvidenceCaptureAndClose() { await performEvidenceCaptureSave(false); }
+
+        async function performEvidenceCaptureSave(advanceToNext) {
+            // Requirement 21: Frontend in-flight lock — a fast double-tap on iPad/Mobile must
+            // never fire this twice while a save is already running.
+            if (evidenceCaptureSaving) return;
+            if (!evidenceCaptureActiveTracking) return;
+            if (!evidenceCaptureNewImages.length) { showSystemToast('กรุณาถ่ายรูปหลักฐานอย่างน้อย 1 รูป', 'error'); return; }
+
+            const trackingId = evidenceCaptureActiveTracking.trackingId;
+            const nextBtn = document.getElementById('evidencecapture-save-next-btn');
+            const closeBtn = document.getElementById('evidencecapture-save-close-btn');
+
+            evidenceCaptureSaving = true;
+            [nextBtn, closeBtn].forEach(function(btn) { if (btn) { btn.disabled = true; btn.classList.add('opacity-60', 'cursor-wait'); } });
+            if (nextBtn) nextBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังบันทึกรูป...';
+
+            try {
+                const res = await apiCall('saveTrackingEvidence', {
+                    trackingId: trackingId,
+                    images: evidenceCaptureNewImages.slice(),
+                    clientRequestId: generateClientRequestId('EVIDENCE'),
+                    authToken: getAuthToken()
+                }, { timeoutMs: API_EVIDENCE_TIMEOUT_MS });
+                if (handleAuthFailure(res)) return;
+
+                // Requirement 22: never treat this as success until the Backend explicitly
+                // confirms verified:true.
+                if (!res || !res.success || !res.verified) {
+                    showSystemToast((res && res.message) || 'บันทึกรูปหลักฐานไม่สำเร็จ', 'error');
+                    return;
+                }
+
+                showSystemToast('✓ ' + (res.message || 'บันทึกรูปหลักฐานสำเร็จ') + ' (' + trackingId + ')', 'success');
+
+                // Requirement 23/25/35: update the in-memory Queue directly — no reload of
+                // Dashboard/Report/Operations/the whole KeyIn dataset.
+                const idx = evidenceCaptureQueueItems.findIndex(function(x) { return x.trackingId === trackingId; });
+                let removedIndex = -1;
+                if (idx !== -1) {
+                    evidenceCaptureQueueItems[idx].hasEvidence = true;
+                    evidenceCaptureQueueItems[idx].evidenceCount = res.evidenceCount;
+                    const statusFilter = document.getElementById('evidencecapture-filter-status')?.value || 'pending';
+                    if (statusFilter === 'pending') {
+                        evidenceCaptureQueueItems.splice(idx, 1);
+                        removedIndex = idx;
+                    }
+                }
+
+                const pendingEl = document.getElementById('evidencecapture-pending-count');
+                const completedEl = document.getElementById('evidencecapture-completed-count');
+                if (pendingEl) pendingEl.textContent = Math.max(0, Number(pendingEl.textContent || 0) - 1);
+                if (completedEl) completedEl.textContent = Number(completedEl.textContent || 0) + 1;
+
+                renderEvidenceCaptureQueue();
+                evidenceCaptureNewImages = [];
+
+                if (advanceToNext && evidenceCaptureQueueItems.length) {
+                    const nextIdx = removedIndex !== -1 ? Math.min(removedIndex, evidenceCaptureQueueItems.length - 1) : 0;
+                    openEvidenceCaptureDetail(nextIdx);
+                } else {
+                    closeEvidenceCaptureDetail();
+                }
+
+            } catch (err) {
+                showSystemToast('บันทึกรูปหลักฐานไม่สำเร็จ: ' + normalizeError(err), 'error');
+            } finally {
+                evidenceCaptureSaving = false;
+                [nextBtn, closeBtn].forEach(function(btn) { if (btn) { btn.disabled = false; btn.classList.remove('opacity-60', 'cursor-wait'); } });
+                if (nextBtn) nextBtn.innerHTML = 'บันทึกและไปตัวถัดไป';
+            }
+        }
+
+        async function loadDepartmentStatusMonitor() {
+            if (!requireGas() || !getAuthToken()) return;
+
+            const statusLine = document.getElementById('deptstatus-status-line');
+            if (statusLine) statusLine.textContent = 'กำลังโหลดข้อมูลเอกสาร...';
+
+            // Requirement 2.8: dropdown built once from the system's central department list —
+            // available immediately, independent of whether the data request has returned yet.
+            const select = document.getElementById('deptstatus-department-select');
+            if (select && select.options.length <= 1) {
+                const previousValue = select.value || '__ALL__';
+                select.innerHTML = '<option value="__ALL__">ทุกแผนก / All Departments</option>' +
+                    SMART_DEPARTMENTS.map(function(name) {
+                        return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+                    }).join('');
+                select.value = previousValue;
+            }
+
+            try {
+                const res = await apiCall('getDepartmentStatusSummary', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ');
+
+                deptStatusData = res; // single load — Department switches below filter this in Browser only.
+
+                const setText = function(id, value) {
+                    const el = document.getElementById(id);
+                    if (el) el.textContent = Number(value || 0).toLocaleString('th-TH');
+                };
+                setText('deptstatus-kpi-total', res.summary.total);
+                setText('deptstatus-kpi-pending', res.summary.pending);
+                setText('deptstatus-kpi-delivered', res.summary.delivered);
+                setText('deptstatus-kpi-returned', res.summary.returned);
+                const deptsEl = document.getElementById('deptstatus-kpi-depts');
+                if (deptsEl) deptsEl.textContent = res.summary.departmentsPending + ' / ' + res.summary.totalDepartments;
+
+                // Requirement 2.1: default view (All Departments) renders immediately — no
+                // department selection required first.
+                renderDepartmentStatusDetail();
+
+            } catch (err) {
+                deptStatusData = null;
+                if (statusLine) statusLine.textContent = '';
+                showSystemToast('โหลด Department Status ไม่สำเร็จ: ' + normalizeError(err), 'error');
+                const tbody = document.getElementById('deptstatus-table-body');
+                const cardList = document.getElementById('deptstatus-card-list');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-rose-500 py-8">โหลดข้อมูลไม่สำเร็จ</td></tr>';
+                if (cardList) cardList.innerHTML = '<div class="text-center text-rose-500 text-xs py-8">โหลดข้อมูลไม่สำเร็จ</div>';
+            }
+        }
+
+        function clearDeptStatusDateFilter() {
+            const dateInput = document.getElementById('deptstatus-date-filter');
+            if (dateInput) dateInput.value = '';
+            renderDepartmentStatusDetail();
+        }
+
+        // Requirement 1 (v5.9.13): "YYYY-MM-DD" → explicit Y/M/D components, compared directly
+        // against Date object components — never `new Date(str)` (UTC-parsing can silently shift
+        // the calendar day) and never a raw string/Thai-formatted comparison.
+        function isSameCalendarDateJs(isoDateStr, value) {
+            if (!isoDateStr || !value) return false;
+            const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDateStr);
+            if (!m) return false;
+            const d = new Date(value);
+            if (isNaN(d.getTime())) return false;
+            return d.getFullYear() === Number(m[1]) && (d.getMonth() + 1) === Number(m[2]) && d.getDate() === Number(m[3]);
+        }
+
+        function renderDepartmentStatusDetail() {
+            const select = document.getElementById('deptstatus-department-select');
+            const department = select ? (select.value || '__ALL__') : '__ALL__';
+            const dateFilter = document.getElementById('deptstatus-date-filter')?.value || '';
+            const statusLine = document.getElementById('deptstatus-status-line');
+            const tbody = document.getElementById('deptstatus-table-body');
+            const cardList = document.getElementById('deptstatus-card-list');
+
+            if (!deptStatusData) return; // still loading / failed — loadDepartmentStatusMonitor already shows that state
+
+            // Requirement 1: Department AND Date filter together, entirely in the Browser from
+            // the array already loaded once by loadDepartmentStatusMonitor() — never a new API
+            // call just because either filter changed (Performance).
+            const allItems = deptStatusData.items || [];
+            const items = allItems.filter(function(item) {
+                if (department !== '__ALL__' && String(item.department || '').trim() !== department) return false;
+                if (dateFilter && !isSameCalendarDateJs(dateFilter, item.registeredTime || item.timestamp)) return false;
+                return true;
+            });
+
+            let total = 0, pending = 0, delivered = 0, returned = 0, atAriHills = 0, inTransit = 0, awaitingEsign = 0;
+            items.forEach(function(item) {
+                const s = String(item.status || '').toLowerCase();
+                const isRegistered = s === 'registered';
+                const isDispatchedLike = s === 'dispatched to btsvp' || s === 'dispatched to bts';
+                const isArrived = s === 'arrived at btsvp';
+                const isDelivered = s === 'delivered' || s === 'signed' || s === 'signed / delivered';
+                const isReturned = s === 'returned' || s === 'return';
+                total++;
+                if (isDelivered) delivered++;
+                else if (isReturned) returned++;
+                else pending++; // Registered, In Transit, Arrived at BTSVP, etc.
+                if (isRegistered) atAriHills++;
+                if (isDispatchedLike) inTransit++;
+                if (isArrived) awaitingEsign++;
+            });
+
+            const setNum = function(id, value) { const el = document.getElementById(id); if (el) el.textContent = value; };
+            setNum('deptstatus-detail-total', total);
+            setNum('deptstatus-detail-pending', pending);
+            setNum('deptstatus-detail-delivered', delivered);
+            setNum('deptstatus-detail-returned', returned);
+            setNum('deptstatus-detail-atarihills', atAriHills);
+            setNum('deptstatus-detail-intransit', inTransit);
+            setNum('deptstatus-detail-awaitingesign', awaitingEsign);
+
+            const emptyMessage = !allItems.length
+                ? 'ยังไม่มีรายการเอกสารในระบบ'
+                : (department === '__ALL__' ? 'ยังไม่มีรายการเอกสารในระบบ' : 'ไม่พบรายการเอกสารของแผนก ' + department);
+
+            if (statusLine) {
+                statusLine.textContent = items.length
+                    ? 'พบทั้งหมด ' + items.length.toLocaleString('th-TH') + ' รายการ'
+                    : emptyMessage;
+            }
+
+            const statusBadgeClass = function(status) {
+                return /deliver/i.test(status || '') ? 'bg-emerald-100 text-emerald-800' :
+                    /return/i.test(status || '') ? 'bg-rose-100 text-rose-800' :
+                    /dispatch|transit/i.test(status || '') ? 'bg-amber-100 text-amber-800' :
+                    'bg-sky-100 text-sky-800';
+            };
+
+            if (!items.length) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">' + escapeHtml(emptyMessage) + '</td></tr>';
+                if (cardList) cardList.innerHTML = '<div class="text-center text-slate-400 text-xs py-8">' + escapeHtml(emptyMessage) + '</div>';
+                return;
+            }
+
+            if (tbody) {
+                tbody.innerHTML = items.map(function(item) {
+                    const trackId = escapeHtml(item.trackingId || '').replace(/'/g, "\\'");
+                    return '<tr class="hover:bg-slate-50 cursor-pointer" onclick="openTrackFromDeptStatus(\'' + trackId + '\')">' +
+                        '<td class="px-4 py-3 text-slate-500 whitespace-nowrap">' + escapeHtml(formatTrackTime(item.timestamp) || '-') + '</td>' +
+                        '<td class="px-4 py-3 font-bold text-slate-800 break-all">' + escapeHtml(item.trackingId || '-') + '</td>' +
+                        '<td class="px-4 py-3 text-slate-600">' + escapeHtml(item.department || '-') + '</td>' +
+                        '<td class="px-4 py-3 text-slate-600">' + escapeHtml(item.recipientName || '-') + '</td>' +
+                        '<td class="px-4 py-3 text-slate-600">' + escapeHtml(item.currentLocation || '-') + '</td>' +
+                        '<td class="px-4 py-3 text-right">' + Number(item.qty || 1) + '</td>' +
+                        '<td class="px-4 py-3"><span class="text-[10px] font-bold px-2 py-1 rounded-full ' + statusBadgeClass(item.status) + '">' + escapeHtml(item.status || '-') + '</span></td>' +
+                    '</tr>';
+                }).join('');
+            }
+
+            if (cardList) {
+                cardList.innerHTML = items.map(function(item) {
+                    const trackId = escapeHtml(item.trackingId || '').replace(/'/g, "\\'");
+                    return '<div class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-teal-300 active:scale-[0.99] transition" onclick="openTrackFromDeptStatus(\'' + trackId + '\')">' +
+                        '<div class="flex items-center justify-between gap-2">' +
+                            '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(item.trackingId || '-') + '</p>' +
+                            '<span class="text-[10px] font-bold px-2 py-1 rounded-full shrink-0 ' + statusBadgeClass(item.status) + '">' + escapeHtml(item.status || '-') + '</span>' +
+                        '</div>' +
+                        '<p class="text-xs text-slate-500 mt-1.5">' + escapeHtml(item.department || '-') + ' • ' + escapeHtml(item.currentLocation || '-') + '</p>' +
+                        '<p class="text-xs text-slate-700 mt-0.5">' + escapeHtml(item.recipientName || '-') + '</p>' +
+                        '<p class="text-[11px] text-slate-400 mt-1">' + escapeHtml((item.route || '-') + ' • ' + Number(item.qty || 1) + ' ชิ้น') + '</p>' +
+                        '<p class="text-[10px] text-slate-400 mt-0.5">' + escapeHtml(formatTrackTime(item.timestamp) || '-') + '</p>' +
+                    '</div>';
+                }).join('');
+            }
+        }
+
+        function openTrackFromDeptStatus(trackingId) {
+            navigateTo('track');
+            const input = document.getElementById('track-search-input');
+            if (input) input.value = trackingId;
+            searchTracking();
+        }
+
+        function searchTracking() {
+            if (!requireGas()) return;
+            const input = document.getElementById('track-search-input');
+            const trackingId = input.value.trim();
+
+            if (!trackingId) {
+                showSystemToast('กรุณากรอก Tracking / Barcode', 'error');
+                input.focus();
+                return;
+            }
+
+            const result = document.getElementById('track-result');
+            if (result) result.classList.add('hidden');
+
+            apiCall('searchTracking', {
+                trackingId: trackingId,
+                authToken: getAuthToken()
+            })
+                .then(function(res) {
+                    if (handleAuthFailure(res)) return;
+                    if (!res || res.success === false || res.found === false) {
+                        showSystemToast((res && res.message) || 'ไม่พบ Tracking นี้ในระบบ', 'error');
+                        return;
+                    }
+                    renderTrackResult(res);
+                })
+                .catch(function(err) {
+                    showSystemToast('ค้นหาไม่สำเร็จ: ' + normalizeError(err), 'error');
+                });
+        }
+
+        function formatTrackTime(value) {
+            if (!value) return '-';
+            const d = new Date(value);
+            if (Number.isNaN(d.getTime())) return '-'; // Requirement: unparseable historical Timestamp shows '-', never raw garbage
+            return d.toLocaleString('th-TH', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function handleTrackCardClick(event) {
+            if (event && event.target && event.target.closest('a,button,input')) return;
+            toggleTrackDetails();
+        }
+
+        function toggleTrackDetails() {
+            const panel = document.getElementById('track-detail-panel');
+            const icon = document.getElementById('track-result-chevron');
+            const toggle = document.getElementById('track-result-toggle');
+            if (!panel) return;
+            const willHide = !panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', willHide);
+            icon?.classList.toggle('fa-chevron-down', willHide);
+            icon?.classList.toggle('fa-chevron-up', !willHide);
+            toggle?.setAttribute('aria-expanded', String(!willHide));
+        }
+
+        // Requirement 3: Signature Preview — lazy-loaded, authenticated (no direct Drive links).
+        let trackSignatureEntries = [];
+
+        // Requirement 2 (v5.9.13): Evidence Preview state — images are only fetched from the
+        // Backend once the user actually clicks "ดูรูปหลักฐาน" (Lazy Loading).
+        let evidencePreviewTrackingId = '';
+        let evidencePreviewImages = [];
+        let evidencePreviewIndex = 0;
+
+        async function openEvidencePreview() {
+            if (!evidencePreviewTrackingId) return;
+            if (!requireGas() || !getAuthToken()) return;
+
+            const modal = document.getElementById('evidence-preview-modal');
+            const loading = document.getElementById('evidence-preview-loading');
+            const errorBox = document.getElementById('evidence-preview-error');
+            const imgEl = document.getElementById('evidence-preview-image');
+            if (!modal) return;
+
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            if (imgEl) { imgEl.classList.add('hidden'); imgEl.removeAttribute('src'); }
+            if (errorBox) errorBox.classList.add('hidden');
+            if (loading) loading.classList.remove('hidden');
+            document.getElementById('evidence-preview-nav')?.classList.add('hidden');
+
+            // Cache per Tracking within this Track & Trace session — avoid re-fetching if the
+            // user closes and reopens the same result without a new Search.
+            if (!evidencePreviewImages.length) {
+                try {
+                    const res = await apiCall('getEvidenceImages', {
+                        trackingId: evidencePreviewTrackingId,
+                        authToken: getAuthToken()
+                    });
+                    if (handleAuthFailure(res)) return;
+                    if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดรูปหลักฐานไม่สำเร็จ');
+
+                    evidencePreviewImages = res.images || [];
+                    if (!evidencePreviewImages.length) {
+                        if (loading) loading.classList.add('hidden');
+                        if (errorBox) { errorBox.textContent = 'ไม่มีรูปหลักฐาน'; errorBox.classList.remove('hidden'); }
+                        return;
+                    }
+                } catch (err) {
+                    if (loading) loading.classList.add('hidden');
+                    if (errorBox) { errorBox.textContent = normalizeError(err); errorBox.classList.remove('hidden'); }
+                    return;
+                }
+            }
+
+            evidencePreviewIndex = 0;
+            showEvidenceAt(0);
+        }
+
+        function showEvidenceAt(index) {
+            const imgEl = document.getElementById('evidence-preview-image');
+            const loading = document.getElementById('evidence-preview-loading');
+            const counter = document.getElementById('evidence-preview-counter');
+            const nav = document.getElementById('evidence-preview-nav');
+            if (!evidencePreviewImages.length) return;
+
+            evidencePreviewIndex = Math.max(0, Math.min(evidencePreviewImages.length - 1, index));
+            const item = evidencePreviewImages[evidencePreviewIndex];
+
+            if (loading) loading.classList.add('hidden');
+            if (imgEl && item) {
+                imgEl.src = item.dataUrl;
+                imgEl.classList.remove('hidden');
+            }
+            if (counter) counter.textContent = (evidencePreviewIndex + 1) + ' / ' + evidencePreviewImages.length;
+            if (nav) nav.classList.toggle('hidden', evidencePreviewImages.length <= 1);
+        }
+
+        function nextEvidenceImage() { showEvidenceAt(evidencePreviewIndex + 1 >= evidencePreviewImages.length ? 0 : evidencePreviewIndex + 1); }
+        function prevEvidenceImage() { showEvidenceAt(evidencePreviewIndex - 1 < 0 ? evidencePreviewImages.length - 1 : evidencePreviewIndex - 1); }
+
+        function closeEvidencePreview() {
+            document.getElementById('evidence-preview-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+
+        async function openSignaturePreview(index) {
+            const entry = trackSignatureEntries[index];
+            if (!entry) return;
+
+            const modal = document.getElementById('signature-preview-modal');
+            const img = document.getElementById('signature-preview-image');
+            const loading = document.getElementById('signature-preview-loading');
+            const errorBox = document.getElementById('signature-preview-error');
+            const recipientEl = document.getElementById('signature-preview-recipient');
+            const timeEl = document.getElementById('signature-preview-time');
+            if (!modal) return;
+
+            if (recipientEl) recipientEl.textContent = entry.recipientName || '-';
+            if (timeEl) timeEl.textContent = formatTrackTime(entry.time);
+            if (img) { img.classList.add('hidden'); img.removeAttribute('src'); }
+            if (errorBox) errorBox.classList.add('hidden');
+            if (loading) loading.classList.remove('hidden');
+
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+
+            try {
+                const res = await apiCall('getSignatureImage', {
+                    signatureUrl: entry.signatureUrl,
+                    authToken: getAuthToken()
+                });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false || !res.imageData) {
+                    throw new Error((res && res.message) || 'ไม่สามารถโหลดรูปลายเซ็นได้');
+                }
+                if (img) {
+                    img.src = res.imageData;
+                    img.classList.remove('hidden');
+                }
+            } catch (err) {
+                if (errorBox) {
+                    errorBox.textContent = normalizeError(err);
+                    errorBox.classList.remove('hidden');
+                }
+            } finally {
+                if (loading) loading.classList.add('hidden');
+            }
+        }
+
+        function closeSignaturePreview() {
+            document.getElementById('signature-preview-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            const img = document.getElementById('signature-preview-image');
+            if (img) { img.classList.add('hidden'); img.removeAttribute('src'); }
+        }
+
+        function renderTrackResult(res) {
+            trackSignatureEntries = []; // reset per search — Signature Preview Modal reads from this
+            const result = document.getElementById('track-result');
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value || '-';
+            };
+
+            setText('result-tracking-id', res.trackingId);
+            setText('result-track-location', res.currentLocation || 'Ari Hills');
+            setText('result-track-sender', res.senderName);
+            setText('result-track-dept', res.department);
+            setText('result-track-route', res.route);
+            setText('result-track-recipient', res.recipientName);
+            setText('result-track-phone', res.recipientPhone);
+            setText('result-track-postcode', res.recipientPostcode);
+            setText('result-track-qty', String(res.qty || 1));
+            setText('result-track-remarks', res.remarks);
+            setText('result-track-summary', (res.timeline || []).length + ' เหตุการณ์ • แตะเพื่อย่อ/ขยาย');
+
+            // Requirement 2: Evidence metadata (count/URLs) is already in this same searchTracking()
+            // response — the actual image bytes are only ever fetched lazily when the user clicks
+            // the button below (Performance — Lazy Loading, never sent up front with every search).
+            evidencePreviewTrackingId = res.trackingId || '';
+            evidencePreviewImages = [];
+            evidencePreviewIndex = 0;
+            const evidenceCount = Array.isArray(res.imageUrls) ? res.imageUrls.length : 0;
+            const evidenceBtn = document.getElementById('track-evidence-btn');
+            const evidenceBtnLabel = document.getElementById('track-evidence-btn-label');
+            if (evidenceBtn) evidenceBtn.classList.toggle('hidden', evidenceCount === 0);
+            if (evidenceBtnLabel) evidenceBtnLabel.textContent = evidenceCount > 1 ? 'ดูรูปหลักฐาน (' + evidenceCount + ')' : 'ดูรูปหลักฐาน';
+
+            const badge = document.getElementById('result-status-badge');
+            if (badge) {
+                badge.textContent = res.status || 'Registered';
+                badge.className = 'text-xs px-3 py-1 rounded-full font-bold ' +
+                    (/deliver/i.test(res.status || '') ? 'bg-emerald-100 text-emerald-800' :
+                     /return/i.test(res.status || '') ? 'bg-rose-100 text-rose-800' :
+                     /arrived/i.test(res.status || '') ? 'bg-purple-100 text-purple-800' :
+                     /dispatch|transit/i.test(res.status || '') ? 'bg-amber-100 text-amber-800' :
+                     'bg-sky-100 text-sky-800');
+            }
+
+            // Requirement 11: distinct color per event type — but always paired with visible text,
+            // never color alone, so the timeline stays readable for colorblind users too.
+            const EVENT_VISUAL = {
+                REGISTERED: { dot: 'text-sky-500', icon: 'fa-inbox', actorLabel: 'ผู้ดำเนินการ' },
+                DISPATCHED: { dot: 'text-amber-500', icon: 'fa-truck-fast', actorLabel: 'ผู้ดำเนินการ' },
+                ARRIVED: { dot: 'text-purple-500', icon: 'fa-building-shield', actorLabel: 'ผู้ยืนยัน' },
+                DELIVERED: { dot: 'text-emerald-500', icon: 'fa-circle-check', actorLabel: 'ผู้เซ็นรับ' },
+                RETURNED: { dot: 'text-rose-500', icon: 'fa-rotate-left', actorLabel: 'บันทึกโดย' },
+                REDELIVERY: { dot: 'text-teal-500', icon: 'fa-route', actorLabel: 'ผู้ดำเนินการ' }
+            };
+
+            const timeline = document.getElementById('result-track-timeline');
+            if (timeline) {
+                const items = Array.isArray(res.timeline) ? res.timeline.slice().reverse() : [];
+                timeline.innerHTML = items.length ? items.map(function(item, index) {
+                    const active = index === 0;
+                    const visual = EVENT_VISUAL[item.type] || { dot: 'text-slate-400', icon: 'fa-circle-dot', actorLabel: 'ผู้ดำเนินการ' };
+
+                    // Requirement 3/12: never link/img straight to the Google Drive URL — that
+                    // triggers Drive's "You need access" prompt. Instead, queue this entry and
+                    // load it lazily (authenticated, base64) only when the user asks to view it.
+                    let signatureBlock = '';
+                    if (item.signatureUrl) {
+                        const sigIndex = trackSignatureEntries.length;
+                        trackSignatureEntries.push({
+                            signatureUrl: item.signatureUrl,
+                            recipientName: item.signedByName || res.recipientName || '',
+                            time: item.time
+                        });
+                        signatureBlock =
+                            '<button type="button" onclick="openSignaturePreview(' + sigIndex + ')" ' +
+                            'class="mt-3 inline-flex items-center gap-2 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 border border-indigo-100 px-3 py-2 rounded-xl active:scale-[0.98] transition">' +
+                            '<i class="fa-regular fa-image"></i> ดูรูปลายเซ็น' +
+                            '</button>';
+                    }
+
+                    // Requirement 3/10: structured, labeled detail lines per event type — rather
+                    // than a single opaque sentence — matching the required Timeline layout.
+                    let extraLines = '';
+                    if (item.type === 'REGISTERED') {
+                        extraLines =
+                            '<p class="text-[11px] text-slate-500 mt-1.5">ผู้ส่ง: ' + escapeHtml(item.senderName || '-') + '</p>' +
+                            '<p class="text-[11px] text-slate-500">ผู้รับ: ' + escapeHtml(item.recipientName || '-') + '</p>' +
+                            '<p class="text-[11px] text-slate-500">แผนก: ' + escapeHtml(item.department || '-') + '</p>';
+                    } else if (item.type === 'DELIVERED') {
+                        extraLines = '<p class="text-[11px] text-slate-500 mt-1.5">แผนก: ' + escapeHtml(item.department || '-') + '</p>';
+                    } else if (item.type === 'RETURNED') {
+                        extraLines =
+                            '<p class="text-[11px] text-slate-500 mt-1.5">ประเภท: ' + escapeHtml(item.returnType || '-') + '</p>' +
+                            '<p class="text-[11px] text-slate-500">สาเหตุ: ' + escapeHtml(item.returnReason || '-') + '</p>' +
+                            '<p class="text-[11px] text-slate-500">หมายเหตุ: ' + escapeHtml(item.returnRemarks || '-') + '</p>';
+                    } else if (item.type === 'REDELIVERY') {
+                        extraLines =
+                            '<p class="text-[11px] text-slate-500 mt-1.5">แผนกเดิม: ' + escapeHtml(item.fromDepartment || '-') + '</p>' +
+                            '<p class="text-[11px] text-slate-500">แผนกใหม่: ' + escapeHtml(item.toDepartment || '-') + '</p>';
+                    }
+
+                    return '<div class="flex gap-3">' +
+                        '<i class="fa-solid ' + visual.icon + ' ' + (active ? visual.dot : 'text-slate-300') + ' mt-1"></i>' +
+                        '<div class="min-w-0 flex-1"><p class="font-bold text-slate-700">' +
+                        escapeHtml(formatTrackTime(item.time) + ' • ' + (item.title || 'อัปเดตสถานะ')) +
+                        '</p><p class="text-slate-500 mt-1 break-words">' +
+                        escapeHtml(item.detail || '') +
+                        '</p>' +
+                        extraLines +
+                        (item.by ? '<p class="text-[10px] text-slate-400 mt-1.5">' + escapeHtml(visual.actorLabel) + ': ' + escapeHtml(item.by) + '</p>' : '') +
+                        signatureBlock +
+                        '</div></div>';
+                }).join('') : '<div class="text-slate-400">ยังไม่มี Timeline เพิ่มเติม</div>';
+            }
+
+            const panel = document.getElementById('track-detail-panel');
+            panel?.classList.remove('hidden');
+            const icon = document.getElementById('track-result-chevron');
+            icon?.classList.remove('fa-chevron-down');
+            icon?.classList.add('fa-chevron-up');
+
+            if (result) {
+                result.classList.remove('hidden');
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function submitReturnForm() {
+            if (!requireGas()) return;
+            const audit = getAuditUser();
+            const payload = {
+                trackingId: document.getElementById('return-tracking').value.trim(),
+                type: document.getElementById('return-type').value,
+                reason: document.getElementById('return-reason').value,
+                remarks: document.getElementById('return-remarks').value.trim(),
+                status: 'Returned', createdBy: audit.username, createdByRole: audit.role,
+                clientRequestId: generateClientRequestId('RETURN'),
+                authToken: getAuthToken()
+            };
+            if (!payload.trackingId) { alert('กรุณาระบุหมายเลข Tracking ที่ต้องการตีกลับ'); return; }
+            apiCall('saveReturn', payload)
+                .then(function(raw) {
+                    const res = normalizeResponse(raw, 'บันทึก Return ไม่สำเร็จ');
+                    if (handleAuthFailure(res)) return;
+                    if (!res.success) { alert(res.message); return; }
+                    alert(res.message);
+                    clearForm(['return-tracking','return-remarks']);
+                    esignQueueLoadedAt = 0; // Mark E-Sign Queue stale — refetches fresh next time it's opened
+                    // Part 3/9: no unconditional Dashboard/Operations refresh here — user is being
+                    // sent to Home, not either of those pages; both refresh fresh on their own entry.
+                    refreshNotificationBadge();
+                    navigateTo('home');
+                })
+                .catch(function(err) {
+                    alert('บันทึก Return ไม่สำเร็จ: ' + normalizeError(err));
+                });
+        }
+
+        /** ===================== REDELIVERY (v5.9.9 — Requirement 3) ===================== **/
+        let returnRedeliveryContext = null; // { trackingId, fromDepartment }
+
+        // Requirement 3 (v5.9.13): Return Acknowledgement Signature — a SEPARATE SignaturePad
+        // instance from the main E-Sign pad, using the same Mouse/Touch/Apple Pencil +
+        // devicePixelRatio pattern so it stays sharp on iPad Retina.
+        let returnSignaturePad = null;
+
+        function initReturnSignaturePad() {
+            const canvas = document.getElementById('return-signature-pad');
+            if (!canvas) return;
+            if (!returnSignaturePad) {
+                returnSignaturePad = new SignaturePad(canvas, {
+                    backgroundColor: 'rgba(255, 255, 255, 0)',
+                    penColor: 'rgb(30, 27, 65)'
+                });
+                canvas.addEventListener('pointerdown', hideReturnSignaturePlaceholder, { once: false });
+                canvas.addEventListener('touchstart', hideReturnSignaturePlaceholder, { passive: true });
+            }
+            resizeReturnSignatureCanvas();
+        }
+
+        function resizeReturnSignatureCanvas() {
+            const canvas = document.getElementById('return-signature-pad');
+            if (!canvas || !returnSignaturePad) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext('2d').scale(ratio, ratio);
+            returnSignaturePad.clear();
+            document.getElementById('return-signature-placeholder')?.classList.remove('hidden');
+        }
+
+        function hideReturnSignaturePlaceholder() {
+            document.getElementById('return-signature-placeholder')?.classList.add('hidden');
+        }
+
+        function clearReturnSignature() {
+            if (returnSignaturePad) returnSignaturePad.clear();
+            document.getElementById('return-signature-placeholder')?.classList.remove('hidden');
+        }
+
+        async function checkReturnTrackingStatus() {
+            const trackingId = document.getElementById('return-tracking')?.value.trim();
+            const card = document.getElementById('return-redelivery-card');
+            if (!trackingId) { card?.classList.add('hidden'); returnRedeliveryContext = null; return; }
+            if (!requireGas() || !getAuthToken()) return;
+
+            try {
+                const res = await apiCall('searchTracking', { trackingId: trackingId, authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+
+                if (!res || !res.found || String(res.status || '').toLowerCase() !== 'returned') {
+                    card?.classList.add('hidden');
+                    returnRedeliveryContext = null;
+                    return;
+                }
+
+                // Requirement: Department dropdown must use the SAME master list as Key In.
+                const deptSelect = document.getElementById('return-redelivery-department');
+                if (deptSelect && deptSelect.options.length <= 1) {
+                    deptSelect.innerHTML = '<option value="">-- กรุณาเลือกแผนก --</option>' +
+                        SMART_DEPARTMENTS.map(function(name) {
+                            return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+                        }).join('');
+                }
+
+                const returnedEvents = (res.timeline || []).filter(function(e) { return e.type === 'RETURNED'; });
+                const latestReturn = returnedEvents.length ? returnedEvents[returnedEvents.length - 1] : null;
+
+                document.getElementById('return-redelivery-tracking').textContent = res.trackingId;
+                document.getElementById('return-redelivery-from-dept').textContent = res.department || '-';
+                document.getElementById('return-redelivery-reason').textContent = latestReturn ? (latestReturn.returnReason || '-') : '-';
+
+                returnRedeliveryContext = { trackingId: res.trackingId, fromDepartment: res.department || '' };
+                card?.classList.remove('hidden');
+                // Canvas must be visible/sized before SignaturePad can size itself correctly.
+                setTimeout(initReturnSignaturePad, 50);
+
+            } catch (err) {
+                card?.classList.add('hidden');
+                returnRedeliveryContext = null;
+            }
+        }
+
+        async function confirmRedelivery() {
+            if (!returnRedeliveryContext) return;
+            const nextDepartment = document.getElementById('return-redelivery-department')?.value;
+            if (!nextDepartment) { showSystemToast('กรุณาเลือกแผนกปลายทางใหม่', 'error'); return; }
+
+            // Requirement 3: Return Acknowledgement Signature is REQUIRED before Redelivery —
+            // Backend also independently verifies this; the Frontend check is just fast feedback.
+            if (!returnSignaturePad || returnSignaturePad.isEmpty()) {
+                showSystemToast('กรุณาลงลายเซ็นยืนยันการรับเอกสารตีกลับก่อนนำส่งใหม่', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('return-redelivery-confirm-btn');
+            if (btn) { btn.disabled = true; btn.classList.add('opacity-60','cursor-wait'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังบันทึก...'; }
+
+            try {
+                const res = await apiCall('redeliverReturnedDocument', {
+                    trackingId: returnRedeliveryContext.trackingId,
+                    nextDepartment: nextDepartment,
+                    returnSignatureImage: cropSignatureCanvasToDataUrl(returnSignaturePad),
+                    clientRequestId: generateClientRequestId('REDELIVERY'),
+                    authToken: getAuthToken()
+                });
+                if (handleAuthFailure(res)) return;
+                if (!res || !res.success) { showSystemToast((res && res.message) || 'บันทึกการนำส่งใหม่ไม่สำเร็จ', 'error'); return; }
+
+                showSystemToast(res.message || 'บันทึกการนำส่งใหม่สำเร็จ', 'success');
+                document.getElementById('return-redelivery-card')?.classList.add('hidden');
+                if (returnSignaturePad) returnSignaturePad.clear();
+                returnRedeliveryContext = null;
+                clearForm(['return-tracking']);
+                esignQueueLoadedAt = 0; // Mark E-Sign Queue stale — refetches fresh next time it's opened (Redelivery moves this Tracking back into Arrived-at-BTSVP eligibility)
+                // Part 3/9: no unconditional Dashboard/Operations refresh — the user stays right
+                // here on the Return page; both refresh fresh whenever actually opened later.
+                refreshNotificationBadge();
+
+            } catch (err) {
+                showSystemToast('บันทึกการนำส่งใหม่ไม่สำเร็จ: ' + normalizeError(err), 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.classList.remove('opacity-60','cursor-wait'); btn.innerHTML = 'ยืนยันนำส่งใหม่'; }
+            }
+        }
+
+
+        /** ===================== NOTIFICATION CENTER (v5.9.9 — Requirement 1) ===================== **/
+        let notificationItems = [];
+
+        async function refreshNotificationBadge() {
+            if (!requireGas() || !getAuthToken()) return;
+            try {
+                const res = await apiCall('getNotifications', { authToken: getAuthToken() });
+                if (!res || res.success === false) return;
+                notificationItems = res.items || [];
+                renderNotificationBadge(res.count || 0);
+            } catch (err) {
+                console.warn('refreshNotificationBadge:', normalizeError(err));
+            }
+        }
+
+        function toggleNotificationPanel() {
+            const panel = document.getElementById('notification-panel');
+            if (panel && !panel.classList.contains('hidden')) { closeNotificationPanel(); return; }
+            openNotificationPanel();
+        }
+
+        async function openNotificationPanel() {
+            if (!requireGas() || !getAuthToken()) return;
+            document.getElementById('notification-overlay')?.classList.remove('hidden');
+            document.getElementById('notification-panel')?.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+
+            const list = document.getElementById('notification-panel-list');
+            if (list) list.innerHTML = '<div class="p-6 text-center text-sm text-slate-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลด...</div>';
+
+            try {
+                const res = await apiCall('getNotifications', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลด Notification ไม่สำเร็จ');
+
+                notificationItems = res.items || [];
+                renderNotificationBadge(res.count || 0);
+                renderNotificationList();
+            } catch (err) {
+                if (list) list.innerHTML = '<div class="p-6 text-center text-sm text-rose-500">โหลด Notification ไม่สำเร็จ</div>';
+            }
+        }
+
+        function closeNotificationPanel() {
+            document.getElementById('notification-overlay')?.classList.add('hidden');
+            document.getElementById('notification-panel')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        function renderNotificationBadge(count) {
+            ['desktop-notification-badge','mobile-notification-badge'].forEach(function(id) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (count > 0) { el.classList.remove('hidden'); el.textContent = count > 9 ? '9+' : String(count); }
+                else el.classList.add('hidden');
+            });
+            const panelCount = document.getElementById('notification-panel-count');
+            if (panelCount) panelCount.textContent = String(count);
+        }
+
+        function renderNotificationList() {
+            const list = document.getElementById('notification-panel-list');
+            if (!list) return;
+
+            if (!notificationItems.length) {
+                list.innerHTML = '<div class="p-8 text-center"><i class="fa-solid fa-circle-check text-3xl text-emerald-500"></i><p class="text-sm font-bold text-slate-700 mt-3">ไม่มีรายการที่ต้องดำเนินการ</p></div>';
+                return;
+            }
+
+            // Requirement 11-style color coding for Notifications too — color + icon + text together.
+            const TYPE_VISUAL = {
+                RETURNED: { dot: 'bg-rose-500', icon: 'fa-rotate-left' },
+                AWAITING_ESIGN: { dot: 'bg-purple-500', icon: 'fa-file-signature' },
+                IN_TRANSIT: { dot: 'bg-amber-500', icon: 'fa-truck-fast' },
+                PENDING_DISPATCH: { dot: 'bg-sky-500', icon: 'fa-inbox' }
+            };
+
+            list.innerHTML = notificationItems.map(function(item, idx) {
+                const visual = TYPE_VISUAL[item.type] || { dot: 'bg-slate-400', icon: 'fa-circle-info' };
+                return '<button type="button" onclick="handleNotificationClick(' + idx + ')" class="w-full text-left flex items-start gap-3 px-4 md:px-5 py-3.5 hover:bg-slate-50 active:bg-slate-100 transition min-h-[44px]">' +
+                    '<span class="w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ' + visual.dot + '"></span>' +
+                    '<span class="flex-1 min-w-0">' +
+                        '<span class="flex items-center gap-2"><i class="fa-solid ' + visual.icon + ' text-xs text-slate-400"></i><span class="text-xs font-bold text-slate-800">' + escapeHtml(item.title || '') + '</span></span>' +
+                        (item.trackingId ? '<span class="block text-[11px] font-mono text-slate-500 mt-0.5">' + escapeHtml(item.trackingId) + (item.department ? ' • ' + escapeHtml(item.department) : '') + '</span>' : '') +
+                        '<span class="block text-[11px] text-slate-500 mt-0.5">' + escapeHtml(item.message || '') + '</span>' +
+                    '</span>' +
+                    '<i class="fa-solid fa-chevron-right text-slate-300 text-xs mt-1.5 shrink-0"></i>' +
+                '</button>';
+            }).join('');
+        }
+
+        function handleNotificationClick(idx) {
+            const item = notificationItems[idx];
+            if (!item) return;
+            closeNotificationPanel();
+
+            if (item.actionPage === 'return' && item.trackingId) {
+                navigateTo('return');
+                const input = document.getElementById('return-tracking');
+                if (input) { input.value = item.trackingId; checkReturnTrackingStatus(); }
+                return;
+            }
+            if (item.actionPage === 'esign') { navigateTo('esign'); return; }
+            if (item.actionPage === 'operations') { navigateTo('operations'); return; }
+            navigateTo('home');
+        }
+
+        function renderDashboardWeekly(weekly) {
+            const box=document.getElementById('dashboard-weekly-chart'); if(!box)return;
+            const rows=Array.isArray(weekly)?weekly:[]; const max=Math.max(1,...rows.map(x=>Number(x.count||0)));
+            box.innerHTML=rows.length?rows.map(x=>'<button type="button" onclick="openDashboardDetail(\'date\',\''+escapeHtml(x.date||'')+'\')" class="w-1/12 rounded-t-md relative bg-indigo-400 hover:bg-indigo-600 transition cursor-pointer" style="height:'+Math.max(6,Math.round(Number(x.count||0)/max*90))+'%"><span class="absolute -top-7 left-1/2 -translate-x-1/2 text-[10px] font-bold text-slate-500 whitespace-nowrap">'+escapeHtml(x.label||'')+'</span><span class="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-black text-white">'+Number(x.count||0)+'</span></button>').join(''):'<div class="m-auto text-sm text-slate-400">ยังไม่มีข้อมูล</div>';
+        }
+        function renderDashboardRecent(items){ const box=document.getElementById('dashboard-recent-log');if(!box)return; const rows=Array.isArray(items)?items:[]; box.innerHTML=rows.length?rows.map(x=>'<button type="button" onclick="openTrackingFromDashboard(\''+encodeURIComponent(x.trackingId||'')+'\')" class="w-full flex justify-between items-center pb-3 border-b border-slate-50 text-left hover:bg-slate-50 rounded-lg p-2"><div><p class="font-bold text-slate-800 text-sm">'+escapeHtml(x.trackingId||'-')+'</p><p class="text-[11px] text-slate-400">'+escapeHtml((x.department||'-')+' · '+(x.timestampText||''))+'</p></div><span class="text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md text-[10px] font-bold">'+escapeHtml(x.status||'Registered')+'</span></button>').join(''):'<div class="text-sm text-slate-400">ยังไม่มีรายการ</div>'; }
+        function loadDashboardStats() {
+            if (!requireGas() || !getAuthToken()) return;
+            apiCall('getDashboardStats',{authToken:getAuthToken()}).then(function(stats){ if(handleAuthFailure(stats))return;if(!stats||stats.success===false)return; const set=(id,v)=>{const e=document.getElementById(id);if(e)e.innerText=(v??'-');}; set('stat-total',stats.total);set('stat-today',stats.today);set('stat-success',stats.successCount??stats.success);set('stat-return',stats.returned??stats.return);renderDashboardWeekly(stats.weekly||[]);renderDashboardRecent(stats.recent||[]); }).catch(e=>console.error('Dashboard error:',normalizeError(e)));
+        }
+        async function openDashboardDetail(filter,date){ try{ const r=await apiCall('getDashboardDetails',{filter:filter,date:date||'',authToken:getAuthToken()});if(handleAuthFailure(r))return; const box=document.getElementById('dashboard-detail-list');document.getElementById('dashboard-detail-title').textContent=r.title||'Dashboard Detail'; box.innerHTML=(r.items||[]).length?(r.items||[]).map(x=>'<button type="button" onclick="openTrackingFromDashboard(\''+encodeURIComponent(x.trackingId||'')+'\')" class="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-indigo-300"><div class="font-bold text-sm">'+escapeHtml(x.trackingId||'-')+'</div><div class="text-xs text-slate-500 mt-1">'+escapeHtml((x.department||'-')+' · '+(x.status||'-')+' · '+(x.timestampText||''))+'</div></button>').join(''):'<div class="p-8 text-center text-slate-400">ไม่พบรายการ</div>';document.getElementById('dashboard-detail-modal').classList.remove('hidden');document.body.classList.add('overflow-hidden'); }catch(e){showSystemToast('โหลดรายละเอียด Dashboard ไม่สำเร็จ: '+normalizeError(e),'error');} }
+        function closeDashboardDetail(){document.getElementById('dashboard-detail-modal')?.classList.add('hidden');document.body.classList.remove('overflow-hidden');}
+        function openTrackingFromDashboard(encoded){closeDashboardDetail();navigateTo('track');setTimeout(()=>{const el=document.getElementById('track-search-input');if(el){el.value=decodeURIComponent(encoded);el.focus();searchTracking();}},100);}
+
+        /** ===================== REPORT — Online View (Requirement 4/5) ===================== **/
+
+        function onReportMonthChange() {
+            const input = document.getElementById('report-month-input');
+            if (!input || !input.value) return;
+            const parts = input.value.split('-'); // YYYY-MM
+            reportSelectedYear = Number(parts[0]);
+            reportSelectedMonth = Number(parts[1]);
+            updateReportRangeLabel();
+            loadReportSummaryForSelectedMonth();
+        }
+
+        function onReportDateChange() {
+            const input = document.getElementById('report-date-input');
+            if (!input || !input.value) return;
+            reportSelectedDate = input.value; // YYYY-MM-DD
+            updateReportRangeLabel();
+            loadReportSummaryForSelectedMonth();
+        }
+
+        function onReportDeptModeChange() {
+            // Requirement 4: Department Report reuses the currently selected Period (Daily/Monthly
+            // above) and simply pins the Document Detail filter to the chosen Department.
+            const value = document.getElementById('report-dept-period-select')?.value || '__ALL__';
+            const deptFilter = document.getElementById('report-filter-department');
+            if (deptFilter) deptFilter.value = value === '__ALL__' ? '' : value;
+            updateReportRangeLabel();
+            renderReportDocumentDetail();
+        }
+
+        async function loadReportSummaryForSelectedMonth() {
+            if (!requireGas() || !getAuthToken()) return;
+
+            const monthInput = document.getElementById('report-month-input');
+            if (monthInput && !monthInput.value) {
+                monthInput.value = String(reportSelectedYear) + '-' + String(reportSelectedMonth).padStart(2, '0');
+            }
+            const dateInput = document.getElementById('report-date-input');
+            if (dateInput && !dateInput.value) dateInput.value = reportSelectedDate;
+
+            const statusEl = document.getElementById('report-online-status');
+            if (statusEl) statusEl.textContent = 'กำลังโหลดข้อมูล...';
+
+            // Requirement 4: Daily / Monthly / Department Report all query through the SAME
+            // getReportSummary() → buildReportDataset_() Filter Logic — never separate Logic sets.
+            const periodType = currentReportRange === 'daily' ? 'daily' : 'monthly';
+            const requestPayload = { periodType: periodType, authToken: getAuthToken() };
+            if (periodType === 'daily') {
+                requestPayload.date = reportSelectedDate;
+            } else {
+                requestPayload.month = reportSelectedMonth;
+                requestPayload.year = reportSelectedYear;
+            }
+
+            try {
+                const res = await apiCall('getReportSummary', requestPayload);
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลด Report ไม่สำเร็จ');
+
+                reportSummaryData = res; // single load per Period — filters below run in Browser only.
+                if (statusEl) statusEl.textContent = 'ข้อมูลจริงจาก KeyIn • ' + res.items.length + ' รายการ';
+
+                renderReportSummaryUI();
+
+            } catch (err) {
+                if (statusEl) statusEl.textContent = '';
+                showSystemToast('โหลด Report ไม่สำเร็จ: ' + normalizeError(err), 'error');
+            }
+        }
+
+        function renderReportSummaryUI() {
+            if (!reportSummaryData) return;
+            const setText = function(id, value) {
+                const el = document.getElementById(id);
+                if (el) el.textContent = Number(value || 0).toLocaleString('th-TH');
+            };
+            setText('report-kpi-total', reportSummaryData.summary.total);
+            setText('report-kpi-pending', reportSummaryData.summary.pending);
+            setText('report-kpi-delivered', reportSummaryData.summary.delivered);
+            setText('report-kpi-returned', reportSummaryData.summary.returned);
+            setText('report-kpi-pending-arihills', reportSummaryData.summary.pendingAtAriHills);
+            setText('report-kpi-intransit', reportSummaryData.summary.inTransit);
+            setText('report-kpi-awaiting-esign', reportSummaryData.summary.arrivedAwaitingEsign);
+
+            const timing = reportSummaryData.timing || {};
+            const transitEl = document.getElementById('report-kpi-avg-transit');
+            if (transitEl) transitEl.textContent = timing.avgTransitLabel || '-';
+            const waitEl = document.getElementById('report-kpi-avg-wait-signature');
+            if (waitEl) waitEl.textContent = timing.avgWaitSignatureLabel || '-';
+
+            const deptBody = document.getElementById('report-dept-table-body');
+            const depts = reportSummaryData.departments || [];
+            if (deptBody) {
+                deptBody.innerHTML = depts.length
+                    ? depts.map(function(d) {
+                        return '<tr><td class="px-4 py-2.5 font-bold text-slate-700">' + escapeHtml(d.department) + '</td>' +
+                            '<td class="px-4 py-2.5 text-right">' + d.total + '</td>' +
+                            '<td class="px-4 py-2.5 text-right text-amber-600 font-bold">' + d.pending + '</td>' +
+                            '<td class="px-4 py-2.5 text-right text-emerald-600 font-bold">' + d.delivered + '</td>' +
+                            '<td class="px-4 py-2.5 text-right text-rose-600 font-bold">' + d.returned + '</td></tr>';
+                    }).join('')
+                    : '<tr><td colspan="5" class="text-center text-slate-400 py-8">ไม่มีข้อมูลในเดือนที่เลือก</td></tr>';
+            }
+
+            const deptFilter = document.getElementById('report-filter-department');
+            if (deptFilter && deptFilter.options.length <= 1) {
+                // Requirement 2: Report Department dropdown must ALWAYS show the full 24-department
+                // master list (+ "All Departments") — never only the departments that happen to
+                // have data this month. Built once from the shared SMART_DEPARTMENTS constant.
+                deptFilter.innerHTML = '<option value="">ทุกแผนก / All Departments</option>' +
+                    SMART_DEPARTMENTS.map(function(name) {
+                        return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+                    }).join('');
+            }
+
+            renderReportDocumentDetail();
+        }
+
+        function renderReportDocumentDetail() {
+            const tbody = document.getElementById('report-detail-table-body');
+            if (!tbody) return;
+
+            if (!reportSummaryData) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">กำลังโหลดข้อมูล...</td></tr>';
+                return;
+            }
+
+            const searchText = (document.getElementById('report-search-tracking')?.value || '').trim().toLowerCase();
+            const deptFilter = document.getElementById('report-filter-department')?.value || '';
+            const statusFilter = document.getElementById('report-filter-status')?.value || '';
+
+            const statusOf = function(status) {
+                const s = (status || '').toLowerCase();
+                if (s === 'delivered' || s === 'signed' || s === 'signed / delivered') return 'delivered';
+                if (s === 'returned' || s === 'return') return 'returned';
+                return 'pending';
+            };
+
+            const filtered = (reportSummaryData.items || []).filter(function(item) {
+                if (searchText && !String(item.trackingId || '').toLowerCase().includes(searchText)) return false;
+                if (deptFilter && item.department !== deptFilter) return false;
+                if (statusFilter && statusOf(item.status) !== statusFilter) return false;
+                return true;
+            });
+
+            if (!filtered.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-slate-400 py-8">ไม่พบรายการที่ตรงกับเงื่อนไข</td></tr>';
+                return;
+            }
+
+            const statusBadgeClass = function(status) {
+                return /deliver/i.test(status || '') ? 'bg-emerald-100 text-emerald-800' :
+                    /return/i.test(status || '') ? 'bg-rose-100 text-rose-800' :
+                    /dispatch|transit/i.test(status || '') ? 'bg-amber-100 text-amber-800' :
+                    'bg-sky-100 text-sky-800';
+            };
+
+            tbody.innerHTML = filtered.slice(0, 500).map(function(item) {
+                return '<tr class="hover:bg-slate-50 cursor-pointer" onclick="openTrackFromDeptStatus(\'' + escapeHtml(item.trackingId).replace(/'/g, "\\'") + '\')">' +
+                    '<td class="px-4 py-2.5 text-slate-500">' + escapeHtml(formatTrackTime(item.timestamp)) + '</td>' +
+                    '<td class="px-4 py-2.5 font-bold text-slate-800 break-all">' + escapeHtml(item.trackingId) + '</td>' +
+                    '<td class="px-4 py-2.5 text-slate-600">' + escapeHtml(item.senderName || '-') + '</td>' +
+                    '<td class="px-4 py-2.5 text-slate-600">' + escapeHtml(item.department || '-') + '</td>' +
+                    '<td class="px-4 py-2.5 text-slate-600">' + escapeHtml(item.recipientName || '-') + '</td>' +
+                    '<td class="px-4 py-2.5 text-right">' + Number(item.qty || 1) + '</td>' +
+                    '<td class="px-4 py-2.5"><span class="text-[10px] font-bold px-2 py-1 rounded-full ' + statusBadgeClass(item.status) + '">' + escapeHtml(item.status || '-') + '</span></td>' +
+                '</tr>';
+            }).join('');
+        }
+
+        function setReportRange(range) {
+            currentReportRange = range;
+            document.querySelectorAll('.report-range-btn').forEach(btn => { btn.classList.remove('bg-sky-600','text-white'); btn.classList.add('bg-slate-50','text-slate-600'); });
+            const activeBtn=document.getElementById('report-btn-'+range); if(activeBtn){activeBtn.classList.remove('bg-slate-50','text-slate-600');activeBtn.classList.add('bg-sky-600','text-white');}
+
+            // Requirement 4: switching Mode must actually change the Filter UI AND re-Query —
+            // never just relabel the button (that was the "just a UI button" bug).
+            const monthlyWrap = document.getElementById('report-period-monthly-wrap');
+            const dailyWrap = document.getElementById('report-period-daily-wrap');
+            const deptWrap = document.getElementById('report-period-dept-wrap');
+            monthlyWrap?.classList.toggle('hidden', range === 'daily');
+            dailyWrap?.classList.toggle('hidden', range !== 'daily');
+            deptWrap?.classList.toggle('hidden', range !== 'dept');
+
+            if (range === 'dept') {
+                const deptSelect = document.getElementById('report-dept-period-select');
+                if (deptSelect && deptSelect.options.length <= 1) {
+                    deptSelect.innerHTML = '<option value="__ALL__">ทุกแผนก / All Departments</option>' +
+                        SMART_DEPARTMENTS.map(function(name) {
+                            return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+                        }).join('');
+                }
+            }
+
+            updateReportRangeLabel();
+            loadReportSummaryForSelectedMonth();
+        }
+
+        function updateReportRangeLabel() {
+            const label = document.getElementById('report-range-label');
+            if (!label) return;
+            if (currentReportRange === 'daily') {
+                label.innerText = 'กำลังแสดง: รายงานรายวัน — ' + (reportSelectedDate || '-');
+            } else if (currentReportRange === 'dept') {
+                const dept = document.getElementById('report-dept-period-select')?.value || '__ALL__';
+                label.innerText = 'กำลังแสดง: รายงานรายแผนก — ' + (dept === '__ALL__' ? 'ทุกแผนก' : dept) + ' • ' + formatMonthLabelJs(reportSelectedMonth, reportSelectedYear);
+            } else {
+                label.innerText = 'กำลังแสดง: รายงานรายเดือน — ' + formatMonthLabelJs(reportSelectedMonth, reportSelectedYear);
+            }
+        }
+
+        function openExportReportModal() {
+            // Requirement 5: pre-fill Period controls with the Report Online page's currently
+            // selected Period, then let the user change Period Type freely before Export.
+            const periodTypeSelect = document.getElementById('export-report-period-type');
+            if (periodTypeSelect) periodTypeSelect.value = currentReportRange === 'daily' ? 'daily' : 'monthly';
+
+            const dateInput = document.getElementById('export-report-date-input');
+            if (dateInput) dateInput.value = reportSelectedDate;
+
+            const monthInput = document.getElementById('export-report-month-input');
+            if (monthInput) monthInput.value = String(reportSelectedYear) + '-' + String(reportSelectedMonth).padStart(2, '0');
+
+            const yearSelect = document.getElementById('export-report-year-select');
+            if (yearSelect && yearSelect.options.length === 0) {
+                const currentYear = new Date().getFullYear();
+                let optionsHtml = '';
+                for (let y = currentYear; y >= currentYear - 5; y--) {
+                    optionsHtml += '<option value="' + y + '">' + y + '</option>';
+                }
+                yearSelect.innerHTML = optionsHtml;
+            }
+            if (yearSelect) yearSelect.value = String(reportSelectedYear);
+
+            const deptSelect = document.getElementById('export-report-department');
+            if (deptSelect && deptSelect.options.length <= 1) {
+                deptSelect.innerHTML = '<option value="__ALL__">ทุกแผนก / All Departments</option>' +
+                    SMART_DEPARTMENTS.map(function(name) {
+                        return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+                    }).join('');
+            }
+
+            onExportPeriodTypeChange();
+
+            const status = document.getElementById('export-report-status');
+            if (status) { status.textContent = ''; status.classList.remove('text-rose-500','text-emerald-600'); }
+            resetGeneratedReportFile();
+
+            document.getElementById('export-report-modal')?.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function onExportPeriodTypeChange() {
+            const periodType = document.getElementById('export-report-period-type')?.value || 'monthly';
+            document.getElementById('export-report-daily-wrap')?.classList.toggle('hidden', periodType !== 'daily');
+            document.getElementById('export-report-monthly-wrap')?.classList.toggle('hidden', periodType !== 'monthly');
+            document.getElementById('export-report-yearly-wrap')?.classList.toggle('hidden', periodType !== 'yearly');
+        }
+
+        function closeExportReportModal() {
+            document.getElementById('export-report-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+            resetGeneratedReportFile();
+        }
+
+        function formatMonthLabelJs(month, year) {
+            const names = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+            const idx = Math.max(1, Math.min(12, Number(month) || 1)) - 1;
+            return names[idx] + ' ' + year;
+        }
+
+        // Requirement 2 (v5.9.12): the generated PDF Blob is kept in memory only, and opened/
+        // downloaded exclusively via a DIRECT user click on "เปิด PDF" / "ดาวน์โหลด PDF" — never
+        // auto-opened right after an async apiCall(). Safari (especially iPad/iPhone) blocks
+        // window.open() calls that don't originate synchronously from a user gesture; calling it
+        // from a real click handler, rather than from inside the async response handler, sidesteps
+        // that entirely on every browser tested.
+        let generatedReportBlobUrl = null;
+        let generatedReportFileName = '';
+
+        function resetGeneratedReportFile() {
+            if (generatedReportBlobUrl) {
+                try { URL.revokeObjectURL(generatedReportBlobUrl); } catch (e) {}
+            }
+            generatedReportBlobUrl = null;
+            generatedReportFileName = '';
+            document.getElementById('export-report-result')?.classList.add('hidden');
+        }
+
+        function openGeneratedReportFile() {
+            if (!generatedReportBlobUrl) return;
+            window.open(generatedReportBlobUrl, '_blank');
+        }
+
+        function downloadGeneratedReportFile() {
+            if (!generatedReportBlobUrl) return;
+            const link = document.createElement('a');
+            link.href = generatedReportBlobUrl;
+            link.download = generatedReportFileName || 'report.pdf';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        }
+
+        async function runExportReport(format) {
+            if (!requireGas()) return;
+
+            const pdfBtn = document.getElementById('export-report-pdf-btn');
+            const excelBtn = document.getElementById('export-report-excel-btn');
+            const status = document.getElementById('export-report-status');
+            const department = document.getElementById('export-report-department')?.value || '__ALL__';
+
+            // Requirement 5: build the request from whichever Period Type control is active.
+            const periodType = document.getElementById('export-report-period-type')?.value || 'monthly';
+            const exportPayload = { periodType: periodType, department: department, authToken: getAuthToken() };
+
+            if (periodType === 'daily') {
+                const dateVal = document.getElementById('export-report-date-input')?.value;
+                if (!dateVal) { if (status) { status.textContent = 'กรุณาเลือกวันที่'; status.classList.add('text-rose-500'); } return; }
+                exportPayload.date = dateVal;
+            } else if (periodType === 'yearly') {
+                const yearVal = document.getElementById('export-report-year-select')?.value;
+                if (!yearVal) { if (status) { status.textContent = 'กรุณาเลือกปี'; status.classList.add('text-rose-500'); } return; }
+                exportPayload.year = Number(yearVal);
+            } else {
+                const monthVal = document.getElementById('export-report-month-input')?.value;
+                if (!monthVal) { if (status) { status.textContent = 'กรุณาเลือกเดือน'; status.classList.add('text-rose-500'); } return; }
+                const parts = monthVal.split('-');
+                exportPayload.year = Number(parts[0]);
+                exportPayload.month = Number(parts[1]);
+            }
+
+            resetGeneratedReportFile();
+            status?.classList.remove('text-rose-500','text-emerald-600');
+
+            // Requirement — EXPORT LOADING UX: disable both buttons to prevent double-click/double-tap
+            // creating duplicate files while generation is in progress.
+            [pdfBtn, excelBtn].forEach(function(btn) { if (btn) { btn.disabled = true; btn.classList.add('opacity-50','cursor-wait'); } });
+            if (status) status.textContent = format === 'pdf' ? 'กำลังสร้าง PDF...' : 'กำลังสร้าง Excel...';
+
+            try {
+                const action = format === 'pdf' ? 'exportReportPdf' : 'exportReportData';
+                const res = await apiCall(action, exportPayload, { timeoutMs: API_EXPORT_TIMEOUT_MS });
+
+                if (handleAuthFailure(res)) return;
+
+                if (res && res.code === 'NO_DATA') {
+                    if (status) { status.textContent = res.message; status.classList.add('text-rose-500'); }
+                    return;
+                }
+
+                if (!res || !res.success) {
+                    if (status) { status.textContent = (res && res.message) || 'Export ไม่สำเร็จ'; status.classList.add('text-rose-500'); }
+                    return;
+                }
+
+                if (format === 'pdf') {
+                    // Requirement 4: PDF Content comes back as Base64 in the response itself —
+                    // never a Drive URL — so a user with no Google Drive permission on this
+                    // account never hits "Request Access". The Drive file stays fully Private.
+                    if (!res.base64) {
+                        if (status) { status.textContent = 'Export PDF ไม่สำเร็จ: ไม่พบข้อมูลไฟล์'; status.classList.add('text-rose-500'); }
+                        return;
+                    }
+                    const binary = atob(res.base64);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                    const blob = new Blob([bytes], { type: res.mimeType || 'application/pdf' });
+                    generatedReportBlobUrl = URL.createObjectURL(blob);
+                    generatedReportFileName = res.fileName || 'report.pdf';
+
+                    document.getElementById('export-report-result')?.classList.remove('hidden');
+                    if (status) { status.textContent = '✓ สร้าง PDF สำเร็จ — กด "เปิด PDF" หรือ "ดาวน์โหลด PDF"'; status.classList.remove('text-rose-500'); status.classList.add('text-emerald-600'); }
+                } else {
+                    // Excel export path is unchanged this round (out of scope) — still Drive-URL based.
+                    const fileUrl = res.url || res.fileUrl;
+                    if (!fileUrl) {
+                        if (status) { status.textContent = 'Export ไม่สำเร็จ'; status.classList.add('text-rose-500'); }
+                        return;
+                    }
+                    window.open(fileUrl, '_blank');
+                    if (status) { status.textContent = '✓ สร้างรายงานสำเร็จ'; status.classList.remove('text-rose-500'); status.classList.add('text-emerald-600'); }
+                    setTimeout(closeExportReportModal, 900);
+                }
+
+            } catch (err) {
+                if (status) { status.textContent = 'Export ไม่สำเร็จ: ' + normalizeError(err); status.classList.add('text-rose-500'); }
+            } finally {
+                [pdfBtn, excelBtn].forEach(function(btn) { if (btn) { btn.disabled = false; btn.classList.remove('opacity-50','cursor-wait'); } });
+            }
+        }
+
+
+        // Professional keyboard support for Track & Trace.
+        document.getElementById('track-search-input')?.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                searchTracking();
+            }
+        });
+</script>
+
+    <!-- ================= OCR TAP-TO-FILL PICKER ================= -->
+    <div id="ocr-field-picker" class="hidden fixed inset-0 z-[12000]">
+        <div class="absolute inset-0 bg-slate-950/55 backdrop-blur-[2px]" onclick="closeOcrFieldPicker()"></div>
+        <div class="absolute inset-x-0 bottom-0 md:inset-auto md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2
+                    bg-white rounded-t-3xl md:rounded-3xl shadow-2xl border border-slate-200
+                    max-h-[78vh] md:w-[560px] md:max-w-[92vw] flex flex-col overflow-hidden">
+            <div class="p-4 md:p-5 border-b border-slate-100 flex items-start justify-between gap-3 bg-white">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.18em] font-black text-indigo-500">OCR Tap to Fill</p>
+                    <h3 id="ocr-picker-title" class="text-lg font-black text-slate-800 mt-0.5">เลือกข้อมูลจากหน้าพัสดุ</h3>
+                    <p id="ocr-picker-subtitle" class="text-xs text-slate-500 mt-1">แตะข้อมูลเพื่อเติมลงช่องโดยไม่ต้องพิมพ์</p>
+                </div>
+                <button type="button" onclick="closeOcrFieldPicker()"
+                    class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="ocr-picker-list" class="p-4 md:p-5 overflow-y-auto space-y-2 bg-slate-50/60">
+                <div class="text-sm text-slate-400 text-center py-8">ยังไม่มีข้อมูล OCR สำหรับเลือก</div>
+            </div>
+
+            <div class="p-3 md:p-4 border-t border-slate-100 bg-white flex items-center justify-between gap-3">
+                <p class="text-[10px] text-slate-400 leading-relaxed">
+                    ระบบไม่แก้ค่าต้นฉบับของ Barcode/Tracking และสามารถพิมพ์แก้เองได้หลังเลือก
+                </p>
+                <button type="button" onclick="closeOcrFieldPicker()"
+                    class="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold shrink-0">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+
+<div id="keyin-confirm-modal" class="hidden fixed inset-0 z-[100] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeKeyInConfirm()"><div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-auto p-5 md:p-6"><div class="flex justify-between gap-3"><div><h3 class="text-lg font-black text-slate-900">กรุณาตรวจสอบข้อมูลก่อนบันทึก</h3><p class="text-xs text-slate-500 mt-1">ตรวจสอบ Tracking, ผู้รับ, แผนก และข้อมูลหน้าพัสดุให้ถูกต้อง</p></div><button type="button" onclick="closeKeyInConfirm()" class="w-9 h-9 rounded-full bg-slate-100">✕</button></div><div id="keyin-confirm-summary" class="mt-4"></div><div class="flex gap-3 mt-5"><button type="button" onclick="closeKeyInConfirm()" class="flex-1 border border-slate-200 py-3 rounded-xl font-bold">กลับไปแก้ไข</button><button type="button" onclick="confirmKeyInSave()" class="flex-1 bg-indigo-700 text-white py-3 rounded-xl font-bold">ยืนยันการบันทึก</button></div></div></div>
+
+<!-- Requirement 11: Batch Entry Complete popup -->
+<div id="batch-complete-modal" class="hidden fixed inset-0 z-[120] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeBatchCompleteModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center animate-fade-in">
+        <div class="w-16 h-16 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mb-4"><i class="fa-solid fa-circle-check"></i></div>
+        <h3 class="text-lg font-black text-slate-900">✓ บันทึกเอกสารครบแล้ว</h3>
+        <p id="batch-complete-message" class="text-sm text-slate-500 mt-2">บันทึกสำเร็จ 0 รายการ</p>
+        <div id="batch-complete-tracking-list" class="mt-4 text-left bg-slate-50 border border-slate-100 rounded-xl p-3 max-h-40 overflow-y-auto text-xs font-mono text-slate-600 space-y-1"></div>
+        <button type="button" onclick="closeBatchCompleteModal()" class="mt-5 w-full bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm hover:bg-indigo-800 transition min-h-[44px]">เสร็จสิ้น</button>
+    </div>
+</div>
+<div id="parcel-lightbox" class="hidden fixed inset-0 z-[110] bg-black/90 p-3 md:p-8 flex items-center justify-center" onclick="if(event.target===this)closeParcelImage()"><button type="button" onclick="closeParcelImage()" class="absolute top-4 right-4 bg-white/90 rounded-full w-11 h-11 text-xl">✕</button><img id="parcel-lightbox-image" src="" alt="Parcel image" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl"></div>
+<div id="dashboard-detail-modal" class="hidden fixed inset-0 z-[105] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeDashboardDetail()"><div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"><div class="p-5 border-b flex justify-between"><h3 id="dashboard-detail-title" class="font-black text-lg">Dashboard Detail</h3><button type="button" onclick="closeDashboardDetail()" class="w-9 h-9 rounded-full bg-slate-100">✕</button></div><div id="dashboard-detail-list" class="p-4 overflow-auto space-y-2"></div></div></div>
+
+<!-- Signature Preview Modal — Requirement 3: authenticated in-app preview, never a raw Drive link -->
+<div id="signature-preview-modal" class="hidden fixed inset-0 z-[130] bg-slate-950/70 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeSignaturePreview()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md sm:max-w-[420px]" style="max-width: 94vw;">
+        <div class="flex items-center justify-between gap-3 p-4 md:p-5 border-b border-slate-100">
+            <h3 class="text-base font-black text-slate-900">ลายเซ็นผู้รับ</h3>
+            <button type="button" onclick="closeSignaturePreview()" class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="p-4 md:p-5">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[180px] overflow-hidden">
+                <div id="signature-preview-loading" class="py-10 text-center text-slate-400 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin text-xl mb-2"></i>
+                    <p>กำลังโหลดรูปลายเซ็น...</p>
+                </div>
+                <div id="signature-preview-error" class="hidden py-10 px-4 text-center text-rose-500 text-xs"></div>
+                <img id="signature-preview-image" class="hidden w-full h-auto max-w-full object-contain" alt="ลายเซ็นผู้รับ">
+            </div>
+            <div class="mt-4 space-y-1.5 text-sm">
+                <p class="text-slate-600"><span class="text-slate-400 font-bold">ผู้รับ:</span> <span id="signature-preview-recipient">-</span></p>
+                <p class="text-slate-600"><span class="text-slate-400 font-bold">วันที่:</span> <span id="signature-preview-time">-</span></p>
+            </div>
+            <button type="button" onclick="closeSignaturePreview()" class="mt-5 w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition">ปิด</button>
+        </div>
+    </div>
+</div>
+
+<!-- Evidence Preview Modal — Requirement 2: secure, lazy-loaded Capture Evidence images from Key In -->
+<div id="evidence-preview-modal" class="hidden fixed inset-0 z-[130] bg-slate-950/70 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeEvidencePreview()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" style="max-width: 92vw;">
+        <div class="flex items-center justify-between gap-3 p-4 md:p-5 border-b border-slate-100">
+            <h3 class="text-base font-black text-slate-900">รูปหลักฐาน (Key In)</h3>
+            <button type="button" onclick="closeEvidencePreview()" class="w-11 h-11 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="p-4 md:p-5">
+            <div class="relative rounded-xl border border-slate-200 bg-slate-50 flex items-center justify-center min-h-[240px] overflow-hidden">
+                <div id="evidence-preview-loading" class="py-10 text-center text-slate-400 text-xs">
+                    <i class="fa-solid fa-spinner fa-spin text-xl mb-2"></i>
+                    <p>กำลังโหลดรูปหลักฐาน...</p>
+                </div>
+                <div id="evidence-preview-error" class="hidden py-10 px-4 text-center text-rose-500 text-xs"></div>
+                <img id="evidence-preview-image" class="hidden w-full h-auto max-w-full max-h-[60vh] object-contain" alt="รูปหลักฐาน">
+
+                <div id="evidence-preview-nav" class="hidden absolute inset-x-0 bottom-0 top-0 flex items-center justify-between px-1 pointer-events-none">
+                    <button type="button" onclick="prevEvidenceImage()" class="pointer-events-auto w-11 h-11 rounded-full bg-slate-900/60 text-white flex items-center justify-center hover:bg-slate-900/80"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button type="button" onclick="nextEvidenceImage()" class="pointer-events-auto w-11 h-11 rounded-full bg-slate-900/60 text-white flex items-center justify-center hover:bg-slate-900/80"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <p id="evidence-preview-counter" class="text-center text-xs text-slate-400 mt-3">-</p>
+            <button type="button" onclick="closeEvidencePreview()" class="mt-3 w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition min-h-[44px]">ปิด</button>
+        </div>
+    </div>
+</div>
+
+<!-- Evidence Capture — Tracking Detail (v5.9.16). Full-screen on Mobile/iPad, centered card on Desktop. Tracking is Read Only — never re-typed. -->
+<div id="evidencecapture-detail-modal" class="hidden fixed inset-0 z-[135] bg-slate-950/70 backdrop-blur-sm flex items-end sm:items-center justify-center">
+    <div class="bg-white w-full sm:max-w-lg sm:rounded-2xl rounded-t-3xl shadow-2xl max-h-[94vh] flex flex-col" style="max-width: 94vw;">
+        <div class="flex items-center justify-between gap-3 p-4 md:p-5 border-b border-slate-100 shrink-0">
+            <div class="min-w-0">
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Tracking (Read Only)</p>
+                <h3 id="evidencecapture-detail-tracking" class="text-lg font-black text-slate-900 break-all">-</h3>
+            </div>
+            <button type="button" onclick="closeEvidenceCaptureDetail()" class="w-11 h-11 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center shrink-0"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="p-4 md:p-5 overflow-y-auto flex-1">
+            <p id="evidencecapture-detail-meta" class="text-xs text-slate-500 mb-1">- • -</p>
+            <p id="evidencecapture-detail-docs" class="text-xs text-slate-500 mb-1">เอกสารในชุด: - ฉบับ</p>
+            <p id="evidencecapture-detail-incomplete" class="hidden text-[11px] font-bold text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5 mt-2 inline-block"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ข้อมูลยังไม่ครบ</p>
+
+            <div class="mt-4">
+                <p class="text-xs font-bold text-slate-700 mb-2">หลักฐานที่มีอยู่แล้ว</p>
+                <div id="evidencecapture-existing-list" class="flex flex-wrap gap-2 mb-1">
+                    <span class="text-xs text-slate-400">ยังไม่มีรูป</span>
+                </div>
+            </div>
+
+            <div class="mt-5">
+                <p class="text-xs font-bold text-slate-700 mb-2">หลักฐานใหม่</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <label class="flex items-center justify-center gap-2 border-2 border-dashed border-orange-300 rounded-2xl bg-orange-50/50 py-4 cursor-pointer hover:bg-orange-50 transition min-h-[56px]">
+                        <i class="fa-solid fa-camera text-xl text-orange-500"></i>
+                        <span class="text-sm font-bold text-orange-600">ถ่ายรูปตอนนี้</span>
+                        <input id="evidencecapture-camera-input" type="file" accept="image/*" capture="environment" class="hidden" onchange="handleEvidenceCameraCapture(event)">
+                    </label>
+                    <label class="flex items-center justify-center gap-2 border-2 border-dashed border-indigo-300 rounded-2xl bg-indigo-50/50 py-4 cursor-pointer hover:bg-indigo-50 transition min-h-[56px]">
+                        <i class="fa-regular fa-images text-xl text-indigo-500"></i>
+                        <span class="text-sm font-bold text-indigo-600">เลือกจากแกลลอรี่</span>
+                        <input id="evidencecapture-gallery-input" type="file" accept="image/*" multiple class="hidden" onchange="handleEvidenceGallerySelect(event)">
+                    </label>
+                </div>
+                <p id="evidencecapture-processing-status" class="hidden text-xs font-bold text-indigo-600 mt-2.5"><i class="fa-solid fa-spinner fa-spin mr-1.5"></i><span id="evidencecapture-processing-status-text">กำลังเตรียมรูป...</span></p>
+                <p id="evidencecapture-new-preview-label" class="hidden text-xs font-bold text-slate-700 mt-3 mb-2">รูปที่เลือก <span id="evidencecapture-new-preview-count"></span></p>
+                <div id="evidencecapture-new-preview-list" class="grid grid-cols-3 gap-2"></div>
+            </div>
+        </div>
+
+        <div class="p-4 md:p-5 border-t border-slate-100 shrink-0 space-y-2">
+            <div class="flex gap-2">
+                <button type="button" onclick="closeEvidenceCaptureDetail()" class="w-1/3 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm hover:bg-slate-50 transition min-h-[44px]">ยกเลิก</button>
+                <button type="button" id="evidencecapture-save-next-btn" onclick="saveEvidenceCaptureAndNext()" class="w-2/3 bg-orange-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-orange-200 hover:bg-orange-700 transition min-h-[44px]">บันทึกและไปตัวถัดไป</button>
+            </div>
+            <button type="button" id="evidencecapture-save-close-btn" onclick="saveEvidenceCaptureAndClose()" class="w-full bg-slate-100 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition min-h-[40px]">บันทึกและปิด</button>
+        </div>
+    </div>
+</div>
+
+<!-- Export Report Modal — Requirement 3: Period / Department / Format, before PDF or Excel generation -->
+<div id="export-report-modal" class="hidden fixed inset-0 z-[125] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center sm:items-center items-end" onclick="if(event.target===this)closeExportReportModal()">
+    <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md p-5 md:p-6" style="max-width: 92vw;">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-base font-black text-slate-900">Export Report</h3>
+            <button type="button" onclick="closeExportReportModal()" class="w-9 h-9 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center shrink-0"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Period Type</label>
+                <select id="export-report-period-type" onchange="onExportPeriodTypeChange()" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="daily">รายวัน / Daily</option>
+                    <option value="monthly" selected>รายเดือน / Monthly</option>
+                    <option value="yearly">รายปี / Yearly</option>
+                </select>
+            </div>
+            <div id="export-report-daily-wrap" class="hidden">
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Date</label>
+                <input type="date" id="export-report-date-input" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div id="export-report-monthly-wrap">
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Month</label>
+                <input type="month" id="export-report-month-input" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            </div>
+            <div id="export-report-yearly-wrap" class="hidden">
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Year</label>
+                <select id="export-report-year-select" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"></select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Department</label>
+                <select id="export-report-department" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <option value="__ALL__">ทุกแผนก / All Departments</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1.5">Format</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" onclick="runExportReport('pdf')" id="export-report-pdf-btn" class="min-h-[44px] flex items-center justify-center gap-2 border border-rose-200 bg-rose-50 text-rose-700 font-bold text-sm rounded-xl hover:bg-rose-100 transition"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
+                    <button type="button" onclick="runExportReport('excel')" id="export-report-excel-btn" class="min-h-[44px] flex items-center justify-center gap-2 border border-emerald-200 bg-emerald-50 text-emerald-700 font-bold text-sm rounded-xl hover:bg-emerald-100 transition"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+                </div>
+            </div>
+            <p id="export-report-status" class="text-xs text-slate-400 text-center min-h-[16px]"></p>
+
+            <!-- Requirement 2 (v5.9.12): explicit user-gesture buttons — never auto-opened — so
+                 Safari/iPad/iPhone popup blockers can never interfere. Shown only after the PDF
+                 Blob is ready in memory. -->
+            <div id="export-report-result" class="hidden grid grid-cols-2 gap-2">
+                <button type="button" onclick="openGeneratedReportFile()" class="min-h-[44px] flex items-center justify-center gap-2 bg-indigo-600 text-white font-bold text-sm rounded-xl hover:bg-indigo-700 transition"><i class="fa-solid fa-up-right-from-square"></i> เปิด PDF</button>
+                <button type="button" onclick="downloadGeneratedReportFile()" class="min-h-[44px] flex items-center justify-center gap-2 bg-slate-800 text-white font-bold text-sm rounded-xl hover:bg-slate-900 transition"><i class="fa-solid fa-download"></i> ดาวน์โหลด PDF</button>
+            </div>
+
+            <button type="button" onclick="closeExportReportModal()" class="w-full border border-slate-200 text-slate-600 py-3 rounded-xl font-bold text-sm hover:bg-slate-50 transition min-h-[44px]">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification Center — Requirement 1: live Action Queue, no persistent read/unread state -->
+<div id="notification-overlay" class="hidden fixed inset-0 z-[140] bg-slate-950/40" onclick="closeNotificationPanel()"></div>
+<div id="notification-panel" class="hidden fixed z-[141] bg-white shadow-2xl inset-x-0 bottom-0 rounded-t-3xl max-h-[75vh] md:inset-auto md:top-20 md:right-8 md:bottom-auto md:w-96 md:rounded-2xl md:max-h-[70vh] md:border md:border-slate-200 flex flex-col overflow-hidden">
+    <div class="flex items-center justify-between px-4 md:px-5 py-3.5 border-b border-slate-100 shrink-0">
+        <h3 class="text-sm font-black text-slate-900">Notifications <span id="notification-panel-count" class="text-indigo-600">0</span></h3>
+        <button type="button" onclick="closeNotificationPanel()" class="w-9 h-9 md:w-8 md:h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="notification-panel-list" class="overflow-y-auto flex-1 divide-y divide-slate-100">
+        <div class="p-6 text-center text-sm text-slate-400">กำลังโหลด...</div>
+    </div>
+</div>
+
+<!-- Operations Result — Dispatch / Confirm Arrival Success Popup (Requirement 16) -->
+<div id="ops-result-modal" class="hidden fixed inset-0 z-[120] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeOpsResultModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center animate-fade-in">
+        <div id="ops-result-icon" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4"></div>
+        <h3 id="ops-result-title" class="text-lg font-black text-slate-900">-</h3>
+        <p id="ops-result-message" class="text-sm text-slate-500 mt-2 whitespace-pre-line">-</p>
+        <button type="button" onclick="closeOpsResultModal()" class="mt-5 w-full bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm hover:bg-indigo-800 transition">ตกลง</button>
+    </div>
+</div>
+
+<!-- E-Sign Save Result — Professional Success / Partial-failure Popup (Requirement 2.5) -->
+<div id="esign-result-modal" class="hidden fixed inset-0 z-[120] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeEsignResultModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-center animate-fade-in">
+        <div id="esign-result-icon" class="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4"></div>
+        <h3 id="esign-result-title" class="text-lg font-black text-slate-900">-</h3>
+        <p id="esign-result-message" class="text-sm text-slate-500 mt-2 whitespace-pre-line">-</p>
+        <div id="esign-result-failed-list" class="hidden mt-4 text-left bg-rose-50 border border-rose-100 rounded-xl p-3 max-h-40 overflow-y-auto"></div>
+        <button type="button" onclick="closeEsignResultModal()" class="mt-5 w-full bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm hover:bg-indigo-800 transition">ตกลง</button>
+    </div>
+</div>
+
+</body>
+</html>
