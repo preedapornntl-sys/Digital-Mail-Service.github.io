@@ -401,6 +401,9 @@
                 <button onclick="navigateTo('report')" id="side-report" class="admin-only sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
                     <i class="fa-solid fa-chart-column w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> รายงาน (Report)
                 </button>
+                <button onclick="navigateTo('automail')" id="side-automail" class="admin-only sidebar-btn w-full flex items-center text-left px-4 py-3 rounded-xl transition-all text-sm font-medium hover:bg-slate-800 hover:text-white group">
+                    <i class="fa-solid fa-envelope-circle-check w-6 text-slate-400 group-hover:text-indigo-400 transition-colors"></i> Auto Mail Settings
+                </button>
             </nav>
 
             <div class="p-4 border-t border-slate-800 bg-slate-950">
@@ -523,6 +526,11 @@
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-column text-2xl"></i></div>
                             <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Report</p><p class="text-xs text-slate-500 mt-0.5 truncate">สรุปผลการดำเนินงานรายเดือน</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-sky-400 shrink-0"></i>
+                        </button>
+                        <button onclick="navigateTo('automail')" class="admin-only card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-blue-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-envelope-circle-check text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Auto Mail Settings</p><p class="text-xs text-slate-500 mt-0.5 truncate">ตั้งค่าแจ้งเตือน Email อัตโนมัติ</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-blue-400 shrink-0"></i>
                         </button>
                     </div>
                 </section>
@@ -921,6 +929,63 @@
 
                         <div id="evidencecapture-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                             <div class="sm:col-span-2 lg:col-span-3 text-center text-slate-400 text-xs py-10"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- MODULE 3C: AUTO MAIL SETTINGS (v5.9.21) — Admin only -->
+                <section id="page-automail" class="page-section hidden max-w-4xl mx-auto space-y-5 animate-fade-in">
+                    <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-solid fa-envelope-circle-check"></i></div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">Auto Mail Notification</h3>
+                                <p class="text-xs text-slate-500">แจ้งแผนกอัตโนมัติทาง Email เมื่อมีเอกสารเข้าระบบ</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+                            <div class="border border-slate-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-xs font-bold text-slate-500 uppercase">Status</p>
+                                    <button type="button" id="automail-toggle-btn" onclick="toggleAutoMailEnabled()" class="relative w-12 h-7 rounded-full bg-slate-300 transition-colors shrink-0" aria-label="Auto Mail on/off">
+                                        <span id="automail-toggle-knob" class="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform"></span>
+                                    </button>
+                                </div>
+                                <p id="automail-status-label" class="text-sm font-black text-slate-400 mt-2">กำลังโหลด...</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-4">
+                                <p class="text-xs font-bold text-slate-500 uppercase mb-1">Sender</p>
+                                <p class="text-sm font-black text-slate-800 break-all">preedapon.j@tidlor.com</p>
+                                <p id="automail-sender-status" class="text-xs font-bold mt-1.5"><i class="fa-solid fa-spinner fa-spin mr-1"></i>กำลังตรวจสอบสิทธิ์ผู้ส่ง...</p>
+                            </div>
+                        </div>
+
+                        <div id="automail-sender-warning" class="hidden mt-3 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2.5">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                            ไม่สามารถเปิด Auto Mail ได้ — Sender preedapon.j@tidlor.com ยังไม่ได้รับอนุญาตให้ส่งจาก Apps Script Account นี้ กรุณาติดต่อผู้ดูแลระบบให้เพิ่ม Alias นี้ในบัญชี Gmail/Workspace ที่ Deploy Apps Script
+                        </div>
+
+                        <div class="mt-6">
+                            <p class="text-sm font-bold text-slate-700 mb-2">Department Recipients</p>
+                            <p class="text-xs text-slate-400 mb-3">ใส่ Email ได้มากกว่า 1 รายการต่อแผนก คั่นด้วยเครื่องหมายจุลภาค (,) เว้นว่างไว้หากไม่ต้องการแจ้งเตือนแผนกนั้น</p>
+                            <div id="automail-department-list" class="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                                <div class="text-center text-slate-400 text-xs py-8"><i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังโหลดข้อมูล...</div>
+                            </div>
+                        </div>
+
+                        <p id="automail-save-status" class="text-xs font-bold mt-3 h-4"></p>
+                        <button type="button" id="automail-save-btn" onclick="saveAutoMailSettingsForm()" class="btn-nav btn-nav-primary w-full mt-2">บันทึกการตั้งค่า Auto Mail</button>
+
+                        <div class="border-t border-slate-100 mt-6 pt-5">
+                            <p class="text-sm font-bold text-slate-700 mb-2"><i class="fa-regular fa-paper-plane mr-1.5 text-slate-400"></i>ทดสอบการส่ง Email</p>
+                            <div class="flex flex-col sm:flex-row gap-2.5">
+                                <select id="automail-test-department" class="flex-1 border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">-- เลือกแผนก --</option>
+                                </select>
+                                <button type="button" id="automail-test-btn" onclick="sendAutoMailTest()" class="btn-nav btn-nav-secondary sm:w-52 shrink-0">ส่ง Email ทดสอบ</button>
+                            </div>
+                            <p id="automail-test-status" class="text-xs font-bold mt-2.5 h-4"></p>
                         </div>
                     </div>
                 </section>
@@ -1950,7 +2015,8 @@
             home: 'Digital Mail Service', dashboard: 'Executive Dashboard', operations: 'Operations Control', keyin: 'Document Entry (Key In)',
             track: 'Track & Trace', esign: 'E-Signature', return: 'Document Return', report: 'Report',
             deptstatus: 'Department Status Monitor / ตรวจสอบสถานะเอกสาร',
-            evidencecapture: 'Evidence Capture / แนบรูปหลักฐาน'
+            evidencecapture: 'Evidence Capture / แนบรูปหลักฐาน',
+            automail: 'Auto Mail Settings / ตั้งค่าแจ้งเตือน Email'
         };
 
         function navigateTo(pageId) {
@@ -1978,6 +2044,7 @@
             }
             if (pageId === 'deptstatus') loadDepartmentStatusMonitor();
             if (pageId === 'evidencecapture') loadEvidenceCaptureQueue();
+            if (pageId === 'automail') loadAutoMailSettings();
             if (pageId === 'dashboard') loadDashboardStats();
             if (pageId === 'operations') loadOperationsControl();
             if (pageId === 'report') loadReportSummaryForSelectedMonth();
@@ -4222,6 +4289,15 @@
                         document.getElementById('batch-complete-modal')?.classList.remove('hidden');
                         document.body.classList.add('overflow-hidden');
                         resetItemSpecificFields();
+
+                        // Auto Mail (v5.9.21): the Batch just finished — flush its queued Auto Mail
+                        // items into ONE digest email now, instead of one email per item. Fire-and-
+                        // forget: never blocks the already-shown Batch Complete UI, and a failure
+                        // here must never look like the Key In itself failed (it already succeeded).
+                        if (batchId) {
+                            apiCall('finalizeBatchAutoMail', { batchId: batchId, authToken: getAuthToken() })
+                                .catch(function(err) { console.warn('finalizeBatchAutoMail failed:', normalizeError(err)); });
+                        }
                     } else {
                         batchCurrentIndex = batchSavedCount + 1;
                         showSystemToast('✓ บันทึกรายการที่ ' + batchSavedCount + '/' + batchTotal + ' สำเร็จ (' + formatTrackingFriendlyLabel(res.trackingId || payload.trackingId) + (res.documentCount > 1 ? ' • ' + res.documentCount + ' เอกสาร' : '') + ')', 'success');
@@ -4257,6 +4333,16 @@
                         'บันทึกสำเร็จ • เชื่อมข้อมูลพร้อมใช้ ' + readyCount + '/4 Module',
                         readyCount >= 3 ? 'info' : 'error'
                     );
+                }
+
+                // Auto Mail (v5.9.21): a mail failure/skip must NEVER read as the Document Save
+                // having failed — Key In already succeeded above. This is a separate, secondary
+                // toast (shown after a short delay so it doesn't instantly overwrite the success
+                // toast) purely informational about the notification side-effect.
+                if (res.mail && res.mail.attempted && !res.mail.success) {
+                    setTimeout(function() {
+                        showSystemToast('⚠ Auto Mail แจ้งแผนกไม่สำเร็จ (เอกสารถูกบันทึกเรียบร้อยแล้ว)', 'error');
+                    }, 3200);
                 }
 
                 // Clear only after verified save + workflow refresh.
@@ -5143,6 +5229,159 @@
         let evidenceCaptureNewImages = [];
         let evidenceCaptureSeenFileKeys = []; // Requirement 16: index-aligned with evidenceCaptureNewImages
         let evidenceCaptureSaving = false; // Frontend in-flight lock — Requirement 21
+
+        /** ===================== AUTO MAIL SETTINGS (v5.9.21) — Admin only ===================== **/
+        let autoMailEnabledState = false; // local UI state — only persisted when "Save" is clicked
+        let autoMailSenderAuthorized = false;
+
+        async function loadAutoMailSettings() {
+            if (!requireGas() || !getAuthToken()) return;
+
+            const listEl = document.getElementById('automail-department-list');
+            const statusLabel = document.getElementById('automail-status-label');
+            const senderStatusEl = document.getElementById('automail-sender-status');
+            const warningEl = document.getElementById('automail-sender-warning');
+            const saveBtn = document.getElementById('automail-save-btn');
+
+            try {
+                const res = await apiCall('getAutoMailSettings', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดการตั้งค่า Auto Mail ไม่สำเร็จ');
+
+                autoMailEnabledState = !!res.enabled;
+                autoMailSenderAuthorized = !!res.senderAuthorized;
+                renderAutoMailToggle();
+
+                if (senderStatusEl) {
+                    senderStatusEl.innerHTML = autoMailSenderAuthorized
+                        ? '<i class="fa-solid fa-circle-check mr-1"></i>Verified ✓ (' + escapeHtml(res.senderReason === 'ACCOUNT_OWNER' ? 'Account เจ้าของ' : 'Gmail Alias') + ')'
+                        : '<i class="fa-solid fa-circle-xmark mr-1"></i>Not Authorized';
+                    senderStatusEl.className = 'text-xs font-bold mt-1.5 ' + (autoMailSenderAuthorized ? 'text-emerald-600' : 'text-rose-600');
+                }
+                warningEl?.classList.toggle('hidden', autoMailSenderAuthorized);
+
+                // Requirement — CRITICAL: if Sender isn't authorized, ON/OFF is disabled entirely
+                // (never allow Auto Mail to be switched on toward a Sender that isn't valid).
+                const toggleBtn = document.getElementById('automail-toggle-btn');
+                if (toggleBtn) toggleBtn.disabled = !autoMailSenderAuthorized;
+                if (saveBtn) saveBtn.disabled = !autoMailSenderAuthorized;
+
+                renderAutoMailDepartmentList(res.departments || []);
+
+                const testSelect = document.getElementById('automail-test-department');
+                if (testSelect) {
+                    testSelect.innerHTML = '<option value="">-- เลือกแผนก --</option>' +
+                        (res.departments || []).map(function(d) {
+                            return '<option value="' + escapeHtml(d.department) + '">' + escapeHtml(d.department) + (d.emails.length ? '' : ' (ยังไม่มี Email)') + '</option>';
+                        }).join('');
+                }
+
+            } catch (err) {
+                if (listEl) listEl.innerHTML = '<div class="text-center text-rose-500 text-xs py-8">โหลดข้อมูลไม่สำเร็จ: ' + escapeHtml(normalizeError(err)) + '</div>';
+                if (statusLabel) statusLabel.textContent = 'โหลดไม่สำเร็จ';
+            }
+        }
+
+        function renderAutoMailToggle() {
+            const btn = document.getElementById('automail-toggle-btn');
+            const knob = document.getElementById('automail-toggle-knob');
+            const label = document.getElementById('automail-status-label');
+            if (btn) btn.classList.toggle('bg-emerald-500', autoMailEnabledState);
+            if (btn) btn.classList.toggle('bg-slate-300', !autoMailEnabledState);
+            if (knob) knob.style.transform = autoMailEnabledState ? 'translateX(20px)' : 'translateX(0)';
+            if (label) {
+                label.textContent = autoMailEnabledState ? '● เปิดใช้งาน Auto Mail' : '○ ปิดใช้งาน Auto Mail';
+                label.className = 'text-sm font-black mt-2 ' + (autoMailEnabledState ? 'text-emerald-600' : 'text-slate-400');
+            }
+        }
+
+        function toggleAutoMailEnabled() {
+            const btn = document.getElementById('automail-toggle-btn');
+            if (btn && btn.disabled) return; // Sender not authorized — cannot be switched on
+            autoMailEnabledState = !autoMailEnabledState;
+            renderAutoMailToggle();
+        }
+
+        function renderAutoMailDepartmentList(departments) {
+            const listEl = document.getElementById('automail-department-list');
+            if (!listEl) return;
+            listEl.innerHTML = departments.map(function(d, idx) {
+                const value = (d.emails || []).join(', ');
+                return '<div class="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 border border-slate-100 rounded-xl p-3">' +
+                    '<label class="text-xs font-bold text-slate-700 sm:w-40 shrink-0">' + escapeHtml(d.department) + '</label>' +
+                    '<input type="text" data-automail-dept="' + escapeHtml(d.department) + '" value="' + escapeHtml(value) + '" placeholder="เว้นว่างไว้หากไม่ต้องการแจ้งเตือน" ' +
+                    'class="automail-email-input flex-1 min-w-0 border border-slate-200 p-2.5 rounded-lg text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">' +
+                    '</div>';
+            }).join('');
+        }
+
+        async function saveAutoMailSettingsForm() {
+            if (!requireGas()) return;
+
+            const statusEl = document.getElementById('automail-save-status');
+            const saveBtn = document.getElementById('automail-save-btn');
+
+            const departmentInputs = document.querySelectorAll('.automail-email-input');
+            const departments = Array.from(departmentInputs).map(function(input) {
+                return { department: input.dataset.automailDept, emails: input.value };
+            });
+
+            if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังบันทึก...'; }
+            if (statusEl) { statusEl.textContent = ''; statusEl.className = 'text-xs font-bold mt-3 h-4'; }
+
+            try {
+                const res = await apiCall('saveAutoMailSettings', {
+                    enabled: autoMailEnabledState,
+                    departments: departments,
+                    authToken: getAuthToken()
+                });
+                if (handleAuthFailure(res)) return;
+
+                if (!res || !res.success) {
+                    // Requirement — Email Validation: reject-with-clear-message, nothing saved.
+                    if (statusEl) { statusEl.textContent = (res && res.message) || 'บันทึกไม่สำเร็จ'; statusEl.className = 'text-xs font-bold mt-3 h-4 text-rose-600'; }
+                    return;
+                }
+
+                if (statusEl) { statusEl.textContent = '✓ ' + res.message; statusEl.className = 'text-xs font-bold mt-3 h-4 text-emerald-600'; }
+                showSystemToast(res.message || 'บันทึกการตั้งค่า Auto Mail เรียบร้อยแล้ว', 'success');
+                loadAutoMailSettings(); // refresh from Backend — never assume the local draft matches what was actually saved
+
+            } catch (err) {
+                if (statusEl) { statusEl.textContent = 'บันทึกไม่สำเร็จ: ' + normalizeError(err); statusEl.className = 'text-xs font-bold mt-3 h-4 text-rose-600'; }
+            } finally {
+                if (saveBtn) { saveBtn.disabled = !autoMailSenderAuthorized; saveBtn.innerHTML = 'บันทึกการตั้งค่า Auto Mail'; }
+            }
+        }
+
+        async function sendAutoMailTest() {
+            if (!requireGas()) return;
+
+            const department = document.getElementById('automail-test-department')?.value;
+            const statusEl = document.getElementById('automail-test-status');
+            const btn = document.getElementById('automail-test-btn');
+
+            if (!department) { if (statusEl) { statusEl.textContent = 'กรุณาเลือกแผนก'; statusEl.className = 'text-xs font-bold mt-2.5 h-4 text-rose-600'; } return; }
+
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังส่ง...'; }
+            if (statusEl) { statusEl.textContent = ''; statusEl.className = 'text-xs font-bold mt-2.5 h-4'; }
+
+            try {
+                // Requirement: Test Email never creates a KeyIn transaction or changes any Status —
+                // testAutoMail() on the Backend only ever calls GmailApp.sendEmail(), nothing else.
+                const res = await apiCall('testAutoMail', { department: department, authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+
+                if (statusEl) {
+                    statusEl.textContent = res && res.success ? '✓ ' + res.message : ((res && res.message) || 'ส่ง Test Email ไม่สำเร็จ');
+                    statusEl.className = 'text-xs font-bold mt-2.5 h-4 ' + (res && res.success ? 'text-emerald-600' : 'text-rose-600');
+                }
+            } catch (err) {
+                if (statusEl) { statusEl.textContent = 'ส่ง Test Email ไม่สำเร็จ: ' + normalizeError(err); statusEl.className = 'text-xs font-bold mt-2.5 h-4 text-rose-600'; }
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = 'ส่ง Email ทดสอบ'; }
+            }
+        }
 
         async function loadEvidenceCaptureQueue() {
             if (!requireGas() || !getAuthToken()) return;
