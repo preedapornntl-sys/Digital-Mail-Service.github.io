@@ -13,6 +13,113 @@
     <script src="https://unpkg.com/@zxing/library@0.23.0/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
+        /* ===================== PART B (v5.9.19) — PROFESSIONAL DESIGN SYSTEM =====================
+           Modern enterprise logistics/document-ops palette: deep navy/royal blue/indigo/azure as
+           the foundation, restrained semantic accents (teal/emerald/violet/amber/rose). All motion
+           uses transform/opacity only, 150–220ms, respecting prefers-reduced-motion. */
+        :root {
+            --nav-navy: #0B1739;
+            --nav-deep-blue: #102A56;
+            --nav-royal-blue: #2563EB;
+            --nav-azure: #3B82F6;
+            --nav-indigo: #4F46E5;
+            --nav-soft-blue: #EAF2FF;
+            --nav-ice: #F6F9FF;
+            --nav-slate: #64748B;
+            --nav-teal: #14B8A6;
+            --nav-emerald: #10B981;
+            --nav-violet: #7C3AED;
+            --nav-amber: #F59E0B;
+            --nav-rose: #F43F5E;
+            --nav-border: #D8E2F0;
+            --nav-field-bg: #F8FAFD;
+            --nav-motion-fast: 160ms;
+            --nav-motion-base: 200ms;
+            --nav-ease: cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Calm, very light brand background — replaces flat gray with a barely-there depth cue.
+           Pure CSS, applied once to the scrollable app shell — never recomputed per frame. */
+        .app-shell-bg {
+            background:
+                radial-gradient(circle at top right, rgba(37,99,235,.06), transparent 32%),
+                linear-gradient(180deg, #f8fbff 0%, #f2f6fc 100%);
+        }
+
+        /* ---------- Global Button System ---------- */
+        .btn-nav {
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            border-radius: 13px; font-weight: 700; font-size: .875rem; min-height: 44px;
+            padding: .75rem 1.25rem; cursor: pointer; user-select: none;
+            transition: transform var(--nav-motion-fast) var(--nav-ease),
+                        box-shadow var(--nav-motion-fast) var(--nav-ease),
+                        filter var(--nav-motion-fast) var(--nav-ease),
+                        background-color var(--nav-motion-fast) var(--nav-ease),
+                        border-color var(--nav-motion-fast) var(--nav-ease);
+            border: 1px solid transparent;
+        }
+        .btn-nav:active { transform: scale(0.98); }
+        .btn-nav:disabled { opacity: .6; cursor: wait; transform: none; }
+        .btn-nav-primary {
+            background: linear-gradient(135deg, var(--nav-royal-blue), var(--nav-indigo));
+            color: #fff; box-shadow: 0 6px 16px -6px rgba(37,99,235,.45);
+        }
+        .btn-nav-primary:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 10px 20px -6px rgba(37,99,235,.5); }
+        .btn-nav-secondary { background: #fff; color: var(--nav-deep-blue); border-color: var(--nav-border); }
+        .btn-nav-secondary:hover:not(:disabled) { background: var(--nav-soft-blue); border-color: var(--nav-royal-blue); }
+        .btn-nav-success { background: var(--nav-emerald); color: #fff; }
+        .btn-nav-success:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn-nav-warning { background: var(--nav-amber); color: #fff; }
+        .btn-nav-warning:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn-nav-destructive { background: var(--nav-rose); color: #fff; }
+        .btn-nav-destructive:hover:not(:disabled) { filter: brightness(1.05); transform: translateY(-1px); }
+        .btn-nav .btn-nav-icon { transition: transform var(--nav-motion-base) var(--nav-ease); }
+        .btn-nav:hover .btn-nav-icon-shift { transform: translateX(2px); }
+        .btn-nav:hover .btn-nav-icon-spin { transform: rotate(90deg); }
+
+        /* ---------- Interactive Module / Home Cards ---------- */
+        .card-interactive {
+            transition: transform var(--nav-motion-base) var(--nav-ease),
+                        box-shadow var(--nav-motion-base) var(--nav-ease),
+                        border-color var(--nav-motion-base) var(--nav-ease);
+        }
+        .card-interactive:hover { transform: translateY(-3px); box-shadow: 0 14px 28px -12px rgba(11,23,57,.16); }
+        .card-interactive:active { transform: translateY(-1px) scale(.98); }
+        .card-interactive .card-icon-capsule { transition: transform var(--nav-motion-base) var(--nav-ease); }
+        .card-interactive:hover .card-icon-capsule { transform: scale(1.04); }
+        .card-interactive .card-arrow { transition: transform var(--nav-motion-base) var(--nav-ease), opacity var(--nav-motion-base) var(--nav-ease); opacity: .45; }
+        .card-interactive:hover .card-arrow { transform: translateX(3px); opacity: 1; }
+
+        /* ---------- Status Badges (shared meaning → shared color, everywhere) ---------- */
+        .badge-status { display: inline-flex; align-items: center; gap: .35rem; font-size: .6875rem; font-weight: 700; padding: .25rem .625rem; border-radius: 999px; white-space: nowrap; }
+        .badge-registered { background: #EAF2FF; color: #1D4ED8; }
+        .badge-ari-hills { background: #E0F2FE; color: #0369A1; }
+        .badge-in-transit { background: #FEF3C7; color: #B45309; }
+        .badge-btsvp { background: #EDE9FE; color: #6D28D9; }
+        .badge-delivered { background: #D1FAE5; color: #047857; }
+        .badge-returned { background: #FFE4E6; color: #BE123C; }
+
+        /* ---------- Sidebar depth + active state ---------- */
+        .sidebar-btn { transition: background-color var(--nav-motion-fast) var(--nav-ease), color var(--nav-motion-fast) var(--nav-ease); position: relative; }
+        .sidebar-btn i { transition: transform var(--nav-motion-fast) var(--nav-ease); }
+        .sidebar-btn:hover i { transform: translateX(2px); }
+        .sidebar-btn.sidebar-btn-active { background: linear-gradient(90deg, rgba(37,99,235,.22), rgba(79,70,229,.14)); color: #fff; box-shadow: inset 0 0 0 1px rgba(96,165,250,.18); }
+        .sidebar-btn.sidebar-btn-active::before { content: ''; position: absolute; left: -4px; top: 8px; bottom: 8px; width: 3px; border-radius: 3px; background: linear-gradient(180deg, var(--nav-royal-blue), var(--nav-indigo)); }
+
+        /* ---------- Signature canvas focus state ---------- */
+        .signature-frame { transition: border-color var(--nav-motion-base) var(--nav-ease), box-shadow var(--nav-motion-base) var(--nav-ease); }
+        .signature-frame.signature-active { border-color: var(--nav-indigo); box-shadow: 0 0 0 3px rgba(79,70,229,.12) inset; }
+
+        /* Respect the user's OS-level motion preference: shrink every custom transition/animation
+           on this page down to effectively-instant, without removing the underlying state changes
+           (buttons still disable, cards still highlight — they just stop moving to get there). */
+        @media (prefers-reduced-motion: reduce) {
+            .card-interactive, .card-interactive:hover,
+            .btn-nav, .btn-nav:hover, .btn-nav:active,
+            .sidebar-btn, .sidebar-btn i, .sidebar-btn:hover i,
+            .signature-frame { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; transform: none !important; }
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -367,64 +474,55 @@
             </div>
 
             <!-- Scrollable Viewport Pages -->
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 no-scrollbar bg-slate-100/70">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 no-scrollbar app-shell-bg">
 
                 <!-- MODULE 1: HOME GRID -->
                 <section id="page-home" class="page-section hidden max-w-7xl mx-auto space-y-6 md:space-y-8 animate-fade-in">
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-                        <button onclick="navigateTo('dashboard')" id="btn-home-dashboard" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-indigo-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-chart-pie text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-indigo-600">Dashboard</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+                        <button onclick="navigateTo('dashboard')" id="btn-home-dashboard" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-indigo-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-pie text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Dashboard</p><p class="text-xs text-slate-500 mt-0.5 truncate">ภาพรวมและสถิติการดำเนินงาน</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-indigo-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('operations')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-violet-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-violet-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-route text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-violet-600">Operations</span>
+                        <button onclick="navigateTo('operations')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-violet-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-route text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Operations Control</p><p class="text-xs text-slate-500 mt-0.5 truncate">จัดการ Dispatch และ Arrival ที่ BTSVP</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-violet-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('keyin')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-blue-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-keyboard text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-blue-600">Key In</span>
+                        <button onclick="navigateTo('keyin')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-blue-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-keyboard text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">นำเข้าเอกสาร (Key In)</p><p class="text-xs text-slate-500 mt-0.5 truncate">ลงทะเบียนเอกสารเข้าใหม่</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-blue-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('evidencecapture')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-orange-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-camera text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-orange-600 text-center leading-tight">แนบรูปหลักฐาน</span>
+                        <button onclick="navigateTo('evidencecapture')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-orange-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-camera text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">แนบรูปหลักฐาน</p><p class="text-xs text-slate-500 mt-0.5 truncate">แนบรูปกับ Tracking ที่ลงทะเบียนแล้ว</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-orange-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('esign')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-purple-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-file-signature text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-purple-600">E-Sign</span>
+                        <button onclick="navigateTo('esign')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-purple-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-file-signature text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">E-Signature</p><p class="text-xs text-slate-500 mt-0.5 truncate">เซ็นรับเอกสารแบบกลุ่มในครั้งเดียว</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-purple-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('deptstatus')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-teal-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-teal-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-building-shield text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-teal-600 text-center leading-tight">สถานะเอกสาร</span>
+                        <button onclick="navigateTo('deptstatus')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-teal-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-building-shield text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">สถานะเอกสาร</p><p class="text-xs text-slate-500 mt-0.5 truncate">ตรวจสถานะเอกสารแยกตามแผนก</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-teal-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('track')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-emerald-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-map-location-dot text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-emerald-600">Track</span>
+                        <button onclick="navigateTo('track')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-emerald-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-map-location-dot text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Track & Trace</p><p class="text-xs text-slate-500 mt-0.5 truncate">ค้นหาและติดตามสถานะเอกสาร</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-emerald-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('return')" class="group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-rose-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-rose-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-rotate-left text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-rose-600">Return</span>
+                        <button onclick="navigateTo('return')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-rose-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-rotate-left text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">เอกสารตีกลับ</p><p class="text-xs text-slate-500 mt-0.5 truncate">บันทึกตีกลับและนำส่งใหม่</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-rose-400 shrink-0"></i>
                         </button>
-                        <button onclick="navigateTo('report')" class="admin-only group bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200/80 hover:shadow-xl hover:border-sky-400 transition-all duration-300 flex flex-col items-center justify-center text-center cursor-pointer">
-                            <div class="w-14 h-14 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white transition-all duration-300 shadow-sm">
-                                <i class="fa-solid fa-chart-column text-2xl"></i>
-                            </div>
-                            <span class="text-sm font-bold text-slate-700 group-hover:text-sky-600">Report</span>
+                        <button onclick="navigateTo('report')" class="admin-only card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-sky-300 flex items-center gap-4 text-left cursor-pointer">
+                            <div class="card-icon-capsule w-14 h-14 shrink-0 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-column text-2xl"></i></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Report</p><p class="text-xs text-slate-500 mt-0.5 truncate">สรุปผลการดำเนินงานรายเดือน</p></div>
+                            <i class="card-arrow fa-solid fa-chevron-right text-sky-400 shrink-0"></i>
                         </button>
                     </div>
                 </section>
@@ -758,7 +856,7 @@
                     <!-- Step 2 footer: Back (no API call, keeps data) + the existing real Save -->
                     <div id="keyin-step-2-footer" class="hidden flex gap-3 pt-6 mt-6 border-t border-slate-100">
                         <button type="button" onclick="goToKeyInPreviousStep()" class="w-1/3 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm hover:bg-slate-50 transition cursor-pointer min-h-[44px]"><i class="fa-solid fa-arrow-left mr-1"></i> ย้อนกลับ</button>
-                        <button id="keyin-save-btn" onclick="submitKeyInForm()" class="w-2/3 bg-indigo-700 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:bg-indigo-800 transition cursor-pointer min-h-[44px]">บันทึกข้อมูลเข้าระบบ</button>
+                        <button id="keyin-save-btn" onclick="submitKeyInForm()" class="btn-nav btn-nav-primary w-2/3">บันทึกข้อมูลเข้าระบบ</button>
                     </div>
                 </section>
 
@@ -885,7 +983,7 @@
                                     <label class="text-xs font-bold text-slate-700">กระดานเซ็นชื่อ (Sign Area)</label>
                                     <button onclick="clearSignatureCanvas()" class="text-xs font-bold text-rose-500 hover:underline cursor-pointer"><i class="fa-solid fa-eraser"></i> ล้างกระดาน</button>
                                 </div>
-                                <div class="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 overflow-hidden touch-none relative">
+                                <div id="signature-pad-frame" class="signature-frame border-2 border-dashed border-slate-300 rounded-2xl bg-white overflow-hidden touch-none relative">
                                     <canvas id="signature-pad" class="w-full h-52 block cursor-crosshair"></canvas>
                                 </div>
                             </div>
@@ -909,7 +1007,7 @@
                                 </div>
                             </div>
 
-                            <button onclick="saveEsignature()" id="esign-save-btn" class="w-full bg-purple-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-purple-200 hover:bg-purple-800 transition cursor-pointer mt-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <button onclick="saveEsignature()" id="esign-save-btn" class="btn-nav w-full bg-purple-700 text-white py-3.5 rounded-xl font-bold text-sm shadow-lg shadow-purple-200 hover:bg-purple-800 mt-4 disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                                 <i class="fa-solid fa-file-signature mr-1"></i> เซ็นรับรายการที่เลือก
                             </button>
                         </div>
@@ -1027,6 +1125,7 @@
                                 <div class="min-w-0">
                                     <p class="text-xs font-bold text-slate-400">TRACKING NO.</p>
                                     <p class="text-lg font-black text-slate-800 break-all" id="result-tracking-id">-</p>
+                                    <p id="result-tracking-ref" class="hidden text-[10px] text-slate-400 font-mono">-</p>
                                     <p class="text-xs text-slate-500 mt-1" id="result-track-summary">แตะเพื่อดูรายละเอียดสถานะ</p>
                                 </div>
                                 <div class="flex items-center gap-2 shrink-0">
@@ -1087,7 +1186,7 @@
                                 <p id="return-signature-placeholder" class="absolute inset-0 flex items-center justify-center text-xs text-slate-300 font-bold pointer-events-none">Sign Here</p>
                             </div>
 
-                            <button type="button" id="return-redelivery-confirm-btn" onclick="confirmRedelivery()" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold text-sm hover:bg-emerald-700 transition min-h-[44px]">ยืนยันนำส่งใหม่</button>
+                            <button type="button" id="return-redelivery-confirm-btn" onclick="confirmRedelivery()" class="btn-nav btn-nav-success w-full">ยืนยันนำส่งใหม่</button>
                         </div>
                     </div>
 
@@ -1378,6 +1477,10 @@
                 signaturePad = new SignaturePad(canvas, {
                     backgroundColor: 'rgba(255, 255, 255, 0)',
                     penColor: 'rgb(30, 27, 65)'
+                });
+                // Requirement 4: subtle Indigo focus state the moment the user starts signing.
+                signaturePad.addEventListener('beginStroke', function() {
+                    document.getElementById('signature-pad-frame')?.classList.add('signature-active');
                 });
             }
 
@@ -1860,9 +1963,9 @@
             document.querySelectorAll('.page-section').forEach(section => section.classList.add('hidden'));
             const target = document.getElementById('page-' + pageId);
             if (target) target.classList.remove('hidden');
-            document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('bg-indigo-600','text-white'));
+            document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('sidebar-btn-active'));
             const sideBtn = document.getElementById('side-' + pageId);
-            if (sideBtn) sideBtn.classList.add('bg-indigo-600','text-white');
+            if (sideBtn) sideBtn.classList.add('sidebar-btn-active');
             if (titles[pageId]) {
                 const desktop = document.getElementById('desktop-header-title');
                 const mobile = document.getElementById('mobile-header-title');
@@ -4095,7 +4198,9 @@
                     if (batchSavedCount >= batchTotal) {
                         // Requirement 11: Batch complete popup.
                         const msgList = document.getElementById('batch-complete-tracking-list');
-                        if (msgList) msgList.innerHTML = batchSavedTrackingIds.map(function(id) { return '<div>' + escapeHtml(id) + '</div>'; }).join('');
+                        if (msgList) msgList.innerHTML = batchSavedTrackingIds.map(function(id) {
+                            return '<div>' + escapeHtml(formatTrackingFriendlyLabel(id)) + (isOrdinaryLetterId(id) ? ' <span class="text-slate-400">(Ref: ' + escapeHtml(id) + ')</span>' : '') + '</div>';
+                        }).join('');
                         const msgText = document.getElementById('batch-complete-message');
                         if (msgText) msgText.textContent = 'บันทึกสำเร็จ ' + batchSavedCount + ' รายการ';
                         document.getElementById('batch-complete-modal')?.classList.remove('hidden');
@@ -4103,7 +4208,7 @@
                         resetItemSpecificFields();
                     } else {
                         batchCurrentIndex = batchSavedCount + 1;
-                        showSystemToast('✓ บันทึกรายการที่ ' + batchSavedCount + '/' + batchTotal + ' สำเร็จ (' + (res.trackingId || payload.trackingId) + (res.documentCount > 1 ? ' • ' + res.documentCount + ' เอกสาร' : '') + ')', 'success');
+                        showSystemToast('✓ บันทึกรายการที่ ' + batchSavedCount + '/' + batchTotal + ' สำเร็จ (' + formatTrackingFriendlyLabel(res.trackingId || payload.trackingId) + (res.documentCount > 1 ? ' • ' + res.documentCount + ' เอกสาร' : '') + ')', 'success');
                         resetItemSpecificFields();
                         renderBatchProgressUI();
                         // Keep the user on Key In, ready to scan the next item — no navigation away.
@@ -4119,7 +4224,7 @@
                     showSystemToast(
                         res.message || (isAriHillsRoute
                             ? '✓ บันทึกเอกสารสำเร็จ • Route: Ari Hills • เอกสารพร้อมสำหรับ E-Sign'
-                            : 'Key In สำเร็จ พร้อมดำเนินการ Dispatch • ' + (res.trackingId || payload.trackingId)),
+                            : 'Key In สำเร็จ พร้อมดำเนินการ Dispatch • ' + formatTrackingFriendlyLabel(res.trackingId || payload.trackingId)),
                         'success'
                     );
                 } else {
@@ -4352,7 +4457,7 @@
             canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
             canvas.getContext('2d').scale(ratio, ratio); signaturePad.clear();
         }
-        function clearSignatureCanvas() { if (signaturePad) signaturePad.clear(); }
+        function clearSignatureCanvas() { if (signaturePad) signaturePad.clear(); document.getElementById('signature-pad-frame')?.classList.remove('signature-active'); }
 
         const NTL_DEPARTMENTS = ["ซองสัญญา", "นายหน้าประกันภัย", "ปฏิบัติการประกันภัย", "ทะเบียน", "บุคคล", "บัญชี", "BSCS", "BDSM", "CLD", "Audit", "Fraud", "CRD", "กำกับธุรกรรม", "Legal", "CAS", "MKT", "Falcon", "IT", "จัดซื้อ", "MD", "CS", "DB", "A&D", "HeyGoody"];
 
@@ -4770,9 +4875,10 @@
                     image +
                     '<div class="min-w-0 flex-1">' +
                         '<div class="flex flex-wrap items-center justify-between gap-1">' +
-                            '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(item.trackingId) + '</p>' +
+                            '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</p>' +
                             '<span class="text-[10px] font-bold text-slate-500">' + escapeHtml(item.route || '') + '</span>' +
                         '</div>' +
+                        (isOrdinaryLetterId(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono -mt-0.5 mb-1">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
                         '<p class="text-xs text-slate-700 mt-1"><i class="fa-regular fa-user w-4 text-slate-400"></i>' +
                             escapeHtml(item.recipientName || '-') + '</p>' +
                         '<p class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-building-user w-4"></i>' +
@@ -4814,6 +4920,19 @@
             renderEsignParcels();
         }
 
+        // Requirement 1 (v5.9.19) — "ธรรมดา" (Ordinary Letter) friendly display. The Backend
+        // generates an Internal Reference like "ORD-20260908-A82F31" and stores that as the real
+        // TrackingID (so it works with every existing lookup unchanged) — the "ORD-" prefix
+        // itself is the signal this helper uses to show "จดหมายธรรมดา" instead of the raw
+        // Reference, with the Reference kept available as a small secondary "Ref:" line.
+        const ORDINARY_LETTER_PREFIX = 'ORD-';
+        function isOrdinaryLetterId(trackingId) {
+            return typeof trackingId === 'string' && trackingId.indexOf(ORDINARY_LETTER_PREFIX) === 0;
+        }
+        function formatTrackingFriendlyLabel(trackingId) {
+            return isOrdinaryLetterId(trackingId) ? 'จดหมายธรรมดา' : (trackingId || '-');
+        }
+
         function escapeHtml(value) {
             return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
         }
@@ -4851,17 +4970,43 @@
                 const completed = Array.isArray(res.completed) ? res.completed : [];
                 const skipped = Array.isArray(res.skipped) ? res.skipped : [];
 
-                if (!completed.length) {
-                    showEsignResultModal({ ok: false, completedCount: 0, totalCount: trackingIds.length, skipped: skipped, message: res.message });
-                    return;
+                // Requirement 2 (v5.9.19) — CRITICAL FIX: this reconciliation used to live ONLY
+                // inside the "completed.length > 0" branch below, so whenever a whole batch came
+                // back with ZERO newly-completed items (every selected Tracking was already
+                // Delivered/Returned — by another Device, a prior click, or an idempotent retry),
+                // the function returned immediately WITHOUT ever removing those stale items from
+                // esignQueueAllItems/esignPendingItems. That is the exact bug: Delivered items
+                // stayed selectable in the Queue until a full page reload. The fix is to always
+                // reconcile BOTH completed items and any skip explicitly marked `stale: true`
+                // (meaning: already resolved elsewhere, safe to drop from the local Queue) —
+                // regardless of whether anything was newly completed in *this* call.
+                const staleTrackingIds = skipped.filter(function(s) { return s.stale === true; }).map(function(s) { return s.trackingId; });
+                const removableSet = new Set(completed.concat(staleTrackingIds));
+
+                if (removableSet.size) {
+                    esignQueueAllItems = esignQueueAllItems.filter(function(item) { return !removableSet.has(item.trackingId); });
+                    esignPendingItems = esignPendingItems.filter(function(item) { return !removableSet.has(item.trackingId); });
+                    renderEsignParcels();
+
+                    const badge = document.getElementById('esign-pending-badge');
+                    if (badge) badge.textContent = 'รอรับ ' + esignQueueAllItems.length + ' รายการ';
+                    renderEsignDepartmentOptions(buildEsignDepartmentCounts(esignQueueAllItems));
                 }
 
-                // Remove only the successfully-signed items from the local queue immediately —
-                // KeyIn rows are NOT moved/deleted, this only updates the in-memory E-Sign view.
-                const completedSet = new Set(completed);
-                esignQueueAllItems = esignQueueAllItems.filter(function(item) { return !completedSet.has(item.trackingId); });
-                esignPendingItems = esignPendingItems.filter(function(item) { return !completedSet.has(item.trackingId); });
-                renderEsignParcels();
+                if (!completed.length) {
+                    // Requirement 2 — "ALL ALREADY COMPLETED": if every skip was stale (already
+                    // resolved elsewhere), this is calm informational reconciliation, never a red
+                    // error — the Queue above has already been cleaned up by the block above.
+                    showEsignResultModal({
+                        ok: !!res.allStaleSkips,
+                        informational: !!res.allStaleSkips,
+                        completedCount: 0,
+                        totalCount: trackingIds.length,
+                        skipped: skipped,
+                        message: res.message
+                    });
+                    return;
+                }
 
                 document.getElementById('esign-recipient-name').value = '';
                 clearSignatureCanvas();
@@ -4879,9 +5024,6 @@
                 // already fetch fresh data unconditionally the moment navigateTo('dashboard') /
                 // navigateTo('operations') actually runs, so this was two unnecessary Backend
                 // calls after every single E-Sign action for no benefit the user could see yet.
-                const badge = document.getElementById('esign-pending-badge');
-                if (badge) badge.textContent = 'รอรับ ' + esignQueueAllItems.length + ' รายการ';
-                renderEsignDepartmentOptions(buildEsignDepartmentCounts(esignQueueAllItems));
 
             } catch (err) {
                 showEsignResultModal({ ok: false, completedCount: 0, totalCount: trackingIds.length, skipped: [], message: 'บันทึก E-Sign ไม่สำเร็จ: ' + normalizeError(err) });
@@ -4914,17 +5056,26 @@
             const failedCount = (result.skipped || []).length;
             const success = result.completedCount > 0 && failedCount === 0;
 
+            // Requirement 2 (v5.9.19): items already Delivered/Returned elsewhere (another
+            // Device, a prior click, an idempotent retry) are NOT an error — this is calm,
+            // informational reconciliation. Never show the red/rose "failed" treatment for it.
+            const informational = !!result.informational;
+
             if (icon) {
                 icon.className = 'w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4 ' +
-                    (success ? 'bg-emerald-100 text-emerald-600' : (result.completedCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'));
-                icon.innerHTML = '<i class="fa-solid ' + (success ? 'fa-circle-check' : (result.completedCount > 0 ? 'fa-triangle-exclamation' : 'fa-circle-xmark')) + '"></i>';
+                    (success ? 'bg-emerald-100 text-emerald-600' :
+                     informational ? 'bg-sky-100 text-sky-600' :
+                     (result.completedCount > 0 ? 'bg-amber-100 text-amber-600' : 'bg-rose-100 text-rose-600'));
+                icon.innerHTML = '<i class="fa-solid ' + (success ? 'fa-circle-check' : informational ? 'fa-circle-info' : (result.completedCount > 0 ? 'fa-triangle-exclamation' : 'fa-circle-xmark')) + '"></i>';
             }
 
-            if (title) title.textContent = success ? 'บันทึกข้อมูลสำเร็จ' : (result.completedCount > 0 ? 'บันทึกข้อมูลสำเร็จบางส่วน' : 'บันทึกข้อมูลไม่สำเร็จ');
+            if (title) title.textContent = success ? 'บันทึกข้อมูลสำเร็จ' : informational ? 'รายการได้รับการเซ็นรับเรียบร้อยแล้ว' : (result.completedCount > 0 ? 'บันทึกข้อมูลสำเร็จบางส่วน' : 'บันทึกข้อมูลไม่สำเร็จ');
 
             if (message) {
                 if (success) {
                     message.textContent = 'บันทึกลายเซ็นรับเอกสารเรียบร้อยแล้ว\nจำนวน ' + result.completedCount + ' รายการ';
+                } else if (informational) {
+                    message.textContent = (result.message || (failedCount + ' รายการถูกปิดงานไปแล้ว')) + '\nระบบนำออกจากคิวรอเซ็นให้เรียบร้อยแล้ว';
                 } else if (result.completedCount > 0) {
                     message.textContent = 'บันทึกสำเร็จ ' + result.completedCount + ' รายการ\nไม่สำเร็จ ' + failedCount + ' รายการ';
                 } else {
@@ -4933,11 +5084,20 @@
             }
 
             if (failedList) {
-                if (failedCount > 0) {
+                if (failedCount > 0 && !informational) {
                     failedList.innerHTML = (result.skipped || []).map(function(item) {
                         return '<div class="text-xs py-1 border-b border-rose-100 last:border-b-0">' +
-                            '<span class="font-bold text-rose-700">' + escapeHtml(item.trackingId) + '</span>' +
+                            '<span class="font-bold text-rose-700">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</span>' +
                             '<span class="text-rose-500"> — ' + escapeHtml(item.reason || 'ไม่สามารถบันทึกได้') + '</span>' +
+                        '</div>';
+                    }).join('');
+                    failedList.classList.remove('hidden');
+                } else if (failedCount > 0 && informational) {
+                    // Same list, calm sky styling instead of rose — these are not failures.
+                    failedList.innerHTML = (result.skipped || []).map(function(item) {
+                        return '<div class="text-xs py-1 border-b border-sky-100 last:border-b-0">' +
+                            '<span class="font-bold text-sky-700">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</span>' +
+                            '<span class="text-sky-500"> — ' + escapeHtml(item.reason || 'ปิดงานแล้ว') + '</span>' +
                         '</div>';
                     }).join('');
                     failedList.classList.remove('hidden');
@@ -5043,8 +5203,9 @@
                 const badge = item.hasEvidence
                     ? '<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 shrink-0">แนบแล้ว ' + item.evidenceCount + '</span>'
                     : '<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700 shrink-0">รอแนบรูป</span>';
-                return '<button type="button" onclick="openEvidenceCaptureDetail(' + idx + ')" class="text-left bg-white border border-slate-200 rounded-xl p-3.5 hover:border-orange-300 hover:shadow-md transition active:scale-[0.99] min-h-[44px]">' +
-                    '<div class="flex items-center justify-between gap-2 mb-1.5"><p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(item.trackingId) + '</p>' + badge + '</div>' +
+                return '<button type="button" onclick="openEvidenceCaptureDetail(' + idx + ')" class="card-interactive text-left bg-white border border-slate-200 rounded-xl p-3.5 hover:border-orange-300 min-h-[44px]">' +
+                    '<div class="flex items-center justify-between gap-2 mb-1.5"><p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</p>' + badge + '</div>' +
+                    (isOrdinaryLetterId(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono -mt-1 mb-1.5">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
                     '<p class="text-xs text-slate-500">' + escapeHtml(item.department || '-') + ' • ' + escapeHtml(item.route || '-') + '</p>' +
                     '<p class="text-[11px] text-slate-400 mt-1">เอกสาร ' + Number(item.documentCount || 1) + ' ฉบับ' + (item.isIncomplete ? ' • <span class="text-amber-600 font-bold">ข้อมูลยังไม่ครบ</span>' : '') + '</p>' +
                     '<div class="mt-2.5 text-[11px] font-bold text-orange-600 flex items-center gap-1"><i class="fa-solid fa-camera"></i> แตะเพื่อแนบรูปหลักฐาน</div>' +
@@ -5060,7 +5221,13 @@
             evidenceCaptureSeenFileKeys = [];
             setEvidenceProcessingState(0, 0);
 
-            document.getElementById('evidencecapture-detail-tracking').textContent = item.trackingId;
+            document.getElementById('evidencecapture-detail-tracking').textContent = formatTrackingFriendlyLabel(item.trackingId);
+            const refEl = document.getElementById('evidencecapture-detail-ref');
+            if (refEl) {
+                const isOrdinary = isOrdinaryLetterId(item.trackingId);
+                refEl.classList.toggle('hidden', !isOrdinary);
+                refEl.textContent = isOrdinary ? 'Ref: ' + item.trackingId : '';
+            }
             document.getElementById('evidencecapture-detail-meta').textContent = (item.department || '-') + ' • ' + (item.route || '-');
             document.getElementById('evidencecapture-detail-docs').textContent = 'เอกสารในชุด: ' + Number(item.documentCount || 1) + ' ฉบับ';
             document.getElementById('evidencecapture-detail-incomplete')?.classList.toggle('hidden', !item.isIncomplete);
@@ -5396,10 +5563,13 @@
             }
 
             const statusBadgeClass = function(status) {
-                return /deliver/i.test(status || '') ? 'bg-emerald-100 text-emerald-800' :
-                    /return/i.test(status || '') ? 'bg-rose-100 text-rose-800' :
-                    /dispatch|transit/i.test(status || '') ? 'bg-amber-100 text-amber-800' :
-                    'bg-sky-100 text-sky-800';
+                const s = String(status || '').toLowerCase();
+                return /deliver|signed/.test(s) ? 'badge-status badge-delivered' :
+                    /return/.test(s) ? 'badge-status badge-returned' :
+                    /arrived at btsvp/.test(s) ? 'badge-status badge-btsvp' :
+                    /ari hills/.test(s) ? 'badge-status badge-ari-hills' :
+                    /dispatch|transit/.test(s) ? 'badge-status badge-in-transit' :
+                    'badge-status badge-registered';
             };
 
             if (!items.length) {
@@ -5428,9 +5598,10 @@
                     const trackId = escapeHtml(item.trackingId || '').replace(/'/g, "\\'");
                     return '<div class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-teal-300 active:scale-[0.99] transition" onclick="openTrackFromDeptStatus(\'' + trackId + '\')">' +
                         '<div class="flex items-center justify-between gap-2">' +
-                            '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(item.trackingId || '-') + '</p>' +
+                            '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</p>' +
                             '<span class="text-[10px] font-bold px-2 py-1 rounded-full shrink-0 ' + statusBadgeClass(item.status) + '">' + escapeHtml(item.status || '-') + '</span>' +
                         '</div>' +
+                        (isOrdinaryLetterId(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
                         '<p class="text-xs text-slate-500 mt-1.5">' + escapeHtml(item.department || '-') + ' • ' + escapeHtml(item.currentLocation || '-') + '</p>' +
                         '<p class="text-xs text-slate-700 mt-0.5">' + escapeHtml(item.recipientName || '-') + '</p>' +
                         '<p class="text-[11px] text-slate-400 mt-1">' + escapeHtml((item.route || '-') + ' • ' + Number(item.qty || 1) + ' ชิ้น') + '</p>' +
@@ -5646,7 +5817,13 @@
                 if (el) el.textContent = value || '-';
             };
 
-            setText('result-tracking-id', res.trackingId);
+            setText('result-tracking-id', formatTrackingFriendlyLabel(res.trackingId));
+            const trackRefEl = document.getElementById('result-tracking-ref');
+            if (trackRefEl) {
+                const isOrdinary = isOrdinaryLetterId(res.trackingId);
+                trackRefEl.classList.toggle('hidden', !isOrdinary);
+                trackRefEl.textContent = isOrdinary ? 'Ref: ' + res.trackingId : '';
+            }
             setText('result-track-location', res.currentLocation || 'Ari Hills');
             setText('result-track-sender', res.senderName);
             setText('result-track-dept', res.department);
@@ -6196,10 +6373,13 @@
             }
 
             const statusBadgeClass = function(status) {
-                return /deliver/i.test(status || '') ? 'bg-emerald-100 text-emerald-800' :
-                    /return/i.test(status || '') ? 'bg-rose-100 text-rose-800' :
-                    /dispatch|transit/i.test(status || '') ? 'bg-amber-100 text-amber-800' :
-                    'bg-sky-100 text-sky-800';
+                const s = String(status || '').toLowerCase();
+                return /deliver|signed/.test(s) ? 'badge-status badge-delivered' :
+                    /return/.test(s) ? 'badge-status badge-returned' :
+                    /arrived at btsvp/.test(s) ? 'badge-status badge-btsvp' :
+                    /ari hills/.test(s) ? 'badge-status badge-ari-hills' :
+                    /dispatch|transit/.test(s) ? 'badge-status badge-in-transit' :
+                    'badge-status badge-registered';
             };
 
             tbody.innerHTML = filtered.slice(0, 500).map(function(item) {
@@ -6558,6 +6738,7 @@
             <div class="min-w-0">
                 <p class="text-[10px] font-bold text-slate-400 uppercase">Tracking (Read Only)</p>
                 <h3 id="evidencecapture-detail-tracking" class="text-lg font-black text-slate-900 break-all">-</h3>
+                <p id="evidencecapture-detail-ref" class="hidden text-[10px] text-slate-400 font-mono mt-0.5">-</p>
             </div>
             <button type="button" onclick="closeEvidenceCaptureDetail()" class="w-11 h-11 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center shrink-0"><i class="fa-solid fa-xmark"></i></button>
         </div>
@@ -6597,7 +6778,7 @@
         <div class="p-4 md:p-5 border-t border-slate-100 shrink-0 space-y-2">
             <div class="flex gap-2">
                 <button type="button" onclick="closeEvidenceCaptureDetail()" class="w-1/3 bg-white border border-slate-200 text-slate-700 py-3 rounded-xl font-bold text-sm hover:bg-slate-50 transition min-h-[44px]">ยกเลิก</button>
-                <button type="button" id="evidencecapture-save-next-btn" onclick="saveEvidenceCaptureAndNext()" class="w-2/3 bg-orange-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-orange-200 hover:bg-orange-700 transition min-h-[44px]">บันทึกและไปตัวถัดไป</button>
+                <button type="button" id="evidencecapture-save-next-btn" onclick="saveEvidenceCaptureAndNext()" class="btn-nav w-2/3 bg-orange-600 text-white shadow-lg shadow-orange-200 hover:bg-orange-700">บันทึกและไปตัวถัดไป</button>
             </div>
             <button type="button" id="evidencecapture-save-close-btn" onclick="saveEvidenceCaptureAndClose()" class="w-full bg-slate-100 text-slate-700 py-2.5 rounded-xl font-bold text-xs hover:bg-slate-200 transition min-h-[40px]">บันทึกและปิด</button>
         </div>
