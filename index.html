@@ -1215,7 +1215,7 @@
                             <label class="block text-xs font-bold text-slate-700 mb-1.5">หมายเหตุเพิ่มเติม</label>
                             <input type="text" id="return-remarks" placeholder="ระบุรายละเอียดเพิ่มเติม..." class="w-full border border-slate-200 p-3 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500">
                         </div>
-                        <button onclick="submitReturnForm()" class="w-full bg-rose-600 text-white py-3 rounded-xl font-bold text-sm shadow hover:bg-rose-700 transition cursor-pointer">บันทึกข้อมูลตีกลับ</button>
+                        <button id="return-submit-btn" onclick="submitReturnForm()" class="btn-nav btn-nav-destructive w-full">บันทึกข้อมูลตีกลับ</button>
                     </div>
                 </section>
 
@@ -1997,12 +1997,28 @@
             }
         }
 
+        // Bumped alongside Code.gs's CODE_VERSION on every delivered revision. If a live
+        // deployment reports something different, the deployed Apps Script project is NOT
+        // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
+        // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
+        // otherwise surfaces as confusing, hard-to-explain bugs.
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.20';
+
         async function loadBackendCapabilities() {
             try {
                 const res = await apiCall('getSystemVersion', {
                     authToken: getAuthToken()
                 });
                 serverOcrEnabled = !!(res && res.serverOcrEnabled);
+
+                if (res && res.version && res.version !== FRONTEND_EXPECTED_BACKEND_VERSION) {
+                    console.warn(
+                        'Backend version mismatch: this HTML expects Code.gs ' + FRONTEND_EXPECTED_BACKEND_VERSION +
+                        ' but the live deployment reports ' + res.version + '. ' +
+                        'The Apps Script project likely needs Deploy \u2192 Manage deployments \u2192 New version.'
+                    );
+                    showSystemToast('พบว่า Backend Deploy เป็นคนละ Version กับหน้าเว็บนี้ (' + res.version + ') กรุณาแจ้งผู้ดูแลระบบให้ Deploy เวอร์ชันล่าสุด', 'error');
+                }
             } catch (err) {
                 serverOcrEnabled = false;
                 console.warn('Backend capabilities unavailable:', normalizeError(err));
@@ -5941,26 +5957,61 @@
             }
         }
 
+        // v5.9.20 — Production Bug Fix: clientRequestId used to be generated fresh on EVERY call
+        // to submitReturnForm(), including a re-click after a timeout/error. That silently
+        // defeated the whole point of Backend idempotency — a retry got a BRAND NEW id, so if
+        // the original (seemingly-timed-out) request had actually completed on the Backend, the
+        // retry would create a SECOND Return row instead of returning the cached result.
+        // returnSaveClientRequestId now persists across retries of the SAME logical attempt —
+        // it is only cleared after a genuine success (a new id is then used for the NEXT,
+        // unrelated Return).
+        let returnSaveClientRequestId = null;
+        let returnSaveInFlight = false; // Requirement 8: Frontend-side double-click / double-tap lock
+
         function submitReturnForm() {
             if (!requireGas()) return;
+            if (returnSaveInFlight) return; // a save is already in flight — ignore a fast repeat click
+
+            const trackingId = document.getElementById('return-tracking').value.trim();
+            if (!trackingId) { alert('กรุณาระบุหมายเลข Tracking ที่ต้องการตีกลับ'); return; }
+
+            if (!returnSaveClientRequestId) {
+                returnSaveClientRequestId = generateClientRequestId('RETURN');
+            }
+
             const audit = getAuditUser();
             const payload = {
-                trackingId: document.getElementById('return-tracking').value.trim(),
+                trackingId: trackingId,
                 type: document.getElementById('return-type').value,
                 reason: document.getElementById('return-reason').value,
                 remarks: document.getElementById('return-remarks').value.trim(),
                 status: 'Returned', createdBy: audit.username, createdByRole: audit.role,
-                clientRequestId: generateClientRequestId('RETURN'),
+                clientRequestId: returnSaveClientRequestId,
                 authToken: getAuthToken()
             };
-            if (!payload.trackingId) { alert('กรุณาระบุหมายเลข Tracking ที่ต้องการตีกลับ'); return; }
+
+            const btn = document.getElementById('return-submit-btn');
+            returnSaveInFlight = true;
+            if (btn) {
+                btn.disabled = true;
+                btn.dataset.originalLabel = btn.dataset.originalLabel || btn.textContent;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังบันทึก...';
+            }
+
             apiCall('saveReturn', payload)
                 .then(function(raw) {
                     const res = normalizeResponse(raw, 'บันทึก Return ไม่สำเร็จ');
                     if (handleAuthFailure(res)) return;
-                    if (!res.success) { alert(res.message); return; }
+                    if (!res.success) {
+                        // Requirement 4/5: NOT_FOUND / SHEET_MISSING / header-missing errors are
+                        // real business errors, shown immediately — clientRequestId is kept so a
+                        // retry after fixing the underlying issue is still safely idempotent.
+                        alert(res.message);
+                        return;
+                    }
                     alert(res.message);
                     clearForm(['return-tracking','return-remarks']);
+                    returnSaveClientRequestId = null; // success — the next submission is a new, unrelated attempt
                     esignQueueLoadedAt = 0; // Mark E-Sign Queue stale — refetches fresh next time it's opened
                     // Part 3/9: no unconditional Dashboard/Operations refresh here — user is being
                     // sent to Home, not either of those pages; both refresh fresh on their own entry.
@@ -5968,7 +6019,14 @@
                     navigateTo('home');
                 })
                 .catch(function(err) {
-                    alert('บันทึก Return ไม่สำเร็จ: ' + normalizeError(err));
+                    // Requirement 9 — CRITICAL: do NOT clear returnSaveClientRequestId here. If the
+                    // Backend actually completed the write before this timeout fired, retrying with
+                    // the SAME id returns the cached success instead of appending a duplicate row.
+                    alert('บันทึก Return ไม่สำเร็จ: ' + normalizeError(err) + '\n\nกด "บันทึกข้อมูลตีกลับ" อีกครั้งเพื่อลองใหม่ — ระบบจะไม่สร้างรายการซ้ำ');
+                })
+                .finally(function() {
+                    returnSaveInFlight = false;
+                    if (btn) { btn.disabled = false; btn.innerHTML = btn.dataset.originalLabel || 'บันทึกข้อมูลตีกลับ'; }
                 });
         }
 
