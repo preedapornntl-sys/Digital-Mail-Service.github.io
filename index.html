@@ -13,6 +13,36 @@
     <script src="https://unpkg.com/@zxing/library@0.23.0/umd/index.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
+        /* ===================== v5.9.22 — GLOBAL MOBILE RESPONSIVE FOUNDATION =====================
+           Layout-system-level fixes (Non-Negotiable Principle 3) — never a "shrink the whole
+           desktop page" hack. Applies everywhere; Desktop/iPad visual scale is untouched since
+           these rules only ever constrain overflow and touch/zoom behavior, never resize content. */
+        html, body { max-width: 100%; overflow-x: hidden; }
+        *, *::before, *::after { box-sizing: border-box; }
+        main, section, .card, .flex-child { min-width: 0; }
+
+        /* iOS Safari auto-zooms any input/select/textarea with font-size below 16px on focus —
+           this is the standard, well-known fix. Desktop/iPad keep the existing smaller type scale
+           (this rule only applies inside the ≤640px breakpoint). */
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px !important; }
+        }
+
+        /* Prefer dvh (accounts for mobile browser toolbars showing/hiding) with vh as a fallback
+           for older engines that don't support dvh yet — never dvh alone. */
+        .app-viewport-height { height: 100vh; height: 100dvh; }
+
+        /* Bottom Nav must clear the iPhone Home Indicator — Section 27. */
+        .mobile-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .mobile-safe-bottom-space { height: env(safe-area-inset-bottom, 0px); }
+
+        /* Content area bottom padding: only needs to clear the fixed Bottom Nav (~64px) + Safe
+           Area on Mobile (<768px, where the Bottom Nav is actually visible — it's md:hidden).
+           Desktop/iPad get their normal p-8 bottom spacing untouched, no Bottom Nav to clear. */
+        @media (max-width: 767px) {
+            .app-content-padding { padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px) !important; }
+        }
+
         /* ===================== PART B (v5.9.19) — PROFESSIONAL DESIGN SYSTEM =====================
            Modern enterprise logistics/document-ops palette: deep navy/royal blue/indigo/azure as
            the foundation, restrained semantic accents (teal/emerald/violet/amber/rose). All motion
@@ -201,7 +231,7 @@
         .theme-toggle-btn i { transition: transform .3s ease; }
     </style>
 </head>
-<body class="bg-slate-900 font-sans text-slate-800 h-screen overflow-hidden antialiased selection:bg-indigo-500 selection:text-white">
+<body class="app-viewport-height bg-slate-900 font-sans text-slate-800 overflow-hidden antialiased selection:bg-indigo-500 selection:text-white">
     <!-- ================= STARTUP / SESSION RESTORE ================= -->
     <div id="view-startup" class="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950 text-white">
         <div class="w-full max-w-sm px-6 text-center">
@@ -477,59 +507,59 @@
             </div>
 
             <!-- Scrollable Viewport Pages -->
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-24 md:pb-8 no-scrollbar app-shell-bg">
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 no-scrollbar app-shell-bg app-content-padding">
 
                 <!-- MODULE 1: HOME GRID -->
                 <section id="page-home" class="page-section hidden max-w-7xl mx-auto space-y-6 md:space-y-8 animate-fade-in">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                         <button onclick="navigateTo('dashboard')" id="btn-home-dashboard" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-indigo-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-pie text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Dashboard</p><p class="text-xs text-slate-500 mt-0.5 truncate">ภาพรวมและสถิติการดำเนินงาน</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Dashboard</p><p class="text-xs text-slate-500 mt-0.5">ภาพรวมและสถิติการดำเนินงาน</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-indigo-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('operations')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-violet-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-route text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Operations Control</p><p class="text-xs text-slate-500 mt-0.5 truncate">จัดการ Dispatch และ Arrival ที่ BTSVP</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Operations Control</p><p class="text-xs text-slate-500 mt-0.5">จัดการ Dispatch และ Arrival ที่ BTSVP</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-violet-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('keyin')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-blue-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-keyboard text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">นำเข้าเอกสาร (Key In)</p><p class="text-xs text-slate-500 mt-0.5 truncate">ลงทะเบียนเอกสารเข้าใหม่</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">นำเข้าเอกสาร (Key In)</p><p class="text-xs text-slate-500 mt-0.5">ลงทะเบียนเอกสารเข้าใหม่</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-blue-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('evidencecapture')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-orange-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-camera text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">แนบรูปหลักฐาน</p><p class="text-xs text-slate-500 mt-0.5 truncate">แนบรูปกับ Tracking ที่ลงทะเบียนแล้ว</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">แนบรูปหลักฐาน</p><p class="text-xs text-slate-500 mt-0.5">แนบรูปกับ Tracking ที่ลงทะเบียนแล้ว</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-orange-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('esign')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-purple-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-file-signature text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">E-Signature</p><p class="text-xs text-slate-500 mt-0.5 truncate">เซ็นรับเอกสารแบบกลุ่มในครั้งเดียว</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">E-Signature</p><p class="text-xs text-slate-500 mt-0.5">เซ็นรับเอกสารแบบกลุ่มในครั้งเดียว</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-purple-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('deptstatus')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-teal-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-building-shield text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">สถานะเอกสาร</p><p class="text-xs text-slate-500 mt-0.5 truncate">ตรวจสถานะเอกสารแยกตามแผนก</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">สถานะเอกสาร</p><p class="text-xs text-slate-500 mt-0.5">ตรวจสถานะเอกสารแยกตามแผนก</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-teal-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('track')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-emerald-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-map-location-dot text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Track & Trace</p><p class="text-xs text-slate-500 mt-0.5 truncate">ค้นหาและติดตามสถานะเอกสาร</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Track & Trace</p><p class="text-xs text-slate-500 mt-0.5">ค้นหาและติดตามสถานะเอกสาร</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-emerald-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('return')" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-rose-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-rotate-left text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">เอกสารตีกลับ</p><p class="text-xs text-slate-500 mt-0.5 truncate">บันทึกตีกลับและนำส่งใหม่</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">เอกสารตีกลับ</p><p class="text-xs text-slate-500 mt-0.5">บันทึกตีกลับและนำส่งใหม่</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-rose-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('report')" class="admin-only card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-sky-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-column text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Report</p><p class="text-xs text-slate-500 mt-0.5 truncate">สรุปผลการดำเนินงานรายเดือน</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Report</p><p class="text-xs text-slate-500 mt-0.5">สรุปผลการดำเนินงานรายเดือน</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-sky-400 shrink-0"></i>
                         </button>
                         <button onclick="navigateTo('automail')" class="admin-only card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-blue-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-envelope-circle-check text-2xl"></i></div>
-                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Auto Mail Settings</p><p class="text-xs text-slate-500 mt-0.5 truncate">ตั้งค่าแจ้งเตือน Email อัตโนมัติ</p></div>
+                            <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Auto Mail Settings</p><p class="text-xs text-slate-500 mt-0.5">ตั้งค่าแจ้งเตือน Email อัตโนมัติ</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-blue-400 shrink-0"></i>
                         </button>
                     </div>
@@ -1434,24 +1464,24 @@
     </div>
 
     <!-- Mobile Bottom Navigation Bar -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around items-center h-16 z-40 text-slate-400 text-xs">
-        <button onclick="navigateTo('home')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around items-stretch z-40 text-slate-400 text-xs mobile-safe-bottom" style="min-height: 64px;">
+        <button onclick="navigateTo('home')" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 hover:text-white cursor-pointer min-h-[44px] px-1">
             <i class="fa-solid fa-house text-base"></i>
-            <span class="text-[10px]">หน้าแรก</span>
+            <span class="text-[10px] leading-none">หน้าแรก</span>
         </button>
-        <button onclick="navigateTo('keyin')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+        <button onclick="navigateTo('keyin')" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 hover:text-white cursor-pointer min-h-[44px] px-1">
             <i class="fa-solid fa-keyboard text-base"></i>
-            <span class="text-[10px]">Key In</span>
+            <span class="text-[10px] leading-none">Key In</span>
         </button>
-        <button onclick="navigateTo('esign')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+        <button onclick="navigateTo('esign')" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 hover:text-white cursor-pointer min-h-[44px] px-1">
             <i class="fa-solid fa-file-signature text-base"></i>
-            <span class="text-[10px]">E-Sign</span>
+            <span class="text-[10px] leading-none">E-Sign</span>
         </button>
-        <button onclick="navigateTo('track')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer">
+        <button onclick="navigateTo('track')" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 hover:text-white cursor-pointer min-h-[44px] px-1">
             <i class="fa-solid fa-map-location-dot text-base"></i>
-            <span class="text-[10px]">Track</span>
+            <span class="text-[10px] leading-none">Track</span>
         </button>
-        <button onclick="navigateTo('operations')" class="flex flex-col items-center gap-1 hover:text-white cursor-pointer"><i class="fa-solid fa-route text-base"></i><span class="text-[10px]">Ops</span></button>
+        <button onclick="navigateTo('operations')" class="flex-1 min-w-0 flex flex-col items-center justify-center gap-1 hover:text-white cursor-pointer min-h-[44px] px-1"><i class="fa-solid fa-route text-base"></i><span class="text-[10px] leading-none">Ops</span></button>
     </nav>
 
     <!-- ================= JAVASCRIPT CONTROLLER ================= -->
@@ -2069,7 +2099,7 @@
         // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
         // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
         // otherwise surfaces as confusing, hard-to-explain bugs.
-        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.20';
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.22';
 
         async function loadBackendCapabilities() {
             try {
@@ -4555,11 +4585,31 @@
         function resizeCanvas() {
             const canvas = document.getElementById('signature-pad');
             if (!canvas || !signaturePad) return;
+            // Section 32: Orientation Change / Resize must never silently erase a signature the
+            // user already drew. Resizing a <canvas> element inherently wipes its pixels, so the
+            // stroke DATA is saved first and restored after, rather than just clearing.
+            const savedData = signaturePad.isEmpty() ? null : signaturePad.toData();
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
             canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
             canvas.getContext('2d').scale(ratio, ratio); signaturePad.clear();
+            if (savedData && savedData.length) signaturePad.fromData(savedData);
         }
         function clearSignatureCanvas() { if (signaturePad) signaturePad.clear(); document.getElementById('signature-pad-frame')?.classList.remove('signature-active'); }
+
+        // Section 32: resize/re-scale the currently-visible Signature Pad(s) on real Orientation
+        // Change or window resize (e.g. iPad rotated, or the on-screen keyboard changing the
+        // viewport) — debounced so a continuous resize/rotation animation doesn't thrash the
+        // canvas repeatedly. Only touches whichever pad is actually visible on screen right now.
+        let signatureCanvasResizeTimer = null;
+        function handleSignatureCanvasViewportChange() {
+            clearTimeout(signatureCanvasResizeTimer);
+            signatureCanvasResizeTimer = setTimeout(function() {
+                if (signaturePad && !document.getElementById('page-esign')?.classList.contains('hidden')) resizeCanvas();
+                if (returnSignaturePad && !document.getElementById('return-redelivery-card')?.classList.contains('hidden')) resizeReturnSignatureCanvas();
+            }, 150);
+        }
+        window.addEventListener('resize', handleSignatureCanvasViewportChange);
+        window.addEventListener('orientationchange', handleSignatureCanvasViewportChange);
 
         const NTL_DEPARTMENTS = ["ซองสัญญา", "นายหน้าประกันภัย", "ปฏิบัติการประกันภัย", "ทะเบียน", "บุคคล", "บัญชี", "BSCS", "BDSM", "CLD", "Audit", "Fraud", "CRD", "กำกับธุรกรรม", "Legal", "CAS", "MKT", "Falcon", "IT", "จัดซื้อ", "MD", "CS", "DB", "A&D", "HeyGoody"];
 
@@ -6149,6 +6199,28 @@
                             '</button>';
                     }
 
+                    // v5.9.22 — BUG FIX: Return Acknowledgement Signature (Requirement 12: a
+                    // completely different transaction from KeyIn Evidence or the E-Sign delivery
+                    // signature above — deliberately its own field, `returnSignatureUrl`, never
+                    // merged with `signatureUrl`). Reuses the exact same secure preview modal via
+                    // trackSignatureEntries/openSignaturePreview — getSignatureImage() now
+                    // recognizes both signature types server-side — but with its own clearly
+                    // labeled button so it's never confused with the delivery signature above.
+                    let returnSignatureBlock = '';
+                    if (item.returnSignatureUrl) {
+                        const retSigIndex = trackSignatureEntries.length;
+                        trackSignatureEntries.push({
+                            signatureUrl: item.returnSignatureUrl,
+                            recipientName: 'ผู้เซ็นยืนยันตีกลับ: ' + (item.returnSignedBy || '-'),
+                            time: item.returnSignedAt || item.time
+                        });
+                        returnSignatureBlock =
+                            '<button type="button" onclick="openSignaturePreview(' + retSigIndex + ')" ' +
+                            'class="mt-3 inline-flex items-center gap-2 text-xs font-bold text-teal-600 hover:text-teal-800 bg-teal-50 border border-teal-100 px-3 py-2 rounded-xl active:scale-[0.98] transition">' +
+                            '<i class="fa-regular fa-signature"></i> ดูลายเซ็นยืนยันตีกลับ' +
+                            '</button>';
+                    }
+
                     // Requirement 3/10: structured, labeled detail lines per event type — rather
                     // than a single opaque sentence — matching the required Timeline layout.
                     let extraLines = '';
@@ -6180,6 +6252,7 @@
                         extraLines +
                         (item.by ? '<p class="text-[10px] text-slate-400 mt-1.5">' + escapeHtml(visual.actorLabel) + ': ' + escapeHtml(item.by) + '</p>' : '') +
                         signatureBlock +
+                        returnSignatureBlock +
                         '</div></div>';
                 }).join('') : '<div class="text-slate-400">ยังไม่มี Timeline เพิ่มเติม</div>';
             }
@@ -6294,12 +6367,19 @@
         function resizeReturnSignatureCanvas() {
             const canvas = document.getElementById('return-signature-pad');
             if (!canvas || !returnSignaturePad) return;
+            // Section 32: same data-preserving resize as the main Signature Pad above.
+            const savedData = returnSignaturePad.isEmpty() ? null : returnSignaturePad.toData();
             const ratio = Math.max(window.devicePixelRatio || 1, 1);
             canvas.width = canvas.offsetWidth * ratio;
             canvas.height = canvas.offsetHeight * ratio;
             canvas.getContext('2d').scale(ratio, ratio);
             returnSignaturePad.clear();
-            document.getElementById('return-signature-placeholder')?.classList.remove('hidden');
+            if (savedData && savedData.length) {
+                returnSignaturePad.fromData(savedData);
+                hideReturnSignaturePlaceholder();
+            } else {
+                document.getElementById('return-signature-placeholder')?.classList.remove('hidden');
+            }
         }
 
         function hideReturnSignaturePlaceholder() {
