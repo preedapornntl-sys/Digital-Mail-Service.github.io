@@ -150,7 +150,20 @@
             .signature-frame { transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; transform: none !important; }
         }
 
+        /* Requirement 4 (v5.9.23) — lightweight CSS-only Skeleton Loading. No animated GIF/image;
+           respects prefers-reduced-motion (the shimmer becomes a static tint instead). */
+        .skeleton-block {
+            background: linear-gradient(90deg, #eef2f7 25%, #e5ebf3 37%, #eef2f7 63%);
+            background-size: 400% 100%;
+            animation: skeletonShimmer 1.4s ease infinite;
+        }
+        @keyframes skeletonShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+        @media (prefers-reduced-motion: reduce) {
+            .skeleton-block { animation: none; background: #eef2f7; }
+        }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
+
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         @keyframes fadeIn {
@@ -511,7 +524,23 @@
 
                 <!-- MODULE 1: HOME GRID -->
                 <section id="page-home" class="page-section hidden max-w-7xl mx-auto space-y-6 md:space-y-8 animate-fade-in">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+
+                    <!-- Requirement 3 (v5.9.23): My Work Today — Role-aware, system-wide (no Department
+                         mapping exists in Users Sheet, so this is never filtered by a guessed Department). -->
+                    <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-sm font-bold text-slate-800"><i class="fa-solid fa-list-check text-indigo-500 mr-1.5"></i>My Work Today</h3>
+                            <p id="my-work-last-synced" class="text-[11px] text-slate-400">-</p>
+                        </div>
+                        <div id="my-work-today-grid" class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                            <div class="skeleton-block h-16 rounded-xl"></div><div class="skeleton-block h-16 rounded-xl"></div>
+                            <div class="skeleton-block h-16 rounded-xl"></div><div class="skeleton-block h-16 rounded-xl"></div>
+                            <div class="skeleton-block h-16 rounded-xl"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-5">
+                        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
                         <button onclick="navigateTo('dashboard')" id="btn-home-dashboard" class="card-interactive group bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80 hover:border-indigo-300 flex items-center gap-4 text-left cursor-pointer">
                             <div class="card-icon-capsule w-14 h-14 shrink-0 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-sm"><i class="fa-solid fa-chart-pie text-2xl"></i></div>
                             <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Dashboard</p><p class="text-xs text-slate-500 mt-0.5">ภาพรวมและสถิติการดำเนินงาน</p></div>
@@ -562,6 +591,15 @@
                             <div class="min-w-0 flex-1"><p class="text-sm font-bold text-slate-800">Auto Mail Settings</p><p class="text-xs text-slate-500 mt-0.5">ตั้งค่าแจ้งเตือน Email อัตโนมัติ</p></div>
                             <i class="card-arrow fa-solid fa-chevron-right text-blue-400 shrink-0"></i>
                         </button>
+                        </div>
+
+                        <!-- Requirement 3: Recent Activity — current logged-in User's own real Audit history. -->
+                        <div class="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200/80">
+                            <h3 class="text-sm font-bold text-slate-800 mb-4"><i class="fa-solid fa-clock-rotate-left text-slate-400 mr-1.5"></i>Recent Activity</h3>
+                            <div id="recent-activity-list" class="space-y-3">
+                                <div class="skeleton-block h-10 rounded-lg"></div><div class="skeleton-block h-10 rounded-lg"></div><div class="skeleton-block h-10 rounded-lg"></div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -600,11 +638,38 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
-                            <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-base font-bold text-slate-800">Transaction Volume (Weekly)</h3>
-                                <button onclick="navigateTo('report')" class="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition cursor-pointer">Export XLS</button>
+                            <div class="flex flex-wrap justify-between items-center gap-3 mb-2">
+                                <h3 class="text-base font-bold text-slate-800">Department Monthly Volume</h3>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="shiftDeptVolumeMonth(-1)" class="w-9 h-9 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-500"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                    <span id="dept-volume-month-label" class="text-sm font-bold text-slate-700 min-w-[130px] text-center">-</span>
+                                    <button onclick="shiftDeptVolumeMonth(1)" class="w-9 h-9 rounded-lg border border-slate-200 hover:bg-slate-50 flex items-center justify-center text-slate-500"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                                </div>
                             </div>
-                            <div id="dashboard-weekly-chart" class="h-64 w-full bg-slate-50/50 rounded-xl border border-slate-100 flex items-end justify-around px-4 pb-4 pt-10 relative"><div class="m-auto text-sm text-slate-400">กำลังโหลดข้อมูลจริง...</div></div>
+                            <p id="dept-volume-last-synced" class="text-[11px] text-slate-400 mb-4">-</p>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
+                                <div class="bg-indigo-50 rounded-xl p-3 text-center">
+                                    <p class="text-[10px] font-bold text-indigo-500 uppercase">Tracking</p>
+                                    <p id="dept-volume-tracking-count" class="text-xl font-black text-indigo-700 mt-0.5">-</p>
+                                </div>
+                                <div class="bg-blue-50 rounded-xl p-3 text-center">
+                                    <p class="text-[10px] font-bold text-blue-500 uppercase">Documents</p>
+                                    <p id="dept-volume-document-count" class="text-xl font-black text-blue-700 mt-0.5">-</p>
+                                </div>
+                                <div class="bg-teal-50 rounded-xl p-3 text-center">
+                                    <p class="text-[10px] font-bold text-teal-500 uppercase">Departments</p>
+                                    <p id="dept-volume-active-depts" class="text-xl font-black text-teal-700 mt-0.5">-</p>
+                                </div>
+                                <div class="bg-emerald-50 rounded-xl p-3 text-center">
+                                    <p class="text-[10px] font-bold text-emerald-500 uppercase">Completion</p>
+                                    <p id="dept-volume-completion" class="text-xl font-black text-emerald-700 mt-0.5">-</p>
+                                </div>
+                            </div>
+
+                            <div id="dept-volume-chart" class="space-y-2.5 min-h-[200px]"><div class="skeleton-block h-48 w-full rounded-xl"></div></div>
+
+                            <button onclick="openDeptVolumeAllModal()" class="mt-4 w-full text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-2.5 rounded-xl transition cursor-pointer min-h-[44px]">ดูทั้งหมด 24 แผนก</button>
                         </div>
 
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
@@ -1851,9 +1916,28 @@
             localStorage.setItem(SESSION_KEY, JSON.stringify(currentUser));
         }
 
+        // Requirement 2 (v5.9.23) — Session Cleanup: on Logout / Session Expired / Cross-day
+        // expiration, every piece of sensitive in-memory/temporary state must be cleared — never
+        // left sitting in the browser tab for a NEXT person to potentially see if the device is
+        // shared. Theme and other pure UI preferences are deliberately NOT touched here.
+        function clearSensitiveTemporaryState() {
+            capturedImages = [];
+            batchActive = false; batchTotal = 1; batchSavedCount = 0; batchSavedTrackingIds = []; batchId = '';
+            esignPendingItems = []; esignQueueAllItems = []; esignQueueLoadedAt = 0;
+            if (typeof signaturePad !== 'undefined' && signaturePad) signaturePad.clear();
+            deptStatusData = null;
+            reportSummaryData = null;
+            evidenceCaptureQueueItems = []; evidenceCaptureActiveTracking = null; evidenceCaptureNewImages = [];
+            if (typeof returnSignaturePad !== 'undefined' && returnSignaturePad) returnSignaturePad.clear();
+            returnRedeliveryContext = null;
+            trackSignatureEntries = [];
+            evidencePreviewImages = []; evidencePreviewTrackingId = '';
+        }
+
         function clearSession() {
             currentUser = null;
             try { localStorage.removeItem(SESSION_KEY); } catch (e) {}
+            clearSensitiveTemporaryState();
         }
 
         function getAuthToken() {
@@ -2075,6 +2159,7 @@
             if (pageId === 'deptstatus') loadDepartmentStatusMonitor();
             if (pageId === 'evidencecapture') loadEvidenceCaptureQueue();
             if (pageId === 'automail') loadAutoMailSettings();
+            if (pageId === 'home') { loadMyWorkToday(); loadRecentActivity(); }
             if (pageId === 'dashboard') loadDashboardStats();
             if (pageId === 'operations') loadOperationsControl();
             if (pageId === 'report') loadReportSummaryForSelectedMonth();
@@ -2099,7 +2184,7 @@
         // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
         // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
         // otherwise surfaces as confusing, hard-to-explain bugs.
-        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.22';
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.23';
 
         async function loadBackendCapabilities() {
             try {
@@ -6585,6 +6670,176 @@
             navigateTo('home');
         }
 
+        // Requirement 1 (v5.9.23) — Department Monthly Volume. Backend already returns only the
+        // small Aggregate Result (~24 Department rows + totals) — this never receives or groups
+        // raw KeyIn rows itself.
+        let deptVolumeMonth = new Date().getMonth() + 1;
+        let deptVolumeYear = new Date().getFullYear();
+        let deptVolumeData = null; // last successful response — reused by the "All 24" modal, no second fetch
+        const THAI_MONTH_NAMES = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+        function shiftDeptVolumeMonth(delta) {
+            deptVolumeMonth += delta;
+            if (deptVolumeMonth > 12) { deptVolumeMonth = 1; deptVolumeYear++; }
+            if (deptVolumeMonth < 1) { deptVolumeMonth = 12; deptVolumeYear--; }
+            loadDepartmentMonthlyVolume();
+        }
+
+        // Requirement 3 (v5.9.23) — My Work Today: system-wide/Role-aware counts (no Department
+        // guessing — the Users Sheet has no such mapping). Every card is clickable and navigates
+        // straight into the relevant Module, making Home a genuine workflow launcher.
+        const MY_WORK_CARDS = [
+            { key: 'pendingEvidence', label: 'รอแนบหลักฐาน', icon: 'fa-camera', color: 'orange', action: function() { navigateTo('evidencecapture'); } },
+            { key: 'pendingEsign', label: 'รอ E-Sign', icon: 'fa-file-signature', color: 'purple', action: function() { navigateTo('esign'); } },
+            { key: 'pendingDispatch', label: 'รอ Dispatch', icon: 'fa-truck-fast', color: 'blue', action: function() { navigateTo('operations'); } },
+            { key: 'pendingArrival', label: 'รอยืนยันถึง BTSVP', icon: 'fa-building-shield', color: 'violet', action: function() { navigateTo('operations'); } },
+            { key: 'returned', label: 'Returned', icon: 'fa-rotate-left', color: 'rose', action: function() { navigateTo('return'); } }
+        ];
+
+        async function loadMyWorkToday() {
+            if (!requireGas() || !getAuthToken()) return;
+            try {
+                const res = await apiCall('getMyWorkToday', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ');
+
+                const grid = document.getElementById('my-work-today-grid');
+                if (grid) {
+                    grid.innerHTML = MY_WORK_CARDS.map(function(card, idx) {
+                        return '<button type="button" onclick="MY_WORK_CARDS[' + idx + '].action()" class="card-interactive text-left bg-' + card.color + '-50 border border-' + card.color + '-100 rounded-xl p-3 min-h-[44px]">' +
+                            '<div class="flex items-center gap-2 mb-1"><i class="fa-solid ' + card.icon + ' text-' + card.color + '-500 text-xs"></i><span class="text-[11px] font-bold text-slate-600 truncate">' + card.label + '</span></div>' +
+                            '<p class="text-xl font-black text-' + card.color + '-700">' + (res[card.key] ?? 0) + '</p>' +
+                        '</button>';
+                    }).join('');
+                }
+                const syncedEl = document.getElementById('my-work-last-synced');
+                if (syncedEl) syncedEl.textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            } catch (err) {
+                const grid = document.getElementById('my-work-today-grid');
+                if (grid) grid.innerHTML = '<div class="col-span-5 text-center text-rose-500 text-xs py-4">โหลดข้อมูลไม่สำเร็จ: ' + escapeHtml(normalizeError(err)) + '</div>';
+            }
+        }
+
+        const RECENT_ACTIVITY_ICON = { KEYIN: 'fa-keyboard', ESIGN: 'fa-file-signature', RETURN: 'fa-rotate-left' };
+        async function loadRecentActivity() {
+            if (!requireGas() || !getAuthToken()) return;
+            try {
+                const res = await apiCall('getRecentActivity', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ');
+
+                const listEl = document.getElementById('recent-activity-list');
+                if (!listEl) return;
+                const items = res.items || [];
+                listEl.innerHTML = items.length ? items.map(function(a) {
+                    return '<div class="flex items-start gap-2.5">' +
+                        '<i class="fa-solid ' + (RECENT_ACTIVITY_ICON[a.type] || 'fa-circle-dot') + ' text-slate-400 mt-1 text-xs"></i>' +
+                        '<div class="min-w-0 flex-1"><p class="text-[11px] text-slate-400">' + escapeHtml(a.timeText) + '</p>' +
+                        '<p class="text-xs font-bold text-slate-700">' + escapeHtml(a.label) + ' • ' + escapeHtml(a.detail) + '</p>' +
+                        '<p class="text-[11px] text-slate-500">' + escapeHtml(a.message) + '</p></div></div>';
+                }).join('') : '<p class="text-xs text-slate-400 text-center py-4">ยังไม่มีกิจกรรมวันนี้</p>';
+            } catch (err) {
+                const listEl = document.getElementById('recent-activity-list');
+                if (listEl) listEl.innerHTML = '<p class="text-xs text-rose-500 text-center py-4">โหลดข้อมูลไม่สำเร็จ</p>';
+            }
+        }
+
+        async function loadDepartmentMonthlyVolume() {
+            if (!requireGas() || !getAuthToken()) return;
+
+            const labelEl = document.getElementById('dept-volume-month-label');
+            if (labelEl) labelEl.textContent = THAI_MONTH_NAMES[deptVolumeMonth - 1] + ' ' + deptVolumeYear;
+
+            const chartEl = document.getElementById('dept-volume-chart');
+            if (chartEl) chartEl.innerHTML = '<div class="skeleton-block h-48 w-full rounded-xl"></div>';
+
+            try {
+                const res = await apiCall('getDepartmentMonthlyVolume', { month: deptVolumeMonth, year: deptVolumeYear, authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดข้อมูลไม่สำเร็จ');
+
+                deptVolumeData = res;
+
+                const set = function(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; };
+                set('dept-volume-tracking-count', res.totals.trackingCount);
+                set('dept-volume-document-count', res.totals.documentCount);
+                set('dept-volume-active-depts', res.totals.activeDepartments);
+                set('dept-volume-completion', res.totals.completionRate + '%');
+
+                // Requirement 4 — Last Synced: real Fetch-success time, never a fabricated one.
+                const syncedEl = document.getElementById('dept-volume-last-synced');
+                if (syncedEl) syncedEl.textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+
+                renderDeptVolumeChart(res.departments.slice(0, 10));
+            } catch (err) {
+                if (chartEl) chartEl.innerHTML = '<div class="text-center text-rose-500 text-xs py-10">โหลดข้อมูลไม่สำเร็จ: ' + escapeHtml(normalizeError(err)) + '</div>';
+            }
+        }
+
+        function renderDeptVolumeChart(departments) {
+            const chartEl = document.getElementById('dept-volume-chart');
+            if (!chartEl) return;
+            if (!departments.length) { chartEl.innerHTML = '<div class="text-center text-slate-400 text-xs py-10">ไม่มีข้อมูลเดือนนี้</div>'; return; }
+
+            const max = Math.max(1, ...departments.map(function(d) { return d.trackingCount; }));
+            chartEl.innerHTML = departments.map(function(d) {
+                const pct = Math.max(4, Math.round((d.trackingCount / max) * 100));
+                const deptEsc = escapeHtml(d.department).replace(/'/g, "\\'");
+                return '<button type="button" onclick="openDeptVolumeDetail(\'' + deptEsc + '\')" title="' + escapeHtml(d.department) + '" class="w-full text-left group min-h-[44px]">' +
+                    '<div class="flex justify-between text-xs mb-1 gap-2"><span class="font-bold text-slate-700 truncate">' + escapeHtml(d.department) + '</span><span class="font-black text-slate-800 shrink-0">' + d.trackingCount + '</span></div>' +
+                    '<div class="h-5 bg-slate-100 rounded-md overflow-hidden"><div class="h-full bg-gradient-to-r from-indigo-500 to-blue-500 rounded-md group-hover:brightness-110 transition" style="width:' + pct + '%"></div></div>' +
+                '</button>';
+            }).join('');
+        }
+
+        // Requirement: Interactive Department — navigate to Report with Month+Department Filter
+        // already applied, reusing Report's OWN existing dataset/filter logic entirely — never a
+        // second, parallel Report implementation just for this click-through.
+        function openDeptVolumeDetail(department) {
+            closeDeptVolumeAllModal();
+            navigateTo('report');
+            setTimeout(function() {
+                const monthInput = document.getElementById('report-month-input');
+                if (monthInput) monthInput.value = String(deptVolumeYear) + '-' + String(deptVolumeMonth).padStart(2, '0');
+                reportSelectedMonth = deptVolumeMonth; reportSelectedYear = deptVolumeYear;
+                const deptSelect = document.getElementById('report-dept-period-select');
+                if (deptSelect) {
+                    setReportRange('dept');
+                    setTimeout(function() {
+                        const d = document.getElementById('report-dept-period-select');
+                        if (d) { d.value = department; onReportDeptModeChange(); }
+                    }, 60);
+                } else {
+                    loadReportSummaryForSelectedMonth();
+                }
+            }, 80);
+        }
+
+        function openDeptVolumeAllModal() {
+            if (!deptVolumeData) return;
+            const listEl = document.getElementById('dept-volume-all-list');
+            if (listEl) {
+                listEl.innerHTML = deptVolumeData.departments.map(function(d) {
+                    const deptEsc = escapeHtml(d.department).replace(/'/g, "\\'");
+                    return '<button type="button" onclick="openDeptVolumeDetail(\'' + deptEsc + '\')" class="w-full text-left border border-slate-100 hover:border-indigo-300 rounded-xl p-3.5 min-h-[44px]">' +
+                        '<div class="flex justify-between items-center gap-2 mb-2"><span class="font-bold text-sm text-slate-800">' + escapeHtml(d.department) + '</span><span class="text-xs font-black text-indigo-600">' + d.completionPercent + '%</span></div>' +
+                        '<div class="grid grid-cols-4 gap-2 text-center text-[11px]">' +
+                            '<div><p class="text-slate-400">Tracking</p><p class="font-bold text-slate-700">' + d.trackingCount + '</p></div>' +
+                            '<div><p class="text-slate-400">Docs</p><p class="font-bold text-slate-700">' + d.documentCount + '</p></div>' +
+                            '<div><p class="text-slate-400">Delivered</p><p class="font-bold text-emerald-600">' + d.delivered + '</p></div>' +
+                            '<div><p class="text-slate-400">Pending</p><p class="font-bold text-amber-600">' + d.pending + '</p></div>' +
+                        '</div>' +
+                    '</button>';
+                }).join('');
+            }
+            document.getElementById('dept-volume-all-modal')?.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+        function closeDeptVolumeAllModal() {
+            document.getElementById('dept-volume-all-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
         function renderDashboardWeekly(weekly) {
             const box=document.getElementById('dashboard-weekly-chart'); if(!box)return;
             const rows=Array.isArray(weekly)?weekly:[]; const max=Math.max(1,...rows.map(x=>Number(x.count||0)));
@@ -6593,7 +6848,8 @@
         function renderDashboardRecent(items){ const box=document.getElementById('dashboard-recent-log');if(!box)return; const rows=Array.isArray(items)?items:[]; box.innerHTML=rows.length?rows.map(x=>'<button type="button" onclick="openTrackingFromDashboard(\''+encodeURIComponent(x.trackingId||'')+'\')" class="w-full flex justify-between items-center pb-3 border-b border-slate-50 text-left hover:bg-slate-50 rounded-lg p-2"><div><p class="font-bold text-slate-800 text-sm">'+escapeHtml(x.trackingId||'-')+'</p><p class="text-[11px] text-slate-400">'+escapeHtml((x.department||'-')+' · '+(x.timestampText||''))+'</p></div><span class="text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-md text-[10px] font-bold">'+escapeHtml(x.status||'Registered')+'</span></button>').join(''):'<div class="text-sm text-slate-400">ยังไม่มีรายการ</div>'; }
         function loadDashboardStats() {
             if (!requireGas() || !getAuthToken()) return;
-            apiCall('getDashboardStats',{authToken:getAuthToken()}).then(function(stats){ if(handleAuthFailure(stats))return;if(!stats||stats.success===false)return; const set=(id,v)=>{const e=document.getElementById(id);if(e)e.innerText=(v??'-');}; set('stat-total',stats.total);set('stat-today',stats.today);set('stat-success',stats.successCount??stats.success);set('stat-return',stats.returned??stats.return);renderDashboardWeekly(stats.weekly||[]);renderDashboardRecent(stats.recent||[]); }).catch(e=>console.error('Dashboard error:',normalizeError(e)));
+            apiCall('getDashboardStats',{authToken:getAuthToken()}).then(function(stats){ if(handleAuthFailure(stats))return;if(!stats||stats.success===false)return; const set=(id,v)=>{const e=document.getElementById(id);if(e)e.innerText=(v??'-');}; set('stat-total',stats.total);set('stat-today',stats.today);set('stat-success',stats.successCount??stats.success);set('stat-return',stats.returned??stats.return);renderDashboardRecent(stats.recent||[]); }).catch(e=>console.error('Dashboard error:',normalizeError(e)));
+            loadDepartmentMonthlyVolume();
         }
         async function openDashboardDetail(filter,date){ try{ const r=await apiCall('getDashboardDetails',{filter:filter,date:date||'',authToken:getAuthToken()});if(handleAuthFailure(r))return; const box=document.getElementById('dashboard-detail-list');document.getElementById('dashboard-detail-title').textContent=r.title||'Dashboard Detail'; box.innerHTML=(r.items||[]).length?(r.items||[]).map(x=>'<button type="button" onclick="openTrackingFromDashboard(\''+encodeURIComponent(x.trackingId||'')+'\')" class="w-full text-left p-3 rounded-xl border border-slate-100 hover:border-indigo-300"><div class="font-bold text-sm">'+escapeHtml(x.trackingId||'-')+'</div><div class="text-xs text-slate-500 mt-1">'+escapeHtml((x.department||'-')+' · '+(x.status||'-')+' · '+(x.timestampText||''))+'</div></button>').join(''):'<div class="p-8 text-center text-slate-400">ไม่พบรายการ</div>';document.getElementById('dashboard-detail-modal').classList.remove('hidden');document.body.classList.add('overflow-hidden'); }catch(e){showSystemToast('โหลดรายละเอียด Dashboard ไม่สำเร็จ: '+normalizeError(e),'error');} }
         function closeDashboardDetail(){document.getElementById('dashboard-detail-modal')?.classList.add('hidden');document.body.classList.remove('overflow-hidden');}
@@ -7051,6 +7307,18 @@
 </div>
 <div id="parcel-lightbox" class="hidden fixed inset-0 z-[110] bg-black/90 p-3 md:p-8 flex items-center justify-center" onclick="if(event.target===this)closeParcelImage()"><button type="button" onclick="closeParcelImage()" class="absolute top-4 right-4 bg-white/90 rounded-full w-11 h-11 text-xl">✕</button><img id="parcel-lightbox-image" src="" alt="Parcel image" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl"></div>
 <div id="dashboard-detail-modal" class="hidden fixed inset-0 z-[105] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeDashboardDetail()"><div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"><div class="p-5 border-b flex justify-between"><h3 id="dashboard-detail-title" class="font-black text-lg">Dashboard Detail</h3><button type="button" onclick="closeDashboardDetail()" class="w-9 h-9 rounded-full bg-slate-100">✕</button></div><div id="dashboard-detail-list" class="p-4 overflow-auto space-y-2"></div></div></div>
+
+<!-- Department Monthly Volume — All 24 Departments (Requirement 1) -->
+<div id="dept-volume-all-modal" class="hidden fixed inset-0 z-[106] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeDeptVolumeAllModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col" style="max-width: 94vw;">
+        <div class="p-5 border-b border-slate-100 flex justify-between items-center shrink-0">
+            <h3 class="font-black text-lg text-slate-900">ทุกแผนก (24 Departments)</h3>
+            <button type="button" onclick="closeDeptVolumeAllModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center">✕</button>
+        </div>
+        <div id="dept-volume-all-list" class="p-4 overflow-y-auto space-y-2"></div>
+    </div>
+</div>
+
 
 <!-- Signature Preview Modal — Requirement 3: authenticated in-app preview, never a raw Drive link -->
 <div id="signature-preview-modal" class="hidden fixed inset-0 z-[130] bg-slate-950/70 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeSignaturePreview()">
