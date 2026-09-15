@@ -754,7 +754,7 @@
                             <span id="keyin-step-indicator-2" class="text-xs font-bold text-slate-400">หลักฐาน &amp; Tracking</span>
                         </div>
                     </div>
-                    <p id="keyin-step-label" class="text-center text-[11px] text-slate-400 mb-6">ขั้นตอนที่ 1 จาก 2 — เลือกอาคาร ผู้ส่ง และแผนก</p>
+                    <p id="keyin-step-label" class="text-center text-[11px] text-slate-400 mb-6">ขั้นตอนที่ 1 จาก 2 — เลือกอาคารและแผนก</p>
 
                     <div class="max-w-2xl mx-auto">
                         <div id="keyin-step-1" class="space-y-5">
@@ -768,12 +768,6 @@
                                     <option value="BTSVP">BTSVP</option>
                                 </select>
                                 <p id="keyin-route-hint" class="text-[10px] text-slate-400 mt-1.5">Ari Hills = นำส่งภายในอาคาร พร้อมเซ็นรับทันทีหลัง Key In • BTSVP = ต้องผ่าน Operations Control (Dispatch → Confirm Arrival) ก่อนจึงเซ็นรับได้</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Document Sender / ชื่อผู้ส่งเอกสาร <span class="text-rose-500">*</span></label>
-                                <input type="text" id="keyin-sender" placeholder="ระบุชื่อผู้ส่งเอกสาร" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
-                                <p class="text-[10px] text-slate-400 mt-1.5">ผู้ที่ส่งมอบเอกสารจริง — คนละความหมายกับบัญชีผู้ใช้ที่ Login (Created By)</p>
                             </div>
 
                             <div>
@@ -836,7 +830,13 @@
                         </div>
 
                         <div id="keyin-step-2" class="hidden space-y-5">
-                            <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider border-b border-indigo-100 pb-2">2. หลักฐานและหมายเลขพัสดุ</h4>
+                            <h4 class="text-xs font-bold text-indigo-900 uppercase tracking-wider border-b border-indigo-100 pb-2">2. ข้อมูลเอกสารและหมายเลขพัสดุ</h4>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">Document Sender / ชื่อผู้ส่งเอกสาร <span class="text-rose-500">*</span></label>
+                                <input type="text" id="keyin-sender" placeholder="ระบุชื่อผู้ส่งเอกสาร" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                <p class="text-[10px] text-slate-400 mt-1.5">ผู้ที่ส่งมอบเอกสารจริง — คนละความหมายกับบัญชีผู้ใช้ที่ Login (Created By) • ใน Batch เดียวกันค่านี้จะคงอยู่ทุก Tracking โดยไม่ต้องกรอกซ้ำ</p>
+                            </div>
 
                             <div>
                                 <label class="block text-xs font-bold text-slate-700 mb-1.5">Tracking Number / หมายเลขพัสดุ</label>
@@ -845,9 +845,12 @@
                                     <input type="text" id="keyin-tracking"
                                         placeholder="สแกน Barcode / QR Code หรือกรอก Tracking ID"
                                         autocomplete="off" autocapitalize="off" spellcheck="false"
+                                        oninput="handleTrackingLiveInput()" onblur="handleTrackingBlurOrEnter()" onkeydown="handleTrackingKeydown(event)"
+                                        aria-invalid="false" aria-describedby="keyin-tracking-feedback"
                                         class="w-full border border-slate-200 pl-11 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition font-mono">
                                 </div>
-                                <p class="text-[10px] text-slate-400 mt-1.5">รองรับ Tracking ทุก Format และเก็บค่าตามที่สแกนได้จริงโดยไม่เติม Prefix</p>
+                                <p id="keyin-tracking-feedback" class="hidden text-[11px] mt-1.5 font-bold" role="alert"></p>
+                                <p class="text-[10px] text-slate-400 mt-1.5">รองรับ Tracking ทุก Format และเก็บค่าตามที่สแกนได้จริงโดยไม่เติม Prefix • NTLB/NTLC ต้องตามด้วยตัวเลข 14 หลัก (รวม 18 ตัวอักษร)</p>
                             </div>
 
                             <div>
@@ -2184,7 +2187,7 @@
         // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
         // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
         // otherwise surfaces as confusing, hard-to-explain bugs.
-        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.23';
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.24';
 
         async function loadBackendCapabilities() {
             try {
@@ -2243,6 +2246,147 @@
             const n = Number(raw);
             if (!isFinite(n) || isNaN(n) || n < 1) return 1;
             return Math.min(999, Math.round(n));
+        }
+
+        /** ===================== NTLB/NTLC TRACKING VALIDATION (v5.9.24) ===================== **/
+        // Requirement 1: NTLB/NTLC must be exactly PREFIX(4) + 14 digits = 18 characters total.
+        // Tracking is NEVER converted to Number anywhere in this validation — every check below
+        // operates on the raw string only, preserving leading zeros exactly.
+        const NTL_TRACKING_REGEX = /^(NTLB|NTLC)\d{14}$/;
+
+        // A "blocksSave" flag rather than a plain boolean-valid flag: Requirement is specifically
+        // that Save/Next/Submit must be blocked ONLY when the field clearly IS an NTLB/NTLC
+        // attempt that is currently invalid — a completely different Tracking format (RY..., BC...,
+        // 12-digit numeric, ธรรมดา) must never be affected by this rule at all.
+        let keyInTrackingBlocksSave = false;
+
+        // Detects an NTLB/NTLC attempt WITHOUT flagging anything while the User is still in the
+        // middle of typing the prefix itself ("N", "NT", "NTL" never trigger this — Requirement:
+        // "ห้ามบล็อกระหว่างพิมพ์ Prefix").
+        function detectNtlPrefix_(rawValue) {
+            const value = (rawValue || '').trim();
+            if (value.length < 4) return null;
+            const prefix = value.slice(0, 4).toUpperCase();
+            return (prefix === 'NTLB' || prefix === 'NTLC') ? prefix : null;
+        }
+
+        // Pure function — never mutates DOM, never converts to Number. Returns:
+        //   { applies:false }                                   — not an NTLB/NTLC attempt at all
+        //   { applies:true, valid:true, normalized:'NTLB...' }   — 18 chars, correct format
+        //   { applies:true, valid:false, reason:'incomplete'|'excess'|'invalid_chars', count }
+        function validateNtlTracking(rawValue) {
+            const value = (rawValue || '').trim();
+            const prefix = detectNtlPrefix_(value);
+            if (!prefix) return { applies: false };
+
+            const rest = value.slice(4);
+            const restIsDigitsOnly = /^\d*$/.test(rest);
+            const normalized = (prefix + rest).toUpperCase();
+
+            if (restIsDigitsOnly && rest.length === 14) {
+                return { applies: true, valid: true, normalized: normalized };
+            }
+            if (!restIsDigitsOnly) {
+                return { applies: true, valid: false, reason: 'invalid_chars', count: rest.length };
+            }
+            if (rest.length < 14) {
+                return { applies: true, valid: false, reason: 'incomplete', count: rest.length };
+            }
+            return { applies: true, valid: false, reason: 'excess', count: rest.length };
+        }
+
+        const NTL_TRACKING_MESSAGES = {
+            incomplete: '⚠ คุณกรอกเลข Tracking ไม่ครบ<br>กรุณาตรวจสอบและกรอก NTLB/NTLC ตามด้วยตัวเลขให้ครบ 14 หลัก',
+            excess: '⚠ คุณกรอกเลข Tracking เกินจำนวนที่กำหนด<br>กรุณาตรวจสอบตัวเลขและกรอกใหม่อีกครั้ง',
+            invalid_chars: '⚠ รูปแบบ Tracking ไม่ถูกต้อง<br>หลัง NTLB หรือ NTLC ต้องเป็นตัวเลข 14 หลักเท่านั้น'
+        };
+
+        // Full colored Success/Error presentation — Accessibility: icon + text + border state +
+        // aria-invalid/aria-describedby together, never color alone.
+        function renderTrackingValidationUI(result) {
+            const input = document.getElementById('keyin-tracking');
+            const feedback = document.getElementById('keyin-tracking-feedback');
+            if (!input || !feedback) return;
+
+            input.classList.remove('border-rose-400','ring-2','ring-rose-200','bg-rose-50','border-emerald-400','ring-emerald-200','bg-emerald-50');
+
+            if (!result || !result.applies) {
+                feedback.classList.add('hidden');
+                input.setAttribute('aria-invalid', 'false');
+                keyInTrackingBlocksSave = false;
+                return;
+            }
+
+            if (result.valid) {
+                input.classList.add('border-emerald-400','ring-2','ring-emerald-200','bg-emerald-50');
+                feedback.className = 'text-[11px] mt-1.5 font-bold text-emerald-600';
+                feedback.innerHTML = '<i class="fa-solid fa-circle-check mr-1"></i>Tracking ถูกต้อง';
+                feedback.classList.remove('hidden');
+                input.setAttribute('aria-invalid', 'false');
+                keyInTrackingBlocksSave = false;
+            } else {
+                input.classList.add('border-rose-400','ring-2','ring-rose-200','bg-rose-50');
+                feedback.className = 'text-[11px] mt-1.5 font-bold text-rose-600';
+                feedback.innerHTML = NTL_TRACKING_MESSAGES[result.reason] || NTL_TRACKING_MESSAGES.invalid_chars;
+                feedback.classList.remove('hidden');
+                input.setAttribute('aria-invalid', 'true');
+                keyInTrackingBlocksSave = true;
+            }
+        }
+
+        // Lightweight neutral counter shown WHILE typing — Requirement: never red/loud until the
+        // User has typed a decisive length, or until blur/Enter/Submit.
+        function renderTrackingCounterUI(count) {
+            const input = document.getElementById('keyin-tracking');
+            const feedback = document.getElementById('keyin-tracking-feedback');
+            if (!input || !feedback) return;
+            input.classList.remove('border-rose-400','ring-2','ring-rose-200','bg-rose-50','border-emerald-400','ring-emerald-200','bg-emerald-50');
+            feedback.className = 'text-[11px] mt-1.5 font-bold text-slate-400';
+            feedback.textContent = (count + 4) + ' / 18 ตัวอักษร';
+            feedback.classList.remove('hidden');
+            input.setAttribute('aria-invalid', 'false');
+        }
+
+        // oninput — fires for typing AND for USB/Bluetooth HID scanners (scanners insert
+        // characters into the field exactly like typing, from the DOM's perspective).
+        function handleTrackingLiveInput() {
+            const raw = document.getElementById('keyin-tracking')?.value || '';
+            const result = validateNtlTracking(raw);
+
+            if (!result.applies) { renderTrackingValidationUI(result); return; }
+
+            // Still short of 14 digits — show ONLY the light counter, never red, matching
+            // Requirement "อย่าขึ้น Error สีแดงทันที". blocksSave stays true (correctly — it's
+            // genuinely not a complete valid Tracking yet) without the loud visual treatment.
+            if (result.reason === 'incomplete') {
+                renderTrackingCounterUI(result.count);
+                keyInTrackingBlocksSave = true;
+                return;
+            }
+
+            // Decisive length reached (18+ characters, or invalid characters typed) — full
+            // colored validation now applies.
+            renderTrackingValidationUI(result);
+        }
+
+        // blur / Enter / Next / Submit — the Requirement's other trigger points. Always runs the
+        // FULL colored validation regardless of length, and normalizes a valid value's casing
+        // (ntlb→NTLB) WITHOUT ever touching/guessing the digits themselves.
+        function handleTrackingBlurOrEnter() {
+            const input = document.getElementById('keyin-tracking');
+            if (!input) return;
+            const result = validateNtlTracking(input.value);
+            renderTrackingValidationUI(result);
+            if (result.applies && result.valid && result.normalized) {
+                input.value = result.normalized; // case normalize only — same 14 digits, untouched
+            }
+        }
+
+        function handleTrackingKeydown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Requirement: Scanner's trailing Enter must not submit a form early
+                handleTrackingBlurOrEnter();
+            }
         }
 
         function registerSuccessfulScan(detail) {
@@ -4092,13 +4236,13 @@
                 if (badge2) { badge2.textContent = '2'; badge2.className = 'w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-xs font-bold shrink-0'; }
                 if (ind1) ind1.className = 'text-xs font-bold text-indigo-600';
                 if (ind2) ind2.className = 'text-xs font-bold text-slate-400';
-                if (label) label.textContent = 'ขั้นตอนที่ 1 จาก 2 — เลือกอาคาร ผู้ส่ง และแผนก';
+                if (label) label.textContent = 'ขั้นตอนที่ 1 จาก 2 — เลือกอาคารและแผนก';
             } else {
                 if (badge1) { badge1.innerHTML = '<i class="fa-solid fa-check"></i>'; badge1.className = 'w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold shrink-0'; }
                 if (badge2) { badge2.textContent = '2'; badge2.className = 'w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold shrink-0'; }
                 if (ind1) ind1.className = 'text-xs font-bold text-emerald-600';
                 if (ind2) ind2.className = 'text-xs font-bold text-indigo-600';
-                if (label) label.textContent = 'ขั้นตอนที่ 2 จาก 2 — สแกน Tracking และถ่ายรูปเอกสาร';
+                if (label) label.textContent = 'ขั้นตอนที่ 2 จาก 2 — ผู้ส่ง, Tracking และหลักฐาน';
             }
 
             // Long form on mobile — keep the user oriented at the top of the card, not stranded
@@ -4109,11 +4253,9 @@
         // Only the fields that actually live in Step 1 — never calls the Backend.
         function validateKeyInStep1() {
             const route = document.getElementById('keyin-route')?.value || '';
-            const sender = document.getElementById('keyin-sender')?.value.trim() || '';
             const department = document.getElementById('keyin-dept')?.value || '';
 
             if (!route) { showSystemToast('กรุณาเลือกเส้นทาง', 'error'); return false; }
-            if (!sender) { showSystemToast('กรุณาระบุชื่อผู้ส่งเอกสาร', 'error'); return false; }
             if (!department) { showSystemToast('กรุณาเลือกแผนกผู้รับ', 'error'); return false; }
             return true;
         }
@@ -4307,6 +4449,17 @@
 
         function submitKeyInForm() {
             if (!requireGas()) return;
+
+            // Requirement 1 — CRITICAL: run the full check one more time right here (covers a
+            // paste that never fired blur, or a scanner whose Enter was consumed elsewhere) and
+            // BLOCK the save outright if the Tracking is a clearly-invalid NTLB/NTLC attempt.
+            handleTrackingBlurOrEnter();
+            if (keyInTrackingBlocksSave) {
+                showSystemToast('กรุณาแก้ไขหมายเลข Tracking ให้ถูกต้องก่อนบันทึก', 'error');
+                document.getElementById('keyin-tracking')?.focus();
+                return;
+            }
+
             const payload = collectKeyInPayload();
 
             // Requirement 4: validation is per CURRENT ITEM only — Tracking, Route, Sender,
@@ -4346,6 +4499,7 @@
             renderImagePreviews();
             document.getElementById('keyin-tracking').value = '';
             document.getElementById('keyin-document-count').value = 1;
+            renderTrackingValidationUI({ applies: false }); // clear NTLB/NTLC feedback for the next item
             scanProgressCount = 0;
             updateScanProgress();
             renderOcrTrackingCandidates([]);
