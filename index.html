@@ -2187,7 +2187,7 @@
         // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
         // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
         // otherwise surfaces as confusing, hard-to-explain bugs.
-        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.24';
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.25';
 
         async function loadBackendCapabilities() {
             try {
@@ -4551,7 +4551,7 @@
                         // Requirement 11: Batch complete popup.
                         const msgList = document.getElementById('batch-complete-tracking-list');
                         if (msgList) msgList.innerHTML = batchSavedTrackingIds.map(function(id) {
-                            return '<div>' + escapeHtml(formatTrackingFriendlyLabel(id)) + (isOrdinaryLetterId(id) ? ' <span class="text-slate-400">(Ref: ' + escapeHtml(id) + ')</span>' : '') + '</div>';
+                            return '<div>' + escapeHtml(formatTrackingFriendlyLabel(id)) + (isInternalTrackingReference(id) ? ' <span class="text-slate-400">(Ref: ' + escapeHtml(id) + ')</span>' : '') + '</div>';
                         }).join('');
                         const msgText = document.getElementById('batch-complete-message');
                         if (msgText) msgText.textContent = 'บันทึกสำเร็จ ' + batchSavedCount + ' รายการ';
@@ -4813,6 +4813,24 @@
                 cropCanvas.width = cropW;
                 cropCanvas.height = cropH;
                 cropCanvas.getContext('2d').drawImage(sourceCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+                // v5.9.25 — Requirement: on a high-DPI device (iPad Retina, devicePixelRatio 2–3),
+                // the Signature Pad canvas's actual pixel dimensions are 2–3x its on-screen size —
+                // cropping whitespace alone does not fix that for a signature drawn across most of
+                // the pad's width. Cap the LONGEST side at a generous-but-bounded size; a signature
+                // never needs more resolution than this to stay fully legible for Audit, and this
+                // meaningfully shrinks the payload sent to saveBatchEsignature() on exactly the
+                // devices most likely to produce an oversized capture.
+                const MAX_SIGNATURE_DIMENSION = 600;
+                const longestSide = Math.max(cropW, cropH);
+                if (longestSide > MAX_SIGNATURE_DIMENSION) {
+                    const scale = MAX_SIGNATURE_DIMENSION / longestSide;
+                    const finalCanvas = document.createElement('canvas');
+                    finalCanvas.width = Math.max(1, Math.round(cropW * scale));
+                    finalCanvas.height = Math.max(1, Math.round(cropH * scale));
+                    finalCanvas.getContext('2d').drawImage(cropCanvas, 0, 0, finalCanvas.width, finalCanvas.height);
+                    return finalCanvas.toDataURL('image/png');
+                }
 
                 return cropCanvas.toDataURL('image/png');
             } catch (err) {
@@ -5269,7 +5287,7 @@
                             '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</p>' +
                             '<span class="text-[10px] font-bold text-slate-500">' + escapeHtml(item.route || '') + '</span>' +
                         '</div>' +
-                        (isOrdinaryLetterId(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono -mt-0.5 mb-1">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
+                        (isInternalTrackingReference(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono -mt-0.5 mb-1">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
                         '<p class="text-xs text-slate-700 mt-1"><i class="fa-regular fa-user w-4 text-slate-400"></i>' +
                             escapeHtml(item.recipientName || '-') + '</p>' +
                         '<p class="text-[11px] text-slate-500 mt-0.5"><i class="fa-solid fa-building-user w-4"></i>' +
@@ -5317,11 +5335,25 @@
         // itself is the signal this helper uses to show "จดหมายธรรมดา" instead of the raw
         // Reference, with the Reference kept available as a small secondary "Ref:" line.
         const ORDINARY_LETTER_PREFIX = 'ORD-';
+        // Requirement 3 (v5.9.25) — Generic No-External-Tracking Document ("เอกสารภายใน",
+        // "Messenger", etc. → "MAN-..."). Same prefix-is-the-signal pattern as Ordinary Letter,
+        // but the User's own typed text varies per Tracking — so `originalLabel` (from
+        // KeyIn.OriginalTrackingLabel, returned by saveKeyIn()/searchTracking()/Report wherever
+        // available) is preferred when present, falling back to a generic label otherwise.
+        const GENERIC_DOCUMENT_PREFIX = 'MAN-';
         function isOrdinaryLetterId(trackingId) {
             return typeof trackingId === 'string' && trackingId.indexOf(ORDINARY_LETTER_PREFIX) === 0;
         }
-        function formatTrackingFriendlyLabel(trackingId) {
-            return isOrdinaryLetterId(trackingId) ? 'จดหมายธรรมดา' : (trackingId || '-');
+        function isGenericDocumentId(trackingId) {
+            return typeof trackingId === 'string' && trackingId.indexOf(GENERIC_DOCUMENT_PREFIX) === 0;
+        }
+        function isInternalTrackingReference(trackingId) {
+            return isOrdinaryLetterId(trackingId) || isGenericDocumentId(trackingId);
+        }
+        function formatTrackingFriendlyLabel(trackingId, originalLabel) {
+            if (isOrdinaryLetterId(trackingId)) return 'จดหมายธรรมดา';
+            if (isGenericDocumentId(trackingId)) return (originalLabel && originalLabel.trim()) || 'เอกสารไม่มี Tracking ภายนอก';
+            return trackingId || '-';
         }
 
         function escapeHtml(value) {
@@ -5749,7 +5781,7 @@
                     : '<span class="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700 shrink-0">รอแนบรูป</span>';
                 return '<button type="button" onclick="openEvidenceCaptureDetail(' + idx + ')" class="card-interactive text-left bg-white border border-slate-200 rounded-xl p-3.5 hover:border-orange-300 min-h-[44px]">' +
                     '<div class="flex items-center justify-between gap-2 mb-1.5"><p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</p>' + badge + '</div>' +
-                    (isOrdinaryLetterId(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono -mt-1 mb-1.5">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
+                    (isInternalTrackingReference(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono -mt-1 mb-1.5">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
                     '<p class="text-xs text-slate-500">' + escapeHtml(item.department || '-') + ' • ' + escapeHtml(item.route || '-') + '</p>' +
                     '<p class="text-[11px] text-slate-400 mt-1">เอกสาร ' + Number(item.documentCount || 1) + ' ฉบับ' + (item.isIncomplete ? ' • <span class="text-amber-600 font-bold">ข้อมูลยังไม่ครบ</span>' : '') + '</p>' +
                     '<div class="mt-2.5 text-[11px] font-bold text-orange-600 flex items-center gap-1"><i class="fa-solid fa-camera"></i> แตะเพื่อแนบรูปหลักฐาน</div>' +
@@ -5768,9 +5800,9 @@
             document.getElementById('evidencecapture-detail-tracking').textContent = formatTrackingFriendlyLabel(item.trackingId);
             const refEl = document.getElementById('evidencecapture-detail-ref');
             if (refEl) {
-                const isOrdinary = isOrdinaryLetterId(item.trackingId);
-                refEl.classList.toggle('hidden', !isOrdinary);
-                refEl.textContent = isOrdinary ? 'Ref: ' + item.trackingId : '';
+                const isInternalRef = isInternalTrackingReference(item.trackingId);
+                refEl.classList.toggle('hidden', !isInternalRef);
+                refEl.textContent = isInternalRef ? 'Ref: ' + item.trackingId : '';
             }
             document.getElementById('evidencecapture-detail-meta').textContent = (item.department || '-') + ' • ' + (item.route || '-');
             document.getElementById('evidencecapture-detail-docs').textContent = 'เอกสารในชุด: ' + Number(item.documentCount || 1) + ' ฉบับ';
@@ -6145,7 +6177,7 @@
                             '<p class="text-sm font-black text-slate-800 break-all">' + escapeHtml(formatTrackingFriendlyLabel(item.trackingId)) + '</p>' +
                             '<span class="text-[10px] font-bold px-2 py-1 rounded-full shrink-0 ' + statusBadgeClass(item.status) + '">' + escapeHtml(item.status || '-') + '</span>' +
                         '</div>' +
-                        (isOrdinaryLetterId(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
+                        (isInternalTrackingReference(item.trackingId) ? '<p class="text-[10px] text-slate-400 font-mono">Ref: ' + escapeHtml(item.trackingId) + '</p>' : '') +
                         '<p class="text-xs text-slate-500 mt-1.5">' + escapeHtml(item.department || '-') + ' • ' + escapeHtml(item.currentLocation || '-') + '</p>' +
                         '<p class="text-xs text-slate-700 mt-0.5">' + escapeHtml(item.recipientName || '-') + '</p>' +
                         '<p class="text-[11px] text-slate-400 mt-1">' + escapeHtml((item.route || '-') + ' • ' + Number(item.qty || 1) + ' ชิ้น') + '</p>' +
@@ -6361,12 +6393,12 @@
                 if (el) el.textContent = value || '-';
             };
 
-            setText('result-tracking-id', formatTrackingFriendlyLabel(res.trackingId));
+            setText('result-tracking-id', formatTrackingFriendlyLabel(res.trackingId, res.originalTrackingLabel));
             const trackRefEl = document.getElementById('result-tracking-ref');
             if (trackRefEl) {
-                const isOrdinary = isOrdinaryLetterId(res.trackingId);
-                trackRefEl.classList.toggle('hidden', !isOrdinary);
-                trackRefEl.textContent = isOrdinary ? 'Ref: ' + res.trackingId : '';
+                const isInternalRef = isInternalTrackingReference(res.trackingId);
+                trackRefEl.classList.toggle('hidden', !isInternalRef);
+                trackRefEl.textContent = isInternalRef ? 'Ref: ' + res.trackingId : '';
             }
             setText('result-track-location', res.currentLocation || 'Ari Hills');
             setText('result-track-sender', res.senderName);
