@@ -218,25 +218,200 @@
                 linear-gradient(155deg, #020617 0%, #0b1224 45%, #131a3d 100%);
         }
 
-        /* ===== Light / Dark Mode — scoped to the app shell only (login screen keeps its own dark theme) ===== */
-        #view-app { transition: background-color .2s ease, color .2s ease; }
-        #view-app.dark-mode { background-color: #0b1220; }
+        /* ===================== FULL DARK MODE (v5.9.26) =====================
+           Requirement 3: centralized CSS Theme Variable system — the OLD block above covered
+           only ~17 hand-picked Tailwind classes, which is exactly why Dark Mode used to change
+           "only some parts": any element using a semantic accent shade not in that short list
+           (bg-indigo-50, text-emerald-700, border-purple-200, and dozens more used throughout
+           Dashboard/E-Sign/Evidence/Report/Auto Mail/Department Status) was silently skipped.
+           This block is a systematic, per-color-family sweep of every accent shade actually used
+           in this file (confirmed by grep, not guessed), plus CSS custom properties as the
+           requested variable architecture. Still scoped to #view-app.dark-mode — the existing
+           toggle mechanism (applyTheme/toggleTheme) is completely unchanged, only what it now
+           controls is dramatically wider. CSS-only: no loops, no new API calls, no reloads. */
+
+        :root {
+            --bg-main: #f8fafc; --bg-card: #ffffff; --bg-sidebar: #0f172a;
+            --text-primary: #1e293b; --text-secondary: #64748b;
+            --border-color: #e2e8f0; --input-bg: #f8fafc; --input-text: #1e293b;
+            --accent-blue: #2563eb;
+        }
+        #view-app.dark-mode {
+            --bg-main: #0b1220; --bg-card: #111827; --bg-sidebar: #0a0f1c;
+            --text-primary: #f1f5f9; --text-secondary: #94a3b8;
+            --border-color: #334155; --input-bg: #1e293b; --input-text: #e2e8f0;
+            --accent-blue: #60a5fa;
+            background-color: var(--bg-main);
+            color-scheme: dark; /* native scrollbars, date pickers, form controls follow dark */
+        }
+
+        /* ---------- Base surfaces (expanded slate coverage) ---------- */
         #view-app.dark-mode .bg-slate-50,
-        #view-app.dark-mode .bg-slate-100\/70 { background-color: #0b1220 !important; }
-        #view-app.dark-mode .bg-white { background-color: #111827 !important; }
+        #view-app.dark-mode .bg-slate-100,
+        #view-app.dark-mode .bg-slate-100\/70,
+        #view-app.dark-mode .bg-slate-200 { background-color: var(--bg-main) !important; }
+        #view-app.dark-mode .bg-white,
+        #view-app.dark-mode .bg-slate-300 { background-color: var(--bg-card) !important; }
         #view-app.dark-mode .bg-slate-50\/50,
         #view-app.dark-mode .bg-slate-50\/70 { background-color: rgba(30,41,59,0.6) !important; }
-        #view-app.dark-mode .text-slate-800 { color: #f1f5f9 !important; }
+        #view-app.dark-mode .bg-slate-900,
+        #view-app.dark-mode .bg-slate-950 { background-color: var(--bg-sidebar) !important; }
+        #view-app.dark-mode .text-slate-900,
+        #view-app.dark-mode .text-slate-800 { color: var(--text-primary) !important; }
         #view-app.dark-mode .text-slate-700 { color: #e2e8f0 !important; }
         #view-app.dark-mode .text-slate-600 { color: #cbd5e1 !important; }
-        #view-app.dark-mode .text-slate-500 { color: #94a3b8 !important; }
+        #view-app.dark-mode .text-slate-500,
+        #view-app.dark-mode .text-slate-300 { color: var(--text-secondary) !important; }
         #view-app.dark-mode .text-slate-400 { color: #64748b !important; }
         #view-app.dark-mode .border-slate-200,
-        #view-app.dark-mode .border-slate-200\/80 { border-color: #334155 !important; }
+        #view-app.dark-mode .border-slate-200\/80,
+        #view-app.dark-mode .border-slate-300 { border-color: var(--border-color) !important; }
         #view-app.dark-mode .border-slate-100 { border-color: #1e293b !important; }
+        #view-app.dark-mode .divide-slate-100 { border-color: #1e293b !important; }
+        #view-app.dark-mode .shadow-sm,
+        #view-app.dark-mode .shadow,
+        #view-app.dark-mode .shadow-lg,
+        #view-app.dark-mode .shadow-xl,
+        #view-app.dark-mode .shadow-2xl { box-shadow: 0 4px 16px rgba(0,0,0,0.45) !important; }
+
+        /* ---------- Forms: input / select / textarea / placeholder / disabled ---------- */
         #view-app.dark-mode input,
-        #view-app.dark-mode select { background-color: #1e293b !important; color: #e2e8f0 !important; border-color: #334155 !important; }
-        #view-app.dark-mode .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
+        #view-app.dark-mode select,
+        #view-app.dark-mode textarea {
+            background-color: var(--input-bg) !important; color: var(--input-text) !important; border-color: var(--border-color) !important;
+        }
+        #view-app.dark-mode input::placeholder,
+        #view-app.dark-mode textarea::placeholder { color: #64748b !important; opacity: 1; }
+        #view-app.dark-mode input:disabled,
+        #view-app.dark-mode select:disabled,
+        #view-app.dark-mode textarea:disabled,
+        #view-app.dark-mode button:disabled { opacity: 0.5 !important; }
+        #view-app.dark-mode input:focus,
+        #view-app.dark-mode select:focus,
+        #view-app.dark-mode textarea:focus { background-color: #24324a !important; }
+
+        /* ---------- Signature Canvas: a WRITING SURFACE, not a UI background — Requirement:
+           never let this go dark, or dark ink on a dark pad becomes illegible. Overrides
+           everything above for this one element, on purpose. ---------- */
+        #view-app.dark-mode #signature-pad-frame,
+        #view-app.dark-mode #return-signature-pad-frame,
+        #view-app.dark-mode .signature-frame { background-color: #ffffff !important; border-color: #cbd5e1 !important; }
+
+        /* ---------- Semantic accent colors: one consistent formula per family, applied to every
+           shade actually used in this file (confirmed by grep — Success=Emerald, Warning=Amber,
+           Error=Rose, Info=Blue/Indigo/Sky, plus the module-accent families Violet/Teal/Purple/
+           Orange/Cyan). -50/-100 backgrounds become a low-opacity tint of the same hue (keeps the
+           badge/card "family" instantly recognizable); -600/-700/-800 text lightens toward a
+           300/400-equivalent for AA-ish contrast on a dark card; -100/-200/-300 borders become a
+           mid-opacity tint. Never pure neon, never blue-glow — matching "ห้ามใช้สีสดจนแสบตา". ---------- */
+        #view-app.dark-mode .bg-indigo-50 { background-color: rgba(99,102,241,0.14) !important; }
+        #view-app.dark-mode .bg-indigo-100 { background-color: rgba(99,102,241,0.22) !important; }
+        #view-app.dark-mode .text-indigo-400 { color: #a5b4fc !important; }
+        #view-app.dark-mode .text-indigo-500 { color: #a5b4fc !important; }
+        #view-app.dark-mode .text-indigo-600 { color: #a5b4fc !important; }
+        #view-app.dark-mode .text-indigo-700 { color: #c7d2fe !important; }
+        #view-app.dark-mode .text-indigo-800 { color: #e0e7ff !important; }
+        #view-app.dark-mode .border-indigo-100,
+        #view-app.dark-mode .border-indigo-200,
+        #view-app.dark-mode .border-indigo-300 { border-color: rgba(99,102,241,0.4) !important; }
+        #view-app.dark-mode .ring-indigo-500 { --tw-ring-color: #818cf8 !important; }
+
+        #view-app.dark-mode .bg-violet-50 { background-color: rgba(139,92,246,0.14) !important; }
+        #view-app.dark-mode .text-violet-400 { color: #c4b5fd !important; }
+        #view-app.dark-mode .text-violet-600 { color: #c4b5fd !important; }
+        #view-app.dark-mode .border-violet-300 { border-color: rgba(139,92,246,0.4) !important; }
+
+        #view-app.dark-mode .bg-blue-50 { background-color: rgba(59,130,246,0.14) !important; }
+        #view-app.dark-mode .bg-blue-100 { background-color: rgba(59,130,246,0.22) !important; }
+        #view-app.dark-mode .text-blue-400 { color: #93c5fd !important; }
+        #view-app.dark-mode .text-blue-500 { color: #93c5fd !important; }
+        #view-app.dark-mode .text-blue-600 { color: #93c5fd !important; }
+        #view-app.dark-mode .text-blue-700 { color: #bfdbfe !important; }
+        #view-app.dark-mode .border-blue-300 { border-color: rgba(59,130,246,0.4) !important; }
+        #view-app.dark-mode .ring-blue-500 { --tw-ring-color: #60a5fa !important; }
+
+        #view-app.dark-mode .bg-emerald-50 { background-color: rgba(16,185,129,0.14) !important; }
+        #view-app.dark-mode .bg-emerald-100 { background-color: rgba(16,185,129,0.22) !important; }
+        #view-app.dark-mode .text-emerald-400 { color: #6ee7b7 !important; }
+        #view-app.dark-mode .text-emerald-500 { color: #6ee7b7 !important; }
+        #view-app.dark-mode .text-emerald-600 { color: #6ee7b7 !important; }
+        #view-app.dark-mode .text-emerald-700 { color: #a7f3d0 !important; }
+        #view-app.dark-mode .text-emerald-800 { color: #d1fae5 !important; }
+        #view-app.dark-mode .border-emerald-100,
+        #view-app.dark-mode .border-emerald-200,
+        #view-app.dark-mode .border-emerald-300 { border-color: rgba(16,185,129,0.4) !important; }
+        #view-app.dark-mode .ring-emerald-200,
+        #view-app.dark-mode .ring-emerald-300 { --tw-ring-color: rgba(16,185,129,0.35) !important; }
+        #view-app.dark-mode .ring-emerald-500 { --tw-ring-color: #34d399 !important; }
+
+        #view-app.dark-mode .bg-teal-50 { background-color: rgba(20,184,166,0.14) !important; }
+        #view-app.dark-mode .text-teal-400 { color: #5eead4 !important; }
+        #view-app.dark-mode .text-teal-500 { color: #5eead4 !important; }
+        #view-app.dark-mode .text-teal-600 { color: #5eead4 !important; }
+        #view-app.dark-mode .text-teal-700 { color: #99f6e4 !important; }
+        #view-app.dark-mode .text-teal-800 { color: #ccfbf1 !important; }
+        #view-app.dark-mode .border-teal-100,
+        #view-app.dark-mode .border-teal-300 { border-color: rgba(20,184,166,0.4) !important; }
+
+        #view-app.dark-mode .bg-amber-50 { background-color: rgba(245,158,11,0.14) !important; }
+        #view-app.dark-mode .bg-amber-100 { background-color: rgba(245,158,11,0.22) !important; }
+        #view-app.dark-mode .text-amber-500 { color: #fcd34d !important; }
+        #view-app.dark-mode .text-amber-600 { color: #fcd34d !important; }
+        #view-app.dark-mode .text-amber-700 { color: #fde68a !important; }
+        #view-app.dark-mode .text-amber-800 { color: #fef3c7 !important; }
+        #view-app.dark-mode .border-amber-100,
+        #view-app.dark-mode .border-amber-200,
+        #view-app.dark-mode .border-amber-300 { border-color: rgba(245,158,11,0.4) !important; }
+
+        #view-app.dark-mode .bg-rose-50 { background-color: rgba(244,63,94,0.14) !important; }
+        #view-app.dark-mode .bg-rose-100 { background-color: rgba(244,63,94,0.22) !important; }
+        #view-app.dark-mode .text-rose-400 { color: #fda4af !important; }
+        #view-app.dark-mode .text-rose-500 { color: #fda4af !important; }
+        #view-app.dark-mode .text-rose-600 { color: #fda4af !important; }
+        #view-app.dark-mode .text-rose-700 { color: #fecdd3 !important; }
+        #view-app.dark-mode .text-rose-800 { color: #ffe4e6 !important; }
+        #view-app.dark-mode .border-rose-100,
+        #view-app.dark-mode .border-rose-200,
+        #view-app.dark-mode .border-rose-300 { border-color: rgba(244,63,94,0.4) !important; }
+        #view-app.dark-mode .ring-rose-200 { --tw-ring-color: rgba(244,63,94,0.35) !important; }
+        #view-app.dark-mode .ring-rose-500 { --tw-ring-color: #fb7185 !important; }
+
+        #view-app.dark-mode .bg-orange-50 { background-color: rgba(249,115,22,0.14) !important; }
+        #view-app.dark-mode .text-orange-400 { color: #fdba74 !important; }
+        #view-app.dark-mode .text-orange-500 { color: #fdba74 !important; }
+        #view-app.dark-mode .text-orange-600 { color: #fdba74 !important; }
+        #view-app.dark-mode .border-orange-300 { border-color: rgba(249,115,22,0.4) !important; }
+
+        #view-app.dark-mode .bg-purple-50 { background-color: rgba(168,85,247,0.14) !important; }
+        #view-app.dark-mode .bg-purple-100 { background-color: rgba(168,85,247,0.22) !important; }
+        #view-app.dark-mode .text-purple-400 { color: #d8b4fe !important; }
+        #view-app.dark-mode .text-purple-500 { color: #d8b4fe !important; }
+        #view-app.dark-mode .text-purple-600 { color: #d8b4fe !important; }
+        #view-app.dark-mode .text-purple-700 { color: #e9d5ff !important; }
+        #view-app.dark-mode .text-purple-800 { color: #f3e8ff !important; }
+        #view-app.dark-mode .border-purple-100,
+        #view-app.dark-mode .border-purple-200,
+        #view-app.dark-mode .border-purple-300 { border-color: rgba(168,85,247,0.4) !important; }
+        #view-app.dark-mode .ring-purple-500 { --tw-ring-color: #c084fc !important; }
+
+        #view-app.dark-mode .bg-sky-50 { background-color: rgba(14,165,233,0.14) !important; }
+        #view-app.dark-mode .bg-sky-100 { background-color: rgba(14,165,233,0.22) !important; }
+        #view-app.dark-mode .text-sky-400 { color: #7dd3fc !important; }
+        #view-app.dark-mode .text-sky-500 { color: #7dd3fc !important; }
+        #view-app.dark-mode .text-sky-600 { color: #7dd3fc !important; }
+        #view-app.dark-mode .text-sky-700 { color: #bae6fd !important; }
+        #view-app.dark-mode .text-sky-800 { color: #e0f2fe !important; }
+        #view-app.dark-mode .border-sky-100,
+        #view-app.dark-mode .border-sky-300 { border-color: rgba(14,165,233,0.4) !important; }
+
+        #view-app.dark-mode .bg-cyan-50 { background-color: rgba(6,182,212,0.14) !important; }
+        #view-app.dark-mode .text-cyan-800 { color: #cffafe !important; }
+        #view-app.dark-mode .border-cyan-100 { border-color: rgba(6,182,212,0.4) !important; }
+
+        /* ---------- Misc controls: checkbox accent, scrollbar ---------- */
+        #view-app.dark-mode .accent-purple-600 { accent-color: #a78bfa !important; }
+        #view-app.dark-mode ::-webkit-scrollbar-track { background: #0b1220; }
+        #view-app.dark-mode ::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
 
         /* ===== Role-based visibility (Operation Staff has no Insight & Automation) ===== */
         body.role-staff .admin-only { display: none !important; }
@@ -809,6 +984,37 @@
                                 </div>
                                 <p class="text-[10px] text-slate-400 mt-1.5">มากกว่า 1 = เข้าสู่ Batch Entry Mode — บันทึกทีละ Tracking จริงทันทีที่กด "บันทึกรายการนี้" (1 Tracking = 1 Document = 1 KeyIn Row)</p>
 
+                                <!-- Requirement 1 (v5.9.26): Evidence Mode — only relevant once Batch Entry Mode is active -->
+                                <div id="evidence-mode-selector" class="hidden mt-3 rounded-xl border border-slate-200 bg-white p-3.5">
+                                    <p class="text-xs font-bold text-slate-700 mb-2">Evidence Mode — ชุดเอกสารนี้จะถ่ายรูปหลักฐานอย่างไร</p>
+                                    <div class="space-y-2">
+                                        <label class="flex items-start gap-2.5 cursor-pointer min-h-[44px]">
+                                            <input type="radio" name="evidence-mode" value="perItem" checked onchange="onEvidenceModeChange()" class="mt-1 shrink-0">
+                                            <span class="text-xs text-slate-600"><span class="font-bold text-slate-800">ถ่ายรูปแยกตาม Tracking</span><br>ถ่ายรูปหลักฐานทีละรายการตามปกติ</span>
+                                        </label>
+                                        <label class="flex items-start gap-2.5 cursor-pointer min-h-[44px]">
+                                            <input type="radio" name="evidence-mode" value="shared" onchange="onEvidenceModeChange()" class="mt-1 shrink-0">
+                                            <span class="text-xs text-slate-600"><span class="font-bold text-slate-800">ใช้รูปหลักฐานร่วมกันทั้ง Batch</span><br>ถ่ายรูปเพียงครั้งเดียว ใช้ร่วมกันทุก Tracking ในชุดนี้</span>
+                                        </label>
+                                    </div>
+
+                                    <div id="shared-evidence-capture-panel" class="hidden mt-3 pt-3 border-t border-slate-100">
+                                        <div class="flex gap-2">
+                                            <label class="flex-1 flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-xl py-2.5 text-xs font-bold cursor-pointer hover:bg-indigo-100 min-h-[44px]">
+                                                <i class="fa-solid fa-camera"></i> ถ่ายรูปหลักฐาน
+                                                <input type="file" accept="image/*" capture="environment" multiple class="hidden" onchange="handleSharedEvidenceFiles(event)">
+                                            </label>
+                                            <label class="flex-1 flex items-center justify-center gap-2 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl py-2.5 text-xs font-bold cursor-pointer hover:bg-slate-100 min-h-[44px]">
+                                                <i class="fa-regular fa-images"></i> เลือกจาก Gallery
+                                                <input type="file" accept="image/*" multiple class="hidden" onchange="handleSharedEvidenceFiles(event)">
+                                            </label>
+                                        </div>
+                                        <p id="shared-evidence-progress-text" class="hidden text-[11px] text-indigo-600 font-bold mt-2"></p>
+                                        <div id="shared-evidence-preview" class="flex flex-wrap gap-2 mt-2"></div>
+                                        <p class="text-[10px] text-slate-400 mt-1.5">รูปชุดนี้จะถูกอัปโหลดครั้งเดียวและใช้ร่วมกันกับทุก Tracking ในชุดนี้</p>
+                                    </div>
+                                </div>
+
                                 <!-- Evidence/scan capture indicator for the CURRENT item — informational only, never blocks Save (Requirement 14) -->
                                 <div id="scan-progress-card" class="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
                                     <div class="flex items-center justify-between gap-2"><div><p class="text-[11px] font-bold text-slate-600">Evidence Capture (รายการปัจจุบัน)</p><p id="scan-progress-text" class="text-xs text-slate-500 mt-0.5">สแกน/แนบหลักฐานแล้ว 0 ครั้ง</p></div><button type="button" onclick="resetScanProgress()" class="text-[10px] font-bold text-slate-500 hover:text-rose-600">Reset</button></div>
@@ -863,7 +1069,7 @@
                                 <p class="text-[10px] text-slate-400 mt-1.5">ปกติปล่อยเป็น 1 — เปลี่ยนเฉพาะเมื่อ Tracking นี้เป็นเอกสารมัดรวมหลายชิ้น (เช่น 8 ฉบับในซองเดียว ยังคงเป็น 1 Tracking)</p>
                             </div>
 
-                            <div>
+                            <div id="per-item-evidence-section">
                                 <label class="flex justify-between items-center text-xs font-bold text-slate-700 mb-1.5">
                                     <span>Capture Evidence / ถ่ายภาพหลักฐาน</span>
                                     <span id="photo-count" class="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md font-bold">0 แนบแล้ว</span>
@@ -2187,7 +2393,7 @@
         // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
         // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
         // otherwise surfaces as confusing, hard-to-explain bugs.
-        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.25';
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.26';
 
         async function loadBackendCapabilities() {
             try {
@@ -2725,6 +2931,72 @@
             }
         }
 
+
+        // Requirement 1 (v5.9.26) — Batch Shared Evidence: captured ONCE, reused for every
+        // Tracking in the current Batch. batchSharedEvidenceImages holds the resized/compressed
+        // base64 images (sent with the FIRST Key In save of the Batch); batchSharedEvidenceUrls
+        // holds the Drive URLs that come back from that first save's response — every SUBSEQUENT
+        // save in the same Batch sends those URLs instead of the base64 data again, which is
+        // exactly what avoids "100 Tracking = 100 Drive uploads" for one shared Batch photo.
+        let keyInEvidenceMode = 'perItem'; // 'perItem' | 'shared'
+        let batchSharedEvidenceImages = [];
+        let batchSharedEvidenceUrls = [];
+
+        function onEvidenceModeChange() {
+            const selected = document.querySelector('input[name="evidence-mode"]:checked')?.value || 'perItem';
+            keyInEvidenceMode = selected;
+            document.getElementById('shared-evidence-capture-panel')?.classList.toggle('hidden', selected !== 'shared');
+            // Requirement 1: hide the per-item Capture Evidence UI entirely while Shared mode is
+            // active — its input would otherwise be silently ignored by collectKeyInPayload(),
+            // which is confusing UX even though it's harmless to the actual save.
+            document.getElementById('per-item-evidence-section')?.classList.toggle('hidden', selected === 'shared');
+        }
+
+        // Sequential processing, never Promise.all(allImages) — Requirement: avoid a Safari
+        // memory spike from decoding many full-resolution photos at once on iPad/iPhone.
+        async function handleSharedEvidenceFiles(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+
+            const progressEl = document.getElementById('shared-evidence-progress-text');
+            if (progressEl) progressEl.classList.remove('hidden');
+
+            for (let i = 0; i < files.length; i++) {
+                if (progressEl) progressEl.textContent = 'กำลังเตรียมรูป ' + (i + 1) + '/' + files.length;
+                try {
+                    const rawDataUrl = await readFileAsDataUrl(files[i]);
+                    const optimizedDataUrl = await normalizeEvidenceDataUrl(rawDataUrl, 1800, 0.88);
+                    batchSharedEvidenceImages.push(optimizedDataUrl);
+                    // A NEW photo invalidates any already-uploaded set from earlier in this Batch —
+                    // the next save must upload fresh, never reuse stale URLs for different content.
+                    batchSharedEvidenceUrls = [];
+                } catch (err) {
+                    console.error('handleSharedEvidenceFiles:', err);
+                    showSystemToast('ไม่สามารถอ่านรูปภาพบางรูปได้: ' + normalizeError(err), 'error');
+                }
+            }
+
+            if (progressEl) progressEl.classList.add('hidden');
+            renderSharedEvidencePreview();
+            event.target.value = '';
+        }
+
+        function renderSharedEvidencePreview() {
+            const box = document.getElementById('shared-evidence-preview');
+            if (!box) return;
+            box.innerHTML = batchSharedEvidenceImages.map(function(src, idx) {
+                return '<div class="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200">' +
+                    '<img src="' + src + '" class="w-full h-full object-cover">' +
+                    '<button type="button" onclick="removeSharedEvidenceImage(' + idx + ')" class="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-rose-600 text-white text-[10px] flex items-center justify-center">✕</button>' +
+                    '</div>';
+            }).join('') + (batchSharedEvidenceImages.length ? '' : '<p class="text-[11px] text-slate-400">ยังไม่มีรูป</p>');
+        }
+
+        function removeSharedEvidenceImage(idx) {
+            batchSharedEvidenceImages.splice(idx, 1);
+            batchSharedEvidenceUrls = []; // set changed — next save must re-upload
+            renderSharedEvidencePreview();
+        }
 
         async function handleImageCapture(event) {
             const file = event.target.files[0];
@@ -4300,6 +4572,7 @@
 
         function onKeyInQtyChange() {
             const qty = getKeyInQty();
+            document.getElementById('evidence-mode-selector')?.classList.toggle('hidden', qty <= 1);
 
             if (qty <= 1) {
                 // Dropping back to 1: if nothing has been saved yet, just exit Batch Mode quietly.
@@ -4350,6 +4623,15 @@
             batchCurrentIndex = 1;
             batchSavedTrackingIds = [];
             batchId = '';
+            // Requirement 1: Shared Evidence is scoped to ONE Batch session only — never silently
+            // carries over into whatever the User does next.
+            keyInEvidenceMode = 'perItem';
+            batchSharedEvidenceImages = [];
+            batchSharedEvidenceUrls = [];
+            document.getElementById('evidence-mode-selector')?.classList.add('hidden');
+            document.querySelector('input[name="evidence-mode"][value="perItem"]')?.setAttribute('checked', 'checked');
+            document.getElementById('shared-evidence-capture-panel')?.classList.add('hidden');
+            renderSharedEvidencePreview();
         }
 
         function renderBatchProgressUI() {
@@ -4437,8 +4719,24 @@
                 // Defaults to 1 — the common case never needs the user to touch this at all.
                 documentCount: getKeyInDocumentCount(),
                 trackingId: document.getElementById('keyin-tracking').value.trim(),
-                remarks: document.getElementById('keyin-remarks').value.trim(), images: capturedImages.slice(), status: 'Registered', createdBy: audit.username, createdByRole: audit.role, authToken: getAuthToken()
+                remarks: document.getElementById('keyin-remarks').value.trim(), status: 'Registered', createdBy: audit.username, createdByRole: audit.role, authToken: getAuthToken()
             };
+
+            // Requirement 1 (v5.9.26) — Batch Shared Evidence: once this Batch's shared photos
+            // have already been uploaded once (batchSharedEvidenceUrls populated by the first
+            // save's response), every later save in the SAME Batch sends those URLs instead of
+            // the base64 data again — this is what prevents re-uploading the same photo per row.
+            if (keyInEvidenceMode === 'shared' && batchActive) {
+                if (batchSharedEvidenceUrls.length) {
+                    payload.sharedImageUrls = batchSharedEvidenceUrls.slice();
+                    payload.images = [];
+                } else {
+                    payload.images = batchSharedEvidenceImages.slice();
+                }
+            } else {
+                payload.images = capturedImages.slice();
+            }
+
             if (batchActive) {
                 payload.batchId = batchId;
                 payload.batchTotal = batchTotal;
@@ -4528,6 +4826,13 @@
                         'error'
                     );
                     return;
+                }
+
+                // Requirement 1 (v5.9.26) — Batch Shared Evidence: the FIRST save of the Batch
+                // uploaded the shared photos to Drive; capture the resulting URLs so every
+                // SUBSEQUENT save in this same Batch reuses them instead of re-uploading.
+                if (keyInEvidenceMode === 'shared' && !batchSharedEvidenceUrls.length && Array.isArray(res.imageUrls) && res.imageUrls.length) {
+                    batchSharedEvidenceUrls = res.imageUrls.slice();
                 }
 
                 // Performance Optimization #1: derive readiness directly from saveKeyIn()'s own
@@ -5298,6 +5603,9 @@
                             ? '<p class="text-[11px] text-slate-400 mt-1 truncate">หมายเหตุ: ' + escapeHtml(item.remarks) + '</p>'
                             : '') +
                     '</div>' +
+                    '<button type="button" onclick="event.preventDefault(); event.stopPropagation(); confirmDeleteKeyInRecord(\'' + escapeHtml(item.trackingId).replace(/'/g, "\\'") + '\');" ' +
+                    'title="ลบเอกสาร (กรอกผิด)" class="shrink-0 self-start w-8 h-8 rounded-lg text-slate-300 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center">' +
+                    '<i class="fa-regular fa-trash-can text-sm"></i></button>' +
                 '</label>';
             }).join('');
 
@@ -5358,6 +5666,66 @@
 
         function escapeHtml(value) {
             return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch]));
+        }
+
+        // Requirement 2 (v5.9.26) — E-Sign: Delete a wrongly Key In'd document.
+        let deleteKeyInPendingTrackingId = '';
+
+        function confirmDeleteKeyInRecord(trackingId) {
+            deleteKeyInPendingTrackingId = trackingId;
+            const label = document.getElementById('delete-keyin-tracking-label');
+            if (label) label.textContent = formatTrackingFriendlyLabel(trackingId) + (isInternalTrackingReference(trackingId) ? ' (Ref: ' + trackingId + ')' : '');
+            document.getElementById('delete-keyin-modal')?.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeDeleteKeyInModal() {
+            deleteKeyInPendingTrackingId = '';
+            document.getElementById('delete-keyin-modal')?.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        async function executeDeleteKeyInRecord() {
+            const trackingId = deleteKeyInPendingTrackingId;
+            if (!trackingId) return;
+            if (!requireGas()) return;
+
+            const btn = document.getElementById('delete-keyin-confirm-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังลบ...'; }
+
+            try {
+                const raw = await apiCall('deleteKeyInRecord', { trackingId: trackingId, authToken: getAuthToken() });
+                const res = normalizeResponse(raw, 'ลบเอกสารไม่สำเร็จ');
+                if (handleAuthFailure(res)) return;
+
+                closeDeleteKeyInModal();
+
+                if (!res.success) {
+                    // Requirement — Concurrency: NOT_FOUND (already deleted elsewhere) is treated as
+                    // a calm reconcile, never a scary error — the end state the User wanted
+                    // (this item gone from the Queue) is already true.
+                    if (res.code === 'NOT_FOUND') {
+                        showSystemToast('รายการนี้ถูกลบไปแล้ว กำลังปรับปรุงคิวให้ล่าสุด', 'info');
+                    } else {
+                        showSystemToast(res.message || 'ลบเอกสารไม่สำเร็จ', 'error');
+                        return; // ALREADY_PROCESSED / SYSTEM_BUSY / DELETE_FAILED — leave Queue untouched
+                    }
+                } else {
+                    showSystemToast(res.message || 'ลบเอกสารออกจากระบบเรียบร้อยแล้ว', 'success');
+                }
+
+                // Requirement — Delete Performance: reconcile the LOCAL E-Sign Queue only, never
+                // reload KeyIn/ESign/Dashboard/Report wholesale.
+                esignPendingItems = esignPendingItems.filter(function(item) { return item.trackingId !== trackingId; });
+                esignQueueAllItems = esignQueueAllItems.filter(function(item) { return item.trackingId !== trackingId; });
+                renderEsignParcels();
+                refreshNotificationBadge();
+
+            } catch (err) {
+                showSystemToast('ลบเอกสารไม่สำเร็จ: ' + normalizeError(err), 'error');
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = 'ยืนยันลบ'; }
+            }
         }
 
         async function saveEsignature() {
@@ -7502,6 +7870,21 @@
             <button type="button" onclick="closeDeptVolumeAllModal()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center">✕</button>
         </div>
         <div id="dept-volume-all-list" class="p-4 overflow-y-auto space-y-2"></div>
+    </div>
+</div>
+
+<!-- Requirement 2 (v5.9.26) — E-Sign: Delete a wrongly Key In'd document. Never a browser confirm(). -->
+<div id="delete-keyin-modal" class="hidden fixed inset-0 z-[110] bg-slate-950/60 backdrop-blur-sm p-4 flex items-center justify-center" onclick="if(event.target===this)closeDeleteKeyInModal()">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6" style="max-width: 92vw;">
+        <div class="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mb-4"><i class="fa-solid fa-triangle-exclamation text-xl"></i></div>
+        <h3 class="font-black text-lg text-slate-900 mb-1.5">กรุณาตรวจสอบข้อมูลก่อนลบเอกสาร</h3>
+        <p class="text-sm text-slate-600 mb-1">คุณกำลังจะลบเอกสาร:</p>
+        <p id="delete-keyin-tracking-label" class="text-base font-black text-slate-900 font-mono break-all mb-3">-</p>
+        <p class="text-xs text-slate-500 mb-5">การลบจะนำรายการออกจากคิว E-Sign และไม่สามารถกู้คืนได้ กรุณาตรวจสอบให้แน่ใจก่อนดำเนินการ</p>
+        <div class="flex gap-2.5">
+            <button type="button" onclick="closeDeleteKeyInModal()" class="btn-nav btn-nav-secondary flex-1">ยกเลิก</button>
+            <button type="button" id="delete-keyin-confirm-btn" onclick="executeDeleteKeyInRecord()" class="btn-nav btn-nav-destructive flex-1">ยืนยันลบ</button>
+        </div>
     </div>
 </div>
 
