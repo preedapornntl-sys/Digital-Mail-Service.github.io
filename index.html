@@ -162,6 +162,10 @@
             .skeleton-block { animation: none; background: #eef2f7; }
         }
 
+        .dept-volume-tab { color: #64748b; }
+        .dept-volume-tab.dept-volume-tab-active { background: #ffffff; color: #4338ca; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        body.dark-mode .dept-volume-tab.dept-volume-tab-active { background: #1e293b; color: #a5b4fc; }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -226,7 +230,7 @@
            Dashboard/E-Sign/Evidence/Report/Auto Mail/Department Status) was silently skipped.
            This block is a systematic, per-color-family sweep of every accent shade actually used
            in this file (confirmed by grep, not guessed), plus CSS custom properties as the
-           requested variable architecture. Still scoped to #view-app.dark-mode — the existing
+           requested variable architecture. Still scoped to body.dark-mode — the existing
            toggle mechanism (applyTheme/toggleTheme) is completely unchanged, only what it now
            controls is dramatically wider. CSS-only: no loops, no new API calls, no reloads. */
 
@@ -236,7 +240,7 @@
             --border-color: #e2e8f0; --input-bg: #f8fafc; --input-text: #1e293b;
             --accent-blue: #2563eb;
         }
-        #view-app.dark-mode {
+        body.dark-mode {
             --bg-main: #0b1220; --bg-card: #111827; --bg-sidebar: #0a0f1c;
             --text-primary: #f1f5f9; --text-secondary: #94a3b8;
             --border-color: #334155; --input-bg: #1e293b; --input-text: #e2e8f0;
@@ -246,56 +250,56 @@
         }
 
         /* ---------- Base surfaces (expanded slate coverage) ---------- */
-        #view-app.dark-mode .bg-slate-50,
-        #view-app.dark-mode .bg-slate-100,
-        #view-app.dark-mode .bg-slate-100\/70,
-        #view-app.dark-mode .bg-slate-200 { background-color: var(--bg-main) !important; }
-        #view-app.dark-mode .bg-white,
-        #view-app.dark-mode .bg-slate-300 { background-color: var(--bg-card) !important; }
-        #view-app.dark-mode .bg-slate-50\/50,
-        #view-app.dark-mode .bg-slate-50\/70 { background-color: rgba(30,41,59,0.6) !important; }
-        #view-app.dark-mode .bg-slate-900,
-        #view-app.dark-mode .bg-slate-950 { background-color: var(--bg-sidebar) !important; }
-        #view-app.dark-mode .text-slate-900,
-        #view-app.dark-mode .text-slate-800 { color: var(--text-primary) !important; }
-        #view-app.dark-mode .text-slate-700 { color: #e2e8f0 !important; }
-        #view-app.dark-mode .text-slate-600 { color: #cbd5e1 !important; }
-        #view-app.dark-mode .text-slate-500,
-        #view-app.dark-mode .text-slate-300 { color: var(--text-secondary) !important; }
-        #view-app.dark-mode .text-slate-400 { color: #64748b !important; }
-        #view-app.dark-mode .border-slate-200,
-        #view-app.dark-mode .border-slate-200\/80,
-        #view-app.dark-mode .border-slate-300 { border-color: var(--border-color) !important; }
-        #view-app.dark-mode .border-slate-100 { border-color: #1e293b !important; }
-        #view-app.dark-mode .divide-slate-100 { border-color: #1e293b !important; }
-        #view-app.dark-mode .shadow-sm,
-        #view-app.dark-mode .shadow,
-        #view-app.dark-mode .shadow-lg,
-        #view-app.dark-mode .shadow-xl,
-        #view-app.dark-mode .shadow-2xl { box-shadow: 0 4px 16px rgba(0,0,0,0.45) !important; }
+        body.dark-mode .bg-slate-50,
+        body.dark-mode .bg-slate-100,
+        body.dark-mode .bg-slate-100\/70,
+        body.dark-mode .bg-slate-200 { background-color: var(--bg-main) !important; }
+        body.dark-mode .bg-white,
+        body.dark-mode .bg-slate-300 { background-color: var(--bg-card) !important; }
+        body.dark-mode .bg-slate-50\/50,
+        body.dark-mode .bg-slate-50\/70 { background-color: rgba(30,41,59,0.6) !important; }
+        body.dark-mode .bg-slate-900,
+        body.dark-mode .bg-slate-950 { background-color: var(--bg-sidebar) !important; }
+        body.dark-mode .text-slate-900,
+        body.dark-mode .text-slate-800 { color: var(--text-primary) !important; }
+        body.dark-mode .text-slate-700 { color: #e2e8f0 !important; }
+        body.dark-mode .text-slate-600 { color: #cbd5e1 !important; }
+        body.dark-mode .text-slate-500,
+        body.dark-mode .text-slate-300 { color: var(--text-secondary) !important; }
+        body.dark-mode .text-slate-400 { color: #64748b !important; }
+        body.dark-mode .border-slate-200,
+        body.dark-mode .border-slate-200\/80,
+        body.dark-mode .border-slate-300 { border-color: var(--border-color) !important; }
+        body.dark-mode .border-slate-100 { border-color: #1e293b !important; }
+        body.dark-mode .divide-slate-100 { border-color: #1e293b !important; }
+        body.dark-mode .shadow-sm,
+        body.dark-mode .shadow,
+        body.dark-mode .shadow-lg,
+        body.dark-mode .shadow-xl,
+        body.dark-mode .shadow-2xl { box-shadow: 0 4px 16px rgba(0,0,0,0.45) !important; }
 
         /* ---------- Forms: input / select / textarea / placeholder / disabled ---------- */
-        #view-app.dark-mode input,
-        #view-app.dark-mode select,
-        #view-app.dark-mode textarea {
+        body.dark-mode input,
+        body.dark-mode select,
+        body.dark-mode textarea {
             background-color: var(--input-bg) !important; color: var(--input-text) !important; border-color: var(--border-color) !important;
         }
-        #view-app.dark-mode input::placeholder,
-        #view-app.dark-mode textarea::placeholder { color: #64748b !important; opacity: 1; }
-        #view-app.dark-mode input:disabled,
-        #view-app.dark-mode select:disabled,
-        #view-app.dark-mode textarea:disabled,
-        #view-app.dark-mode button:disabled { opacity: 0.5 !important; }
-        #view-app.dark-mode input:focus,
-        #view-app.dark-mode select:focus,
-        #view-app.dark-mode textarea:focus { background-color: #24324a !important; }
+        body.dark-mode input::placeholder,
+        body.dark-mode textarea::placeholder { color: #64748b !important; opacity: 1; }
+        body.dark-mode input:disabled,
+        body.dark-mode select:disabled,
+        body.dark-mode textarea:disabled,
+        body.dark-mode button:disabled { opacity: 0.5 !important; }
+        body.dark-mode input:focus,
+        body.dark-mode select:focus,
+        body.dark-mode textarea:focus { background-color: #24324a !important; }
 
         /* ---------- Signature Canvas: a WRITING SURFACE, not a UI background — Requirement:
            never let this go dark, or dark ink on a dark pad becomes illegible. Overrides
            everything above for this one element, on purpose. ---------- */
-        #view-app.dark-mode #signature-pad-frame,
-        #view-app.dark-mode #return-signature-pad-frame,
-        #view-app.dark-mode .signature-frame { background-color: #ffffff !important; border-color: #cbd5e1 !important; }
+        body.dark-mode #signature-pad-frame,
+        body.dark-mode #return-signature-pad-frame,
+        body.dark-mode .signature-frame { background-color: #ffffff !important; border-color: #cbd5e1 !important; }
 
         /* ---------- Semantic accent colors: one consistent formula per family, applied to every
            shade actually used in this file (confirmed by grep — Success=Emerald, Warning=Amber,
@@ -304,114 +308,114 @@
            badge/card "family" instantly recognizable); -600/-700/-800 text lightens toward a
            300/400-equivalent for AA-ish contrast on a dark card; -100/-200/-300 borders become a
            mid-opacity tint. Never pure neon, never blue-glow — matching "ห้ามใช้สีสดจนแสบตา". ---------- */
-        #view-app.dark-mode .bg-indigo-50 { background-color: rgba(99,102,241,0.14) !important; }
-        #view-app.dark-mode .bg-indigo-100 { background-color: rgba(99,102,241,0.22) !important; }
-        #view-app.dark-mode .text-indigo-400 { color: #a5b4fc !important; }
-        #view-app.dark-mode .text-indigo-500 { color: #a5b4fc !important; }
-        #view-app.dark-mode .text-indigo-600 { color: #a5b4fc !important; }
-        #view-app.dark-mode .text-indigo-700 { color: #c7d2fe !important; }
-        #view-app.dark-mode .text-indigo-800 { color: #e0e7ff !important; }
-        #view-app.dark-mode .border-indigo-100,
-        #view-app.dark-mode .border-indigo-200,
-        #view-app.dark-mode .border-indigo-300 { border-color: rgba(99,102,241,0.4) !important; }
-        #view-app.dark-mode .ring-indigo-500 { --tw-ring-color: #818cf8 !important; }
+        body.dark-mode .bg-indigo-50 { background-color: rgba(99,102,241,0.14) !important; }
+        body.dark-mode .bg-indigo-100 { background-color: rgba(99,102,241,0.22) !important; }
+        body.dark-mode .text-indigo-400 { color: #a5b4fc !important; }
+        body.dark-mode .text-indigo-500 { color: #a5b4fc !important; }
+        body.dark-mode .text-indigo-600 { color: #a5b4fc !important; }
+        body.dark-mode .text-indigo-700 { color: #c7d2fe !important; }
+        body.dark-mode .text-indigo-800 { color: #e0e7ff !important; }
+        body.dark-mode .border-indigo-100,
+        body.dark-mode .border-indigo-200,
+        body.dark-mode .border-indigo-300 { border-color: rgba(99,102,241,0.4) !important; }
+        body.dark-mode .ring-indigo-500 { --tw-ring-color: #818cf8 !important; }
 
-        #view-app.dark-mode .bg-violet-50 { background-color: rgba(139,92,246,0.14) !important; }
-        #view-app.dark-mode .text-violet-400 { color: #c4b5fd !important; }
-        #view-app.dark-mode .text-violet-600 { color: #c4b5fd !important; }
-        #view-app.dark-mode .border-violet-300 { border-color: rgba(139,92,246,0.4) !important; }
+        body.dark-mode .bg-violet-50 { background-color: rgba(139,92,246,0.14) !important; }
+        body.dark-mode .text-violet-400 { color: #c4b5fd !important; }
+        body.dark-mode .text-violet-600 { color: #c4b5fd !important; }
+        body.dark-mode .border-violet-300 { border-color: rgba(139,92,246,0.4) !important; }
 
-        #view-app.dark-mode .bg-blue-50 { background-color: rgba(59,130,246,0.14) !important; }
-        #view-app.dark-mode .bg-blue-100 { background-color: rgba(59,130,246,0.22) !important; }
-        #view-app.dark-mode .text-blue-400 { color: #93c5fd !important; }
-        #view-app.dark-mode .text-blue-500 { color: #93c5fd !important; }
-        #view-app.dark-mode .text-blue-600 { color: #93c5fd !important; }
-        #view-app.dark-mode .text-blue-700 { color: #bfdbfe !important; }
-        #view-app.dark-mode .border-blue-300 { border-color: rgba(59,130,246,0.4) !important; }
-        #view-app.dark-mode .ring-blue-500 { --tw-ring-color: #60a5fa !important; }
+        body.dark-mode .bg-blue-50 { background-color: rgba(59,130,246,0.14) !important; }
+        body.dark-mode .bg-blue-100 { background-color: rgba(59,130,246,0.22) !important; }
+        body.dark-mode .text-blue-400 { color: #93c5fd !important; }
+        body.dark-mode .text-blue-500 { color: #93c5fd !important; }
+        body.dark-mode .text-blue-600 { color: #93c5fd !important; }
+        body.dark-mode .text-blue-700 { color: #bfdbfe !important; }
+        body.dark-mode .border-blue-300 { border-color: rgba(59,130,246,0.4) !important; }
+        body.dark-mode .ring-blue-500 { --tw-ring-color: #60a5fa !important; }
 
-        #view-app.dark-mode .bg-emerald-50 { background-color: rgba(16,185,129,0.14) !important; }
-        #view-app.dark-mode .bg-emerald-100 { background-color: rgba(16,185,129,0.22) !important; }
-        #view-app.dark-mode .text-emerald-400 { color: #6ee7b7 !important; }
-        #view-app.dark-mode .text-emerald-500 { color: #6ee7b7 !important; }
-        #view-app.dark-mode .text-emerald-600 { color: #6ee7b7 !important; }
-        #view-app.dark-mode .text-emerald-700 { color: #a7f3d0 !important; }
-        #view-app.dark-mode .text-emerald-800 { color: #d1fae5 !important; }
-        #view-app.dark-mode .border-emerald-100,
-        #view-app.dark-mode .border-emerald-200,
-        #view-app.dark-mode .border-emerald-300 { border-color: rgba(16,185,129,0.4) !important; }
-        #view-app.dark-mode .ring-emerald-200,
-        #view-app.dark-mode .ring-emerald-300 { --tw-ring-color: rgba(16,185,129,0.35) !important; }
-        #view-app.dark-mode .ring-emerald-500 { --tw-ring-color: #34d399 !important; }
+        body.dark-mode .bg-emerald-50 { background-color: rgba(16,185,129,0.14) !important; }
+        body.dark-mode .bg-emerald-100 { background-color: rgba(16,185,129,0.22) !important; }
+        body.dark-mode .text-emerald-400 { color: #6ee7b7 !important; }
+        body.dark-mode .text-emerald-500 { color: #6ee7b7 !important; }
+        body.dark-mode .text-emerald-600 { color: #6ee7b7 !important; }
+        body.dark-mode .text-emerald-700 { color: #a7f3d0 !important; }
+        body.dark-mode .text-emerald-800 { color: #d1fae5 !important; }
+        body.dark-mode .border-emerald-100,
+        body.dark-mode .border-emerald-200,
+        body.dark-mode .border-emerald-300 { border-color: rgba(16,185,129,0.4) !important; }
+        body.dark-mode .ring-emerald-200,
+        body.dark-mode .ring-emerald-300 { --tw-ring-color: rgba(16,185,129,0.35) !important; }
+        body.dark-mode .ring-emerald-500 { --tw-ring-color: #34d399 !important; }
 
-        #view-app.dark-mode .bg-teal-50 { background-color: rgba(20,184,166,0.14) !important; }
-        #view-app.dark-mode .text-teal-400 { color: #5eead4 !important; }
-        #view-app.dark-mode .text-teal-500 { color: #5eead4 !important; }
-        #view-app.dark-mode .text-teal-600 { color: #5eead4 !important; }
-        #view-app.dark-mode .text-teal-700 { color: #99f6e4 !important; }
-        #view-app.dark-mode .text-teal-800 { color: #ccfbf1 !important; }
-        #view-app.dark-mode .border-teal-100,
-        #view-app.dark-mode .border-teal-300 { border-color: rgba(20,184,166,0.4) !important; }
+        body.dark-mode .bg-teal-50 { background-color: rgba(20,184,166,0.14) !important; }
+        body.dark-mode .text-teal-400 { color: #5eead4 !important; }
+        body.dark-mode .text-teal-500 { color: #5eead4 !important; }
+        body.dark-mode .text-teal-600 { color: #5eead4 !important; }
+        body.dark-mode .text-teal-700 { color: #99f6e4 !important; }
+        body.dark-mode .text-teal-800 { color: #ccfbf1 !important; }
+        body.dark-mode .border-teal-100,
+        body.dark-mode .border-teal-300 { border-color: rgba(20,184,166,0.4) !important; }
 
-        #view-app.dark-mode .bg-amber-50 { background-color: rgba(245,158,11,0.14) !important; }
-        #view-app.dark-mode .bg-amber-100 { background-color: rgba(245,158,11,0.22) !important; }
-        #view-app.dark-mode .text-amber-500 { color: #fcd34d !important; }
-        #view-app.dark-mode .text-amber-600 { color: #fcd34d !important; }
-        #view-app.dark-mode .text-amber-700 { color: #fde68a !important; }
-        #view-app.dark-mode .text-amber-800 { color: #fef3c7 !important; }
-        #view-app.dark-mode .border-amber-100,
-        #view-app.dark-mode .border-amber-200,
-        #view-app.dark-mode .border-amber-300 { border-color: rgba(245,158,11,0.4) !important; }
+        body.dark-mode .bg-amber-50 { background-color: rgba(245,158,11,0.14) !important; }
+        body.dark-mode .bg-amber-100 { background-color: rgba(245,158,11,0.22) !important; }
+        body.dark-mode .text-amber-500 { color: #fcd34d !important; }
+        body.dark-mode .text-amber-600 { color: #fcd34d !important; }
+        body.dark-mode .text-amber-700 { color: #fde68a !important; }
+        body.dark-mode .text-amber-800 { color: #fef3c7 !important; }
+        body.dark-mode .border-amber-100,
+        body.dark-mode .border-amber-200,
+        body.dark-mode .border-amber-300 { border-color: rgba(245,158,11,0.4) !important; }
 
-        #view-app.dark-mode .bg-rose-50 { background-color: rgba(244,63,94,0.14) !important; }
-        #view-app.dark-mode .bg-rose-100 { background-color: rgba(244,63,94,0.22) !important; }
-        #view-app.dark-mode .text-rose-400 { color: #fda4af !important; }
-        #view-app.dark-mode .text-rose-500 { color: #fda4af !important; }
-        #view-app.dark-mode .text-rose-600 { color: #fda4af !important; }
-        #view-app.dark-mode .text-rose-700 { color: #fecdd3 !important; }
-        #view-app.dark-mode .text-rose-800 { color: #ffe4e6 !important; }
-        #view-app.dark-mode .border-rose-100,
-        #view-app.dark-mode .border-rose-200,
-        #view-app.dark-mode .border-rose-300 { border-color: rgba(244,63,94,0.4) !important; }
-        #view-app.dark-mode .ring-rose-200 { --tw-ring-color: rgba(244,63,94,0.35) !important; }
-        #view-app.dark-mode .ring-rose-500 { --tw-ring-color: #fb7185 !important; }
+        body.dark-mode .bg-rose-50 { background-color: rgba(244,63,94,0.14) !important; }
+        body.dark-mode .bg-rose-100 { background-color: rgba(244,63,94,0.22) !important; }
+        body.dark-mode .text-rose-400 { color: #fda4af !important; }
+        body.dark-mode .text-rose-500 { color: #fda4af !important; }
+        body.dark-mode .text-rose-600 { color: #fda4af !important; }
+        body.dark-mode .text-rose-700 { color: #fecdd3 !important; }
+        body.dark-mode .text-rose-800 { color: #ffe4e6 !important; }
+        body.dark-mode .border-rose-100,
+        body.dark-mode .border-rose-200,
+        body.dark-mode .border-rose-300 { border-color: rgba(244,63,94,0.4) !important; }
+        body.dark-mode .ring-rose-200 { --tw-ring-color: rgba(244,63,94,0.35) !important; }
+        body.dark-mode .ring-rose-500 { --tw-ring-color: #fb7185 !important; }
 
-        #view-app.dark-mode .bg-orange-50 { background-color: rgba(249,115,22,0.14) !important; }
-        #view-app.dark-mode .text-orange-400 { color: #fdba74 !important; }
-        #view-app.dark-mode .text-orange-500 { color: #fdba74 !important; }
-        #view-app.dark-mode .text-orange-600 { color: #fdba74 !important; }
-        #view-app.dark-mode .border-orange-300 { border-color: rgba(249,115,22,0.4) !important; }
+        body.dark-mode .bg-orange-50 { background-color: rgba(249,115,22,0.14) !important; }
+        body.dark-mode .text-orange-400 { color: #fdba74 !important; }
+        body.dark-mode .text-orange-500 { color: #fdba74 !important; }
+        body.dark-mode .text-orange-600 { color: #fdba74 !important; }
+        body.dark-mode .border-orange-300 { border-color: rgba(249,115,22,0.4) !important; }
 
-        #view-app.dark-mode .bg-purple-50 { background-color: rgba(168,85,247,0.14) !important; }
-        #view-app.dark-mode .bg-purple-100 { background-color: rgba(168,85,247,0.22) !important; }
-        #view-app.dark-mode .text-purple-400 { color: #d8b4fe !important; }
-        #view-app.dark-mode .text-purple-500 { color: #d8b4fe !important; }
-        #view-app.dark-mode .text-purple-600 { color: #d8b4fe !important; }
-        #view-app.dark-mode .text-purple-700 { color: #e9d5ff !important; }
-        #view-app.dark-mode .text-purple-800 { color: #f3e8ff !important; }
-        #view-app.dark-mode .border-purple-100,
-        #view-app.dark-mode .border-purple-200,
-        #view-app.dark-mode .border-purple-300 { border-color: rgba(168,85,247,0.4) !important; }
-        #view-app.dark-mode .ring-purple-500 { --tw-ring-color: #c084fc !important; }
+        body.dark-mode .bg-purple-50 { background-color: rgba(168,85,247,0.14) !important; }
+        body.dark-mode .bg-purple-100 { background-color: rgba(168,85,247,0.22) !important; }
+        body.dark-mode .text-purple-400 { color: #d8b4fe !important; }
+        body.dark-mode .text-purple-500 { color: #d8b4fe !important; }
+        body.dark-mode .text-purple-600 { color: #d8b4fe !important; }
+        body.dark-mode .text-purple-700 { color: #e9d5ff !important; }
+        body.dark-mode .text-purple-800 { color: #f3e8ff !important; }
+        body.dark-mode .border-purple-100,
+        body.dark-mode .border-purple-200,
+        body.dark-mode .border-purple-300 { border-color: rgba(168,85,247,0.4) !important; }
+        body.dark-mode .ring-purple-500 { --tw-ring-color: #c084fc !important; }
 
-        #view-app.dark-mode .bg-sky-50 { background-color: rgba(14,165,233,0.14) !important; }
-        #view-app.dark-mode .bg-sky-100 { background-color: rgba(14,165,233,0.22) !important; }
-        #view-app.dark-mode .text-sky-400 { color: #7dd3fc !important; }
-        #view-app.dark-mode .text-sky-500 { color: #7dd3fc !important; }
-        #view-app.dark-mode .text-sky-600 { color: #7dd3fc !important; }
-        #view-app.dark-mode .text-sky-700 { color: #bae6fd !important; }
-        #view-app.dark-mode .text-sky-800 { color: #e0f2fe !important; }
-        #view-app.dark-mode .border-sky-100,
-        #view-app.dark-mode .border-sky-300 { border-color: rgba(14,165,233,0.4) !important; }
+        body.dark-mode .bg-sky-50 { background-color: rgba(14,165,233,0.14) !important; }
+        body.dark-mode .bg-sky-100 { background-color: rgba(14,165,233,0.22) !important; }
+        body.dark-mode .text-sky-400 { color: #7dd3fc !important; }
+        body.dark-mode .text-sky-500 { color: #7dd3fc !important; }
+        body.dark-mode .text-sky-600 { color: #7dd3fc !important; }
+        body.dark-mode .text-sky-700 { color: #bae6fd !important; }
+        body.dark-mode .text-sky-800 { color: #e0f2fe !important; }
+        body.dark-mode .border-sky-100,
+        body.dark-mode .border-sky-300 { border-color: rgba(14,165,233,0.4) !important; }
 
-        #view-app.dark-mode .bg-cyan-50 { background-color: rgba(6,182,212,0.14) !important; }
-        #view-app.dark-mode .text-cyan-800 { color: #cffafe !important; }
-        #view-app.dark-mode .border-cyan-100 { border-color: rgba(6,182,212,0.4) !important; }
+        body.dark-mode .bg-cyan-50 { background-color: rgba(6,182,212,0.14) !important; }
+        body.dark-mode .text-cyan-800 { color: #cffafe !important; }
+        body.dark-mode .border-cyan-100 { border-color: rgba(6,182,212,0.4) !important; }
 
         /* ---------- Misc controls: checkbox accent, scrollbar ---------- */
-        #view-app.dark-mode .accent-purple-600 { accent-color: #a78bfa !important; }
-        #view-app.dark-mode ::-webkit-scrollbar-track { background: #0b1220; }
-        #view-app.dark-mode ::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
+        body.dark-mode .accent-purple-600 { accent-color: #a78bfa !important; }
+        body.dark-mode ::-webkit-scrollbar-track { background: #0b1220; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #334155; border-radius: 8px; }
 
         /* ===== Role-based visibility (Operation Staff has no Insight & Automation) ===== */
         body.role-staff .admin-only { display: none !important; }
@@ -823,28 +827,48 @@
                             </div>
                             <p id="dept-volume-last-synced" class="text-[11px] text-slate-400 mb-4">-</p>
 
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
-                                <div class="bg-indigo-50 rounded-xl p-3 text-center">
-                                    <p class="text-[10px] font-bold text-indigo-500 uppercase">Tracking</p>
-                                    <p id="dept-volume-tracking-count" class="text-xl font-black text-indigo-700 mt-0.5">-</p>
-                                </div>
-                                <div class="bg-blue-50 rounded-xl p-3 text-center">
-                                    <p class="text-[10px] font-bold text-blue-500 uppercase">Documents</p>
-                                    <p id="dept-volume-document-count" class="text-xl font-black text-blue-700 mt-0.5">-</p>
-                                </div>
-                                <div class="bg-teal-50 rounded-xl p-3 text-center">
-                                    <p class="text-[10px] font-bold text-teal-500 uppercase">Departments</p>
-                                    <p id="dept-volume-active-depts" class="text-xl font-black text-teal-700 mt-0.5">-</p>
-                                </div>
-                                <div class="bg-emerald-50 rounded-xl p-3 text-center">
-                                    <p class="text-[10px] font-bold text-emerald-500 uppercase">Completion</p>
-                                    <p id="dept-volume-completion" class="text-xl font-black text-emerald-700 mt-0.5">-</p>
-                                </div>
+                            <!-- Requirement 2D (v5.9.27): view toggle — switches CSS visibility only, never refetches -->
+                            <div class="flex gap-1.5 mb-4 bg-slate-50 rounded-xl p-1">
+                                <button onclick="setDeptVolumeView('overview')" id="dept-volume-tab-overview" class="dept-volume-tab dept-volume-tab-active flex-1 text-xs font-bold py-2 rounded-lg transition">Overview</button>
+                                <button onclick="setDeptVolumeView('activity')" id="dept-volume-tab-activity" class="dept-volume-tab flex-1 text-xs font-bold py-2 rounded-lg transition">Department Activity</button>
+                                <button onclick="setDeptVolumeView('trend')" id="dept-volume-tab-trend" class="dept-volume-tab flex-1 text-xs font-bold py-2 rounded-lg transition">Monthly Trend</button>
                             </div>
 
-                            <div id="dept-volume-chart" class="space-y-2.5 min-h-[200px]"><div class="skeleton-block h-48 w-full rounded-xl"></div></div>
+                            <div id="dept-volume-view-overview">
+                                <!-- Requirement 2B: Top Activity Departments -->
+                                <div id="dept-volume-top-cards" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5"></div>
 
-                            <button onclick="openDeptVolumeAllModal()" class="mt-4 w-full text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-2.5 rounded-xl transition cursor-pointer min-h-[44px]">ดูทั้งหมด 24 แผนก</button>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5">
+                                    <div class="bg-indigo-50 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-indigo-500 uppercase">Tracking</p>
+                                        <p id="dept-volume-tracking-count" class="text-xl font-black text-indigo-700 mt-0.5">-</p>
+                                    </div>
+                                    <div class="bg-blue-50 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-blue-500 uppercase">Documents</p>
+                                        <p id="dept-volume-document-count" class="text-xl font-black text-blue-700 mt-0.5">-</p>
+                                    </div>
+                                    <div class="bg-teal-50 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-teal-500 uppercase">Departments</p>
+                                        <p id="dept-volume-active-depts" class="text-xl font-black text-teal-700 mt-0.5">-</p>
+                                    </div>
+                                    <div class="bg-emerald-50 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-emerald-500 uppercase">Completion</p>
+                                        <p id="dept-volume-completion" class="text-xl font-black text-emerald-700 mt-0.5">-</p>
+                                    </div>
+                                </div>
+
+                                <div id="dept-volume-chart" class="space-y-2.5 min-h-[200px]"><div class="skeleton-block h-48 w-full rounded-xl"></div></div>
+
+                                <button onclick="openDeptVolumeAllModal()" class="mt-4 w-full text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 py-2.5 rounded-xl transition cursor-pointer min-h-[44px]">ดูทั้งหมด 24 แผนก</button>
+                            </div>
+
+                            <!-- Requirement 2A: Department Activity Matrix -->
+                            <div id="dept-volume-view-activity" class="hidden space-y-2.5 max-h-[520px] overflow-y-auto pr-1"></div>
+
+                            <!-- Requirement 2C: Monthly Trend -->
+                            <div id="dept-volume-view-trend" class="hidden">
+                                <div id="dept-volume-trend-chart" class="min-h-[280px]"></div>
+                            </div>
                         </div>
 
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80">
@@ -1415,6 +1439,16 @@
                             <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 col-span-2 md:col-span-1">
                                 <p class="text-[10px] font-bold text-indigo-600 uppercase">แผนกที่ยังมีงานค้าง</p>
                                 <p id="deptstatus-kpi-depts" class="text-xl font-black text-indigo-700 mt-1">-</p>
+                            </div>
+                        </div>
+
+                        <!-- Requirement 1 (v5.9.27): search first, Department filter still available and combinable -->
+                        <div class="mb-4 max-w-xl">
+                            <label class="block text-xs font-bold text-slate-700 mb-1.5">ค้นหา / Search</label>
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+                                <input type="text" id="deptstatus-search-input" oninput="handleDeptStatusSearchInput()" placeholder="ค้นหา Tracking / ผู้ส่ง / แผนก..."
+                                    class="w-full border border-slate-200 pl-11 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition">
                             </div>
                         </div>
 
@@ -2188,16 +2222,23 @@
         }
 
         function applyTheme(theme) {
-            const appView = document.getElementById('view-app');
+            // v5.9.27 — BUG FIX: this used to toggle .dark-mode on #view-app only. But 11 modals
+            // (batch-complete, dept-volume-all, delete-keyin, esign-result, evidence-preview,
+            // evidencecapture-detail, export-report, keyin-confirm, ops-result,
+            // signature-preview, dashboard-detail) are siblings of #view-app in the DOM, not
+            // descendants — confirmed by tracing the actual HTML structure — so the entire dark
+            // theme CSS system never reached them at all, no matter how complete its coverage of
+            // #view-app's own content was. Toggling on <body> instead fixes this in one place:
+            // body.dark-mode X still matches everything nested inside #view-app (a descendant
+            // selector matches at any depth), AND now also reaches these sibling modals.
             const iconDesktop = document.getElementById('theme-icon-desktop');
             const iconMobile = document.getElementById('theme-icon-mobile');
-            if (!appView) return;
             if (theme === 'dark') {
-                appView.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
                 if (iconDesktop) iconDesktop.className = 'fa-solid fa-sun';
                 if (iconMobile) iconMobile.className = 'fa-solid fa-sun';
             } else {
-                appView.classList.remove('dark-mode');
+                document.body.classList.remove('dark-mode');
                 if (iconDesktop) iconDesktop.className = 'fa-solid fa-moon';
                 if (iconMobile) iconMobile.className = 'fa-solid fa-moon';
             }
@@ -2205,9 +2246,7 @@
         }
 
         function toggleTheme() {
-            const app = document.getElementById('view-app');
-            if (!app) return;
-            applyTheme(app.classList.contains('dark-mode') ? 'light' : 'dark');
+            applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
         }
 
         function setLoginStatus(message, type) {
@@ -2393,7 +2432,7 @@
         // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
         // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
         // otherwise surfaces as confusing, hard-to-explain bugs.
-        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.26';
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.27';
 
         async function loadBackendCapabilities() {
             try {
@@ -6450,23 +6489,44 @@
             return d.getFullYear() === Number(m[1]) && (d.getMonth() + 1) === Number(m[2]) && d.getDate() === Number(m[3]);
         }
 
+        // Requirement 1 (v5.9.27) — Department Status Search: debounced (250ms), entirely
+        // in-memory over deptStatusData already loaded once — never a new API call per
+        // keystroke. Case-insensitive, Thai/English/numeric, partial "contains" match, trimmed.
+        let deptStatusSearchDebounceTimer = null;
+        function handleDeptStatusSearchInput() {
+            clearTimeout(deptStatusSearchDebounceTimer);
+            deptStatusSearchDebounceTimer = setTimeout(renderDepartmentStatusDetail, 250);
+        }
+
         function renderDepartmentStatusDetail() {
             const select = document.getElementById('deptstatus-department-select');
             const department = select ? (select.value || '__ALL__') : '__ALL__';
             const dateFilter = document.getElementById('deptstatus-date-filter')?.value || '';
+            const searchQuery = (document.getElementById('deptstatus-search-input')?.value || '').trim().toLowerCase();
             const statusLine = document.getElementById('deptstatus-status-line');
             const tbody = document.getElementById('deptstatus-table-body');
             const cardList = document.getElementById('deptstatus-card-list');
 
             if (!deptStatusData) return; // still loading / failed — loadDepartmentStatusMonitor already shows that state
 
-            // Requirement 1: Department AND Date filter together, entirely in the Browser from
-            // the array already loaded once by loadDepartmentStatusMonitor() — never a new API
-            // call just because either filter changed (Performance).
+            // Requirement 1: Department AND Date AND Search filter together, entirely in the
+            // Browser from the array already loaded once by loadDepartmentStatusMonitor() —
+            // never a new API call just because any filter changed (Performance).
             const allItems = deptStatusData.items || [];
             const items = allItems.filter(function(item) {
                 if (department !== '__ALL__' && String(item.department || '').trim() !== department) return false;
                 if (dateFilter && !isSameCalendarDateJs(dateFilter, item.registeredTime || item.timestamp)) return false;
+                if (searchQuery) {
+                    // Search by real Tracking, friendly label (จดหมายธรรมดา / Generic Document's
+                    // own typed text), Sender, or Department — "contains", not exact match.
+                    const haystack = (
+                        String(item.trackingId || '') + ' ' +
+                        formatTrackingFriendlyLabel(item.trackingId, item.originalTrackingLabel) + ' ' +
+                        String(item.senderName || '') + ' ' +
+                        String(item.department || '')
+                    ).toLowerCase();
+                    if (haystack.indexOf(searchQuery) === -1) return false;
+                }
                 return true;
             });
 
@@ -7325,9 +7385,99 @@
                 if (syncedEl) syncedEl.textContent = 'อัปเดตล่าสุด ' + new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
 
                 renderDeptVolumeChart(res.departments.slice(0, 10));
+                renderDeptVolumeTopCards(res.departments.slice(0, 5));
+                renderDeptVolumeActivityMatrix(res.departments);
+                renderDeptVolumeTrendChart(res.trend || []);
             } catch (err) {
                 if (chartEl) chartEl.innerHTML = '<div class="text-center text-rose-500 text-xs py-10">โหลดข้อมูลไม่สำเร็จ: ' + escapeHtml(normalizeError(err)) + '</div>';
             }
+        }
+
+        // Requirement 2D (v5.9.27) — CSS-only view switch, zero refetch: all 3 views' data
+        // already arrived together in loadDepartmentMonthlyVolume()'s one response.
+        let deptVolumeActiveView = 'overview';
+        function setDeptVolumeView(view) {
+            deptVolumeActiveView = view;
+            ['overview', 'activity', 'trend'].forEach(function(v) {
+                document.getElementById('dept-volume-view-' + v)?.classList.toggle('hidden', v !== view);
+                document.getElementById('dept-volume-tab-' + v)?.classList.toggle('dept-volume-tab-active', v === view);
+            });
+        }
+
+        // Requirement 2B — Top Activity Departments: 3–5 cards, no "อันดับ 1/2" ranking language.
+        function renderDeptVolumeTopCards(topDepartments) {
+            const box = document.getElementById('dept-volume-top-cards');
+            if (!box) return;
+            if (!topDepartments.length) { box.innerHTML = ''; return; }
+            const palette = ['indigo', 'blue', 'teal', 'violet', 'sky'];
+            box.innerHTML = topDepartments.map(function(d, idx) {
+                const c = palette[idx % palette.length];
+                return '<div class="bg-' + c + '-50 border border-' + c + '-100 rounded-xl p-3 text-center">' +
+                    '<p class="text-xs font-bold text-slate-700 truncate mb-1">' + escapeHtml(d.department) + '</p>' +
+                    '<p class="text-2xl font-black text-' + c + '-700">' + d.trackingCount + '</p>' +
+                    '<p class="text-[10px] text-slate-400 uppercase">Tracking</p>' +
+                '</div>';
+            }).join('');
+        }
+
+        // Requirement 2A — Department Activity Matrix: every Department as a row with a
+        // Completion progress indicator, never just a bare bar chart.
+        function renderDeptVolumeActivityMatrix(departments) {
+            const box = document.getElementById('dept-volume-view-activity');
+            if (!box) return;
+            if (!departments.length) { box.innerHTML = '<p class="text-center text-slate-400 text-xs py-10">ไม่มีข้อมูลเดือนนี้</p>'; return; }
+            box.innerHTML = departments.map(function(d) {
+                const barColor = d.completionPercent >= 80 ? 'bg-emerald-500' : d.completionPercent >= 40 ? 'bg-amber-500' : 'bg-rose-400';
+                return '<div class="border border-slate-100 rounded-xl p-3.5">' +
+                    '<div class="flex justify-between items-center mb-2 gap-2">' +
+                        '<span class="font-bold text-sm text-slate-800 truncate">' + escapeHtml(d.department) + '</span>' +
+                        '<span class="text-xs font-black text-slate-700 shrink-0">' + d.completionPercent + '%</span>' +
+                    '</div>' +
+                    '<div class="h-2 bg-slate-100 rounded-full overflow-hidden mb-2.5"><div class="h-full ' + barColor + ' rounded-full" style="width:' + Math.max(3, d.completionPercent) + '%"></div></div>' +
+                    '<div class="grid grid-cols-4 gap-2 text-center text-[11px]">' +
+                        '<div><p class="text-slate-400">Tracking</p><p class="font-bold text-slate-700">' + d.trackingCount + '</p></div>' +
+                        '<div><p class="text-slate-400">Docs</p><p class="font-bold text-slate-700">' + d.documentCount + '</p></div>' +
+                        '<div><p class="text-slate-400">Delivered</p><p class="font-bold text-emerald-600">' + d.delivered + '</p></div>' +
+                        '<div><p class="text-slate-400">Return</p><p class="font-bold text-rose-600">' + d.returned + '</p></div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+        }
+
+        // Requirement 2C — Monthly Trend: lightweight inline SVG area chart, no heavy charting
+        // library — keeps the Dashboard fast to load per the explicit performance requirement.
+        function renderDeptVolumeTrendChart(trend) {
+            const box = document.getElementById('dept-volume-trend-chart');
+            if (!box) return;
+            if (!trend.length) { box.innerHTML = '<p class="text-center text-slate-400 text-xs py-10">ไม่มีข้อมูล</p>'; return; }
+
+            const w = 600, h = 240, padL = 36, padR = 12, padT = 16, padB = 28;
+            const maxVal = Math.max(1, ...trend.map(function(t) { return t.trackingCount; }));
+            const stepX = (w - padL - padR) / Math.max(1, trend.length - 1);
+            const toY = function(v) { return padT + (h - padT - padB) * (1 - v / maxVal); };
+            const points = trend.map(function(t, i) { return (padL + i * stepX) + ',' + toY(t.trackingCount); });
+            const areaPath = 'M' + (padL) + ',' + (h - padB) + ' L' + points.join(' L') + ' L' + (padL + (trend.length - 1) * stepX) + ',' + (h - padB) + ' Z';
+            const linePath = 'M' + points.join(' L');
+
+            const monthLabels = trend.map(function(t) { return THAI_MONTH_NAMES[t.month - 1].slice(0, 3); });
+            const dots = trend.map(function(t, i) {
+                const x = padL + i * stepX, y = toY(t.trackingCount);
+                return '<circle cx="' + x + '" cy="' + y + '" r="3.5" fill="#4f46e5"></circle>' +
+                    '<text x="' + x + '" y="' + (h - 8) + '" font-size="9" fill="#94a3b8" text-anchor="middle">' + monthLabels[i] + '</text>' +
+                    '<text x="' + x + '" y="' + (y - 8) + '" font-size="9" fill="#4338ca" font-weight="700" text-anchor="middle">' + t.trackingCount + '</text>';
+            }).join('');
+
+            box.innerHTML =
+                '<svg viewBox="0 0 ' + w + ' ' + h + '" class="w-full h-auto" style="max-height:280px">' +
+                    '<defs><linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">' +
+                        '<stop offset="0%" stop-color="#4f46e5" stop-opacity="0.22"></stop>' +
+                        '<stop offset="100%" stop-color="#4f46e5" stop-opacity="0"></stop>' +
+                    '</linearGradient></defs>' +
+                    '<path d="' + areaPath + '" fill="url(#trendFill)"></path>' +
+                    '<path d="' + linePath + '" fill="none" stroke="#4f46e5" stroke-width="2"></path>' +
+                    dots +
+                '</svg>' +
+                '<p class="text-center text-[11px] text-slate-400 mt-2">Tracking Count รายเดือน (6 เดือนล่าสุด)</p>';
         }
 
         function renderDeptVolumeChart(departments) {
