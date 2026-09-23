@@ -219,6 +219,27 @@
         body.dark-mode .badge-in-transit { background: rgba(245,158,11,0.18) !important; color: #fcd34d !important; }
         body.dark-mode .badge-returned { background: rgba(244,63,94,0.18) !important; color: #fda4af !important; }
 
+        /* Requirement 7-13 (v5.9.30) — Mobile Sidebar: the SAME <aside> element now serves both
+           Desktop (static, always visible, unchanged) and Mobile (a fixed slide-in drawer) —
+           deliberately not a second, duplicated copy of the navigation buttons, which would mean
+           duplicate element IDs. Mobile-first: fixed + off-screen by default; a `.md:` override
+           resets it to normal in-flow desktop positioning. */
+        .mobile-sidebar-drawer {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            transform: translateX(-100%);
+            transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 85vw;
+        }
+        .mobile-sidebar-drawer.mobile-sidebar-open { transform: translateX(0); }
+        @media (min-width: 768px) {
+            .mobile-sidebar-drawer { position: relative; transform: none !important; transition: none; max-width: none; }
+        }
+        #mobile-sidebar-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(2,6,23,0.6); z-index: 39;
+        }
+        #mobile-sidebar-overlay.mobile-sidebar-open { display: block; }
+        @media (prefers-reduced-motion: reduce) { .mobile-sidebar-drawer { transition: none; } }
+
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -629,15 +650,21 @@
     <div id="view-app" class="hidden h-screen w-full flex bg-slate-50">
 
         <!-- SIDEBAR (PC & Tablet View) -->
-        <aside class="w-64 bg-slate-900 text-slate-300 hidden md:flex flex-col shadow-2xl relative z-20 flex-shrink-0 border-r border-slate-800">
-            <div class="h-20 flex items-center px-6 border-b border-slate-800 bg-slate-950">
-                <div class="w-9 h-9 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-md shadow-indigo-500/20">
-                    <span class="text-white font-black text-xs tracking-wider">NTL</span>
+        <aside id="app-sidebar" class="mobile-sidebar-drawer w-64 bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-40 flex-shrink-0 border-r border-slate-800">
+            <div class="h-20 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950">
+                <div class="flex items-center">
+                    <div class="w-9 h-9 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-md shadow-indigo-500/20">
+                        <span class="text-white font-black text-xs tracking-wider">NTL</span>
+                    </div>
+                    <div>
+                        <h1 class="text-white font-bold text-base tracking-wide leading-none">Digital Mail</h1>
+                        <p class="text-[10px] text-indigo-400 font-medium mt-0.5">Digital Mail Service</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 class="text-white font-bold text-base tracking-wide leading-none">Digital Mail</h1>
-                    <p class="text-[10px] text-indigo-400 font-medium mt-0.5">Digital Mail Service</p>
-                </div>
+                <!-- Requirement 9 (v5.9.30): explicit close affordance inside the drawer itself, Mobile only -->
+                <button onclick="closeMobileSidebar()" class="md:hidden w-9 h-9 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 flex items-center justify-center shrink-0" aria-label="ปิดเมนู">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
             </div>
 
             <!-- Navigation Links -->
@@ -700,17 +727,27 @@
             </div>
         </aside>
 
+        <!-- Requirement 9 (v5.9.30): backdrop overlay, closes drawer on outside click -->
+        <div id="mobile-sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
         <!-- MAIN CONTENT CONTAINER -->
         <main class="flex-1 flex flex-col h-full w-full relative min-w-0 overflow-hidden">
 
             <!-- Mobile Header Bar -->
             <header class="md:hidden bg-slate-900 text-white h-16 border-b border-slate-800 flex items-center justify-between px-4 shadow-md z-30 flex-shrink-0">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-lg flex items-center justify-center shadow">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <!-- Requirement 8 (v5.9.30): hamburger — this was completely missing before,
+                         which is exactly why mobile had no way to reach any Module outside the
+                         5-item Bottom Nav (Dashboard, Evidence, Department Status, Return,
+                         Report, Auto Mail Settings all had no path to open on Mobile at all). -->
+                    <button onclick="openMobileSidebar()" class="w-10 h-10 -ml-1.5 shrink-0 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 flex items-center justify-center" aria-label="เปิดเมนู">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                    <div class="w-8 h-8 bg-gradient-to-br from-indigo-600 to-blue-700 rounded-lg flex items-center justify-center shadow shrink-0">
                         <span class="text-white font-black text-xs">NTL</span>
                     </div>
-                    <div>
-                        <h1 class="font-bold text-slate-100 text-sm truncate max-w-[160px]" id="mobile-header-title">Digital Mail Service</h1>
+                    <div class="min-w-0">
+                        <h1 class="font-bold text-slate-100 text-sm truncate max-w-[140px]" id="mobile-header-title">Digital Mail Service</h1>
                         <p class="text-[9px] text-indigo-300 font-medium">NTL Digital Mail Service</p>
                     </div>
                 </div>
@@ -1383,6 +1420,58 @@
                                 <button type="button" id="automail-test-btn" onclick="sendAutoMailTest()" class="btn-nav btn-nav-secondary sm:w-52 shrink-0">ส่ง Email ทดสอบ</button>
                             </div>
                             <p id="automail-test-status" class="text-xs font-bold mt-2.5 h-4"></p>
+                        </div>
+                    </div>
+
+                    <!-- Requirement 16-33 (v5.9.30) — LINE Notification Settings -->
+                    <div class="bg-white p-5 md:p-8 rounded-2xl shadow-sm border border-slate-200/80">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-lg"><i class="fa-brands fa-line"></i></div>
+                            <div>
+                                <h3 class="text-lg font-bold text-slate-800">LINE Notification</h3>
+                                <p class="text-xs text-slate-500">แจ้งเตือนผ่าน LINE เมื่อมี Key In ใหม่ และเมื่อมีเอกสารเตรียมส่ง BTSVP</p>
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-xl p-4 mt-5">
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs font-bold text-slate-500 uppercase">Enable LINE Notification</p>
+                                <button type="button" id="line-toggle-enabled-btn" onclick="toggleLineSetting('enabled')" class="relative w-12 h-7 rounded-full bg-slate-300 transition-colors shrink-0" aria-label="Enable LINE Notification">
+                                    <span id="line-toggle-enabled-knob" class="absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                            <label class="flex items-center justify-between border border-slate-200 rounded-xl p-3.5 cursor-pointer min-h-[44px]">
+                                <span class="text-xs font-bold text-slate-700">Notify New Key In</span>
+                                <input type="checkbox" id="line-notify-keyin-check" onchange="toggleLineSetting('notifyKeyIn')" class="w-5 h-5 accent-emerald-600">
+                            </label>
+                            <label class="flex items-center justify-between border border-slate-200 rounded-xl p-3.5 cursor-pointer min-h-[44px]">
+                                <span class="text-xs font-bold text-slate-700">Notify BTSVP Ready</span>
+                                <input type="checkbox" id="line-notify-btsvp-check" onchange="toggleLineSetting('notifyBtsvp')" class="w-5 h-5 accent-emerald-600">
+                            </label>
+                        </div>
+
+                        <div class="mt-5 space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">LINE Channel Access Token <span id="line-token-status" class="font-normal text-slate-400"></span></label>
+                                <input type="password" id="line-token-input" placeholder="กรอกเฉพาะเมื่อต้องการเปลี่ยน — เว้นว่างไว้เพื่อคงค่าเดิม" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                                <p class="text-[10px] text-slate-400 mt-1.5">เก็บฝั่ง Backend (Script Properties) เท่านั้น — หน้าเว็บนี้ไม่แสดงค่าที่บันทึกไว้แล้ว</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 mb-1.5">LINE Target ID (User ID / Group ID) <span id="line-target-status" class="font-normal text-slate-400"></span></label>
+                                <input type="text" id="line-target-input" placeholder="กรอกเฉพาะเมื่อต้องการเปลี่ยน — เว้นว่างไว้เพื่อคงค่าเดิม" class="w-full border border-slate-200 p-3 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition">
+                            </div>
+                        </div>
+
+                        <p id="line-save-status" class="text-xs font-bold mt-3 h-4"></p>
+                        <button type="button" id="line-save-btn" onclick="saveLineSettingsForm()" class="btn-nav btn-nav-primary w-full mt-2">บันทึกการตั้งค่า LINE</button>
+
+                        <div class="border-t border-slate-100 mt-6 pt-5">
+                            <p class="text-sm font-bold text-slate-700 mb-2"><i class="fa-regular fa-paper-plane mr-1.5 text-slate-400"></i>ทดสอบการส่ง LINE</p>
+                            <button type="button" id="line-test-btn" onclick="sendLineTest()" class="btn-nav btn-nav-secondary w-full">ส่ง LINE ทดสอบ</button>
+                            <p id="line-test-status" class="text-xs font-bold mt-2.5 h-4"></p>
                         </div>
                     </div>
                 </section>
@@ -2450,6 +2539,20 @@
             automail: 'Auto Mail Settings / ตั้งค่าแจ้งเตือน Email'
         };
 
+        // Requirement 7-9 (v5.9.30) — Mobile Sidebar Drawer. Client-side only: no API call, no
+        // Sheet read, nothing but two class toggles — matching Requirement 35's "Dark Mode /
+        // Mobile Responsive must be Client-side" principle exactly.
+        function openMobileSidebar() {
+            document.getElementById('app-sidebar')?.classList.add('mobile-sidebar-open');
+            document.getElementById('mobile-sidebar-overlay')?.classList.add('mobile-sidebar-open');
+            document.body.classList.add('overflow-hidden');
+        }
+        function closeMobileSidebar() {
+            document.getElementById('app-sidebar')?.classList.remove('mobile-sidebar-open');
+            document.getElementById('mobile-sidebar-overlay')?.classList.remove('mobile-sidebar-open');
+            document.body.classList.remove('overflow-hidden');
+        }
+
         function navigateTo(pageId) {
             const session = currentUser || getSession();
             if (!session || !session.token) return;
@@ -2457,6 +2560,7 @@
                 alert('บัญชี Operation Staff ไม่มีสิทธิ์เข้าเมนูนี้');
                 return;
             }
+            closeMobileSidebar(); // Requirement 8: selecting a Module auto-closes the Drawer, standard mobile nav UX
             document.querySelectorAll('.page-section').forEach(section => section.classList.add('hidden'));
             const target = document.getElementById('page-' + pageId);
             if (target) target.classList.remove('hidden');
@@ -2475,7 +2579,7 @@
             }
             if (pageId === 'deptstatus') loadDepartmentStatusMonitor();
             if (pageId === 'evidencecapture') loadEvidenceCaptureQueue();
-            if (pageId === 'automail') loadAutoMailSettings();
+            if (pageId === 'automail') { loadAutoMailSettings(); loadLineSettings(); }
             if (pageId === 'home') { loadMyWorkToday(); loadRecentActivity(); }
             if (pageId === 'dashboard') loadDashboardStats();
             if (pageId === 'operations') loadOperationsControl();
@@ -2501,7 +2605,7 @@
         // running the same Code.gs as this HTML file — most commonly because Code.gs was edited
         // but "Deploy > New version" was never pushed. This is exactly the kind of drift that
         // otherwise surfaces as confusing, hard-to-explain bugs.
-        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.29';
+        const FRONTEND_EXPECTED_BACKEND_VERSION = 'v5.9.30';
 
         async function loadBackendCapabilities() {
             try {
@@ -6074,6 +6178,105 @@
         /** ===================== AUTO MAIL SETTINGS (v5.9.21) — Admin only ===================== **/
         let autoMailEnabledState = false; // local UI state — only persisted when "Save" is clicked
         let autoMailSenderAuthorized = false;
+
+        /** ===================== LINE NOTIFICATION SETTINGS (v5.9.30) — Admin only ===================== **/
+        let lineEnabledState = false;
+
+        async function loadLineSettings() {
+            if (!requireGas() || !getAuthToken()) return;
+            try {
+                const res = await apiCall('getLineSettings', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (!res || res.success === false) throw new Error((res && res.message) || 'โหลดการตั้งค่า LINE ไม่สำเร็จ');
+
+                lineEnabledState = !!res.enabled;
+                renderLineToggle();
+                const keyinCheck = document.getElementById('line-notify-keyin-check');
+                if (keyinCheck) keyinCheck.checked = !!res.notifyKeyIn;
+                const btsvpCheck = document.getElementById('line-notify-btsvp-check');
+                if (btsvpCheck) btsvpCheck.checked = !!res.notifyBtsvp;
+
+                const tokenStatus = document.getElementById('line-token-status');
+                if (tokenStatus) tokenStatus.textContent = res.hasToken ? '(ตั้งค่าแล้ว)' : '(ยังไม่ได้ตั้งค่า)';
+                const targetStatus = document.getElementById('line-target-status');
+                if (targetStatus) targetStatus.textContent = res.hasTargetId ? '(' + (res.targetIdMasked || 'ตั้งค่าแล้ว') + ')' : '(ยังไม่ได้ตั้งค่า)';
+            } catch (err) {
+                console.warn('loadLineSettings:', normalizeError(err));
+            }
+        }
+
+        function renderLineToggle() {
+            const btn = document.getElementById('line-toggle-enabled-btn');
+            const knob = document.getElementById('line-toggle-enabled-knob');
+            if (btn) { btn.classList.toggle('bg-emerald-500', lineEnabledState); btn.classList.toggle('bg-slate-300', !lineEnabledState); }
+            if (knob) knob.style.transform = lineEnabledState ? 'translateX(20px)' : 'translateX(0)';
+        }
+
+        function toggleLineSetting(which) {
+            if (which === 'enabled') { lineEnabledState = !lineEnabledState; renderLineToggle(); }
+            // notifyKeyIn / notifyBtsvp are plain checkboxes — their own checked state is already
+            // authoritative; nothing else to toggle here, they're just read at Save time below.
+        }
+
+        async function saveLineSettingsForm() {
+            if (!requireGas()) return;
+            const statusEl = document.getElementById('line-save-status');
+            const btn = document.getElementById('line-save-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังบันทึก...'; }
+            if (statusEl) { statusEl.textContent = ''; statusEl.className = 'text-xs font-bold mt-3 h-4'; }
+
+            try {
+                const res = await apiCall('saveLineSettings', {
+                    enabled: lineEnabledState,
+                    notifyKeyIn: document.getElementById('line-notify-keyin-check')?.checked !== false,
+                    notifyBtsvp: document.getElementById('line-notify-btsvp-check')?.checked !== false,
+                    token: document.getElementById('line-token-input')?.value.trim() || '',
+                    targetId: document.getElementById('line-target-input')?.value.trim() || '',
+                    authToken: getAuthToken()
+                });
+                if (handleAuthFailure(res)) return;
+
+                if (!res || !res.success) {
+                    if (statusEl) { statusEl.textContent = (res && res.message) || 'บันทึกไม่สำเร็จ'; statusEl.className = 'text-xs font-bold mt-3 h-4 text-rose-600'; }
+                    return;
+                }
+
+                if (statusEl) { statusEl.textContent = '✓ ' + res.message; statusEl.className = 'text-xs font-bold mt-3 h-4 text-emerald-600'; }
+                showSystemToast(res.message || 'บันทึกการตั้งค่า LINE เรียบร้อยแล้ว', 'success');
+                // Clear the Token/Target inputs after a successful save — they're write-only
+                // fields (Requirement 26: never echo a stored credential back to the Frontend).
+                const tokenInput = document.getElementById('line-token-input'); if (tokenInput) tokenInput.value = '';
+                const targetInput = document.getElementById('line-target-input'); if (targetInput) targetInput.value = '';
+                loadLineSettings();
+            } catch (err) {
+                if (statusEl) { statusEl.textContent = 'บันทึกไม่สำเร็จ: ' + normalizeError(err); statusEl.className = 'text-xs font-bold mt-3 h-4 text-rose-600'; }
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = 'บันทึกการตั้งค่า LINE'; }
+            }
+        }
+
+        async function sendLineTest() {
+            if (!requireGas()) return;
+            const statusEl = document.getElementById('line-test-status');
+            const btn = document.getElementById('line-test-btn');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>กำลังส่ง...'; }
+            if (statusEl) { statusEl.textContent = ''; statusEl.className = 'text-xs font-bold mt-2.5 h-4'; }
+            showGlobalLoading('กำลังส่ง LINE ทดสอบ รอสักครู่น้าา');
+
+            try {
+                const res = await apiCall('testLineNotification', { authToken: getAuthToken() });
+                if (handleAuthFailure(res)) return;
+                if (statusEl) {
+                    statusEl.textContent = res && res.success ? '✓ ' + res.message : ((res && res.message) || 'ส่ง LINE ทดสอบไม่สำเร็จ');
+                    statusEl.className = 'text-xs font-bold mt-2.5 h-4 ' + (res && res.success ? 'text-emerald-600' : 'text-rose-600');
+                }
+            } catch (err) {
+                if (statusEl) { statusEl.textContent = 'ส่ง LINE ทดสอบไม่สำเร็จ: ' + normalizeError(err); statusEl.className = 'text-xs font-bold mt-2.5 h-4 text-rose-600'; }
+            } finally {
+                hideGlobalLoading();
+                if (btn) { btn.disabled = false; btn.innerHTML = 'ส่ง LINE ทดสอบ'; }
+            }
+        }
 
         async function loadAutoMailSettings() {
             if (!requireGas() || !getAuthToken()) return;
